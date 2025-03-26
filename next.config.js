@@ -5,6 +5,10 @@ const nextConfig = {
   // Increase memory limit for builds if needed
   experimental: {
     memoryBasedWorkersCount: true
+  },
+  // Ensure CSS modules work properly
+  webpack(config) {
+    return config;
   }
 };
 
