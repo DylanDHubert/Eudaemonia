@@ -3,8 +3,11 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { db } from '@/lib/db';
 
-// POST: Create a new daily entry
-export async function POST(request: Request) {
+// PUT: Update an existing entry
+export async function PUT(
+  request: Request,
+  { params }: { params: { id: string } }
+) {
   try {
     const session = await getServerSession(authOptions);
     
@@ -12,7 +15,20 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
     
+    const { id } = params;
     const body = await request.json();
+    
+    // First, check if the entry exists and belongs to the user
+    const existingEntry = await db.dailyEntry.findFirst({
+      where: {
+        id,
+        userId: session.user.id
+      }
+    });
+    
+    if (!existingEntry) {
+      return NextResponse.json({ error: 'Entry not found' }, { status: 404 });
+    }
     
     // Validate required fields
     const requiredFields = ['sleepHours', 'sleepQuality', 'exercise', 'alcohol', 
@@ -24,10 +40,11 @@ export async function POST(request: Request) {
       }
     }
     
-    // Create the entry
-    const entry = await db.dailyEntry.create({
+    // Update the entry
+    const updatedEntry = await db.dailyEntry.update({
+      where: { id },
       data: {
-        date: body.date ? new Date(body.date) : new Date(),
+        date: body.date ? new Date(body.date) : existingEntry.date,
         sleepHours: parseFloat(body.sleepHours),
         sleepQuality: parseInt(body.sleepQuality),
         exercise: Boolean(body.exercise),
@@ -43,19 +60,21 @@ export async function POST(request: Request) {
         stressLevel: parseInt(body.stressLevel),
         happinessRating: parseInt(body.happinessRating),
         notes: body.notes || null,
-        userId: session.user.id,
       }
     });
     
-    return NextResponse.json({ message: 'Entry created successfully', entry }, { status: 201 });
+    return NextResponse.json({ message: 'Entry updated successfully', entry: updatedEntry }, { status: 200 });
   } catch (error) {
-    console.error('Entry creation error:', error);
-    return NextResponse.json({ error: 'Error creating entry' }, { status: 500 });
+    console.error('Entry update error:', error);
+    return NextResponse.json({ error: 'Error updating entry' }, { status: 500 });
   }
 }
 
-// GET: Fetch all entries for the current user
-export async function GET(request: Request) {
+// DELETE: Remove an entry
+export async function DELETE(
+  request: Request,
+  { params }: { params: { id: string } }
+) {
   try {
     const session = await getServerSession(authOptions);
     
@@ -63,48 +82,28 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
     
-    const { searchParams } = new URL(request.url);
+    const { id } = params;
     
-    // Optional date filtering
-    const dateParam = searchParams.get('date');
-    const startDate = searchParams.get('startDate');
-    const endDate = searchParams.get('endDate');
-    
-    // Build the where clause for the query
-    let where: any = { userId: session.user.id };
-    
-    // Exact date filtering (for checking same-day entries)
-    if (dateParam) {
-      const date = new Date(dateParam);
-      
-      // Set time to start of day
-      const startOfDay = new Date(date);
-      startOfDay.setHours(0, 0, 0, 0);
-      
-      // Set time to end of day
-      const endOfDay = new Date(date);
-      endOfDay.setHours(23, 59, 59, 999);
-      
-      where.date = {
-        gte: startOfDay,
-        lte: endOfDay
-      };
-    }
-    // Date range filtering
-    else if (startDate || endDate) {
-      where.date = {};
-      if (startDate) where.date.gte = new Date(startDate);
-      if (endDate) where.date.lte = new Date(endDate);
-    }
-    
-    const entries = await db.dailyEntry.findMany({
-      where,
-      orderBy: { date: 'desc' },
+    // First, check if the entry exists and belongs to the user
+    const existingEntry = await db.dailyEntry.findFirst({
+      where: {
+        id,
+        userId: session.user.id
+      }
     });
     
-    return NextResponse.json({ entries }, { status: 200 });
+    if (!existingEntry) {
+      return NextResponse.json({ error: 'Entry not found' }, { status: 404 });
+    }
+    
+    // Delete the entry
+    await db.dailyEntry.delete({
+      where: { id }
+    });
+    
+    return NextResponse.json({ message: 'Entry deleted successfully' }, { status: 200 });
   } catch (error) {
-    console.error('Error fetching entries:', error);
-    return NextResponse.json({ error: 'Error fetching entries' }, { status: 500 });
+    console.error('Entry deletion error:', error);
+    return NextResponse.json({ error: 'Error deleting entry' }, { status: 500 });
   }
 } 

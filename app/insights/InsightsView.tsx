@@ -1,6 +1,33 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import { 
+  Chart as ChartJS, 
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+  ScatterController
+} from 'chart.js';
+import { Line, Bar, Scatter } from 'react-chartjs-2';
+import { format, subDays } from 'date-fns';
+
+// Register ChartJS components
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+  ScatterController
+);
 
 // Types for our entries
 type DailyEntry = {
@@ -40,6 +67,39 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
   const [correlations, setCorrelations] = useState<Correlation[]>([]);
   const [selectedFactor, setSelectedFactor] = useState<string | null>(null);
   const [scatterData, setScatterData] = useState<{ x: number; y: number }[]>([]);
+  const [timeSeriesData, setTimeSeriesData] = useState<any>(null);
+  const [viewMode, setViewMode] = useState<'correlations' | 'trends'>('correlations');
+  
+  // Prepare time series data for the happiness trend chart
+  const prepareTimeSeriesData = useCallback(() => {
+    if (entries.length < 2) return;
+    
+    // Sort entries by date (oldest first)
+    const sortedEntries = [...entries].sort((a, b) => 
+      new Date(a.date).getTime() - new Date(b.date).getTime()
+    );
+    
+    // Format dates and get happiness values
+    const dates = sortedEntries.map(entry => format(new Date(entry.date), 'MMM d'));
+    const happinessValues = sortedEntries.map(entry => entry.happinessRating);
+    
+    // Prepare dataset for Chart.js
+    const data = {
+      labels: dates,
+      datasets: [
+        {
+          label: 'Happiness Rating',
+          data: happinessValues,
+          borderColor: 'rgb(79, 70, 229)',
+          backgroundColor: 'rgba(79, 70, 229, 0.5)',
+          tension: 0.3,
+          fill: false,
+        }
+      ]
+    };
+    
+    setTimeSeriesData(data);
+  }, [entries]);
   
   useEffect(() => {
     if (entries.length < minimumEntries) {
@@ -109,7 +169,11 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
     };
     
     setCorrelations(calculateCorrelations());
-  }, [entries, minimumEntries]);
+    
+    // Prepare time series data for happiness
+    prepareTimeSeriesData();
+    
+  }, [entries, minimumEntries, prepareTimeSeriesData]);
   
   useEffect(() => {
     if (selectedFactor && entries.length >= minimumEntries) {
@@ -140,8 +204,8 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
         const trueValues = entries.filter(e => e[factorKey] === true).map(e => e.happinessRating);
         const falseValues = entries.filter(e => e[factorKey] === false).map(e => e.happinessRating);
         
-        const trueAvg = trueValues.length ? trueValues.reduce((a, b) => a + b, 0) / trueValues.length : 0;
-        const falseAvg = falseValues.length ? falseValues.reduce((a, b) => a + b, 0) / falseValues.length : 0;
+        const trueAvg = trueValues.length ? trueValues.reduce((a: number, b: number) => a + b, 0) / trueValues.length : 0;
+        const falseAvg = falseValues.length ? falseValues.reduce((a: number, b: number) => a + b, 0) / falseValues.length : 0;
         
         // We'll just use two points for the scatter plot in this case
         setScatterData([
@@ -283,6 +347,91 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
     return num.toFixed(2);
   };
   
+  // Generate options for scatter plot
+  const getScatterOptions = (isBooleanFactor: boolean) => {
+    const xTitle = isBooleanFactor ? '' : (selectedFactor || '');
+    
+    return {
+      responsive: true,
+      plugins: {
+        legend: {
+          display: false,
+        },
+        tooltip: {
+          callbacks: {
+            label: function(context: any) {
+              if (isBooleanFactor) {
+                const labels = ['No', 'Yes'];
+                return `${labels[context.parsed.x]}: ${context.parsed.y.toFixed(1)} happiness`;
+              }
+              return `(${context.parsed.x}, ${context.parsed.y})`;
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          title: {
+            display: true,
+            text: xTitle,
+          },
+          ticks: isBooleanFactor ? {
+            callback: function(value: any) {
+              return ['No', 'Yes'][value];
+            }
+          } : undefined
+        },
+        y: {
+          title: {
+            display: true,
+            text: 'Happiness Rating',
+          },
+          min: 0,
+          max: 10
+        }
+      }
+    };
+  };
+  
+  // Generate scatter chart data
+  const getScatterChartData = (isBooleanFactor: boolean) => {
+    return {
+      datasets: [
+        {
+          label: `${selectedFactor} vs. Happiness`,
+          data: scatterData,
+          backgroundColor: 'rgba(79, 70, 229, 0.6)',
+          pointRadius: isBooleanFactor ? 10 : 6,
+          pointHoverRadius: isBooleanFactor ? 12 : 8,
+        },
+      ],
+    };
+  };
+  
+  // Time series chart options
+  const timeSeriesOptions = {
+    responsive: true,
+    plugins: {
+      legend: {
+        position: 'top' as const,
+      },
+      title: {
+        display: true,
+        text: 'Your Happiness Over Time',
+      },
+    },
+    scales: {
+      y: {
+        min: 0,
+        max: 10,
+        title: {
+          display: true,
+          text: 'Happiness Rating'
+        }
+      }
+    }
+  };
+  
   if (entries.length < minimumEntries) {
     return (
       <div className="text-center py-6">
@@ -295,60 +444,97 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
   
   return (
     <div>
-      <div className="mb-8">
-        <h3 className="text-lg font-medium mb-4">Factors Affecting Your Happiness</h3>
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Factor</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Correlation</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Interpretation</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {correlations.length === 0 ? (
-                <tr>
-                  <td colSpan={4} className="px-6 py-4 text-center text-gray-500">
-                    No correlation data available
-                  </td>
-                </tr>
-              ) : (
-                correlations.map((correlation, index) => (
-                  <tr key={index} className={selectedFactor === correlation.factor ? 'bg-indigo-50' : 'hover:bg-gray-50'}>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{correlation.factor}</td>
-                    <td className={`px-6 py-4 whitespace-nowrap text-sm ${getCorrelationColor(correlation.correlation)}`}>
-                      {formatDecimal(correlation.correlation)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{correlation.description}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      <button
-                        onClick={() => setSelectedFactor(correlation.factor)}
-                        className="text-indigo-600 hover:text-indigo-900"
-                      >
-                        View
-                      </button>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+      {/* View mode tabs */}
+      <div className="flex space-x-2 mb-6">
+        <button 
+          onClick={() => setViewMode('correlations')}
+          className={`px-4 py-2 rounded ${viewMode === 'correlations' ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}>
+          Correlations
+        </button>
+        <button 
+          onClick={() => setViewMode('trends')}
+          className={`px-4 py-2 rounded ${viewMode === 'trends' ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}>
+          Happiness Trend
+        </button>
       </div>
       
-      {selectedFactor && (
-        <div className="border-t pt-6">
-          <h3 className="text-lg font-medium mb-4">{selectedFactor} vs. Happiness</h3>
-          <div className="h-64 relative">
-            <div className="absolute inset-0 flex items-center justify-center">
-              <p className="text-gray-500">Visualization coming soon</p>
+      {viewMode === 'correlations' ? (
+        <>
+          <div className="mb-8">
+            <h3 className="text-lg font-medium mb-4">Factors Affecting Your Happiness</h3>
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Factor</th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Correlation</th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Interpretation</th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {correlations.length === 0 ? (
+                    <tr>
+                      <td colSpan={4} className="px-6 py-4 text-center text-gray-500">
+                        No correlation data available
+                      </td>
+                    </tr>
+                  ) : (
+                    correlations.map((correlation, index) => (
+                      <tr key={index} className={selectedFactor === correlation.factor ? 'bg-indigo-50' : 'hover:bg-gray-50'}>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{correlation.factor}</td>
+                        <td className={`px-6 py-4 whitespace-nowrap text-sm ${getCorrelationColor(correlation.correlation)}`}>
+                          {formatDecimal(correlation.correlation)}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{correlation.description}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          <button
+                            onClick={() => setSelectedFactor(correlation.factor)}
+                            className="text-indigo-600 hover:text-indigo-900"
+                          >
+                            View
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
             </div>
+          </div>
+          
+          {selectedFactor && (
+            <div className="border-t pt-6">
+              <h3 className="text-lg font-medium mb-4">{selectedFactor} vs. Happiness</h3>
+              <div className="h-64 relative">
+                {scatterData.length > 0 && (
+                  <Scatter 
+                    options={getScatterOptions(
+                      ['Exercise', 'Alcohol', 'Weed', 'Meditation'].includes(selectedFactor)
+                    )} 
+                    data={getScatterChartData(
+                      ['Exercise', 'Alcohol', 'Weed', 'Meditation'].includes(selectedFactor)
+                    )} 
+                  />
+                )}
+              </div>
+              <div className="mt-4">
+                <p className="text-sm text-gray-500">
+                  {correlations.find(c => c.factor === selectedFactor)?.description || 'No interpretation available'}
+                </p>
+              </div>
+            </div>
+          )}
+        </>
+      ) : (
+        <div>
+          <h3 className="text-lg font-medium mb-4">Your Happiness Over Time</h3>
+          <div className="h-64 relative">
+            {timeSeriesData && <Line options={timeSeriesOptions} data={timeSeriesData} />}
           </div>
           <div className="mt-4">
             <p className="text-sm text-gray-500">
-              {correlations.find(c => c.factor === selectedFactor)?.description || 'No interpretation available'}
+              This chart shows your happiness ratings over time. Look for patterns to understand how your happiness changes.
             </p>
           </div>
         </div>

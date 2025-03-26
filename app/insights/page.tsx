@@ -3,48 +3,34 @@ import { redirect } from 'next/navigation';
 import { authOptions } from '@/lib/auth';
 import { db } from '@/lib/db';
 import InsightsView from './InsightsView';
+import { format } from 'date-fns';
 import Link from 'next/link';
 
-export default async function Insights() {
+export default async function InsightsPage() {
   const session = await getServerSession(authOptions);
-
-  if (!session) {
+  
+  if (!session || !session.user) {
     redirect('/login');
   }
-
-  // Fetch the user's entries
+  
+  // Get all entries for the current user
   const entries = await db.dailyEntry.findMany({
     where: {
-      userId: session.user.id
+      userId: session.user.id,
     },
     orderBy: {
-      date: 'desc'
-    }
+      date: 'desc',
+    },
   });
-
-  // Prepare the data for analysis
-  const preparedEntries = entries.map(entry => ({
-    id: entry.id,
-    date: entry.date.toISOString(),
-    sleepHours: entry.sleepHours,
-    sleepQuality: entry.sleepQuality,
-    exercise: entry.exercise,
-    exerciseTime: entry.exerciseTime,
-    alcohol: entry.alcohol,
-    alcoholUnits: entry.alcoholUnits,
-    weed: entry.weed,
-    weedAmount: entry.weedAmount,
-    meditation: entry.meditation,
-    meditationTime: entry.meditationTime,
-    socialTime: entry.socialTime,
-    workHours: entry.workHours,
-    stressLevel: entry.stressLevel,
-    happinessRating: entry.happinessRating,
-    notes: entry.notes,
+  
+  // Format date field for each entry
+  const formattedEntries = entries.map((entry: any) => ({
+    ...entry,
+    date: format(new Date(entry.date), 'yyyy-MM-dd'),
     createdAt: entry.createdAt.toISOString(),
-    updatedAt: entry.updatedAt.toISOString()
+    updatedAt: entry.updatedAt.toISOString(),
   }));
-
+  
   return (
     <div className="min-h-screen bg-gray-50">
       <nav className="bg-white shadow-sm">
@@ -94,7 +80,7 @@ export default async function Insights() {
                 </Link>
               </div>
             ) : (
-              <InsightsView entries={preparedEntries} minimumEntries={5} />
+              <InsightsView entries={formattedEntries} minimumEntries={5} />
             )}
           </div>
         </div>
