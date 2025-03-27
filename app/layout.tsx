@@ -15,8 +15,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="h-full">
-      <body className={`${GeistSans.className} h-full bg-gray-50`}>
-        <Providers>{children}</Providers>
+      <body className={`${GeistSans.className} h-full bg-gradient-to-br from-blue-50 to-indigo-50`}>
+        <div className="min-h-screen bg-[url('/grid.svg')] bg-center">
+          <Providers>{children}</Providers>
+        </div>
       </body>
     </html>
   );

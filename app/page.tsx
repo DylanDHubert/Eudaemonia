@@ -12,28 +12,28 @@ export default async function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <nav className="bg-white shadow-sm">
+    <div className="min-h-screen">
+      <nav className="glass-nav fixed top-0 left-0 right-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
             <div className="flex items-center">
-              <h1 className="text-xl font-semibold">
+              <h1 className="text-xl font-semibold text-gray-800">
                 Hello, {session.user?.name || session.user?.email?.split('@')[0] || 'User'}
               </h1>
             </div>
             <div className="flex items-center space-x-4">
-              <a href="/insights" className="text-indigo-600 hover:text-indigo-900">Insights</a>
-              <a href="/history" className="text-indigo-600 hover:text-indigo-900">History</a>
+              <a href="/insights" className="text-indigo-600 hover:text-indigo-900 transition-colors">Insights</a>
+              <a href="/history" className="text-indigo-600 hover:text-indigo-900 transition-colors">History</a>
               <LogoutButton />
             </div>
           </div>
         </div>
       </nav>
 
-      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8 pt-24">
         <div className="px-4 py-6 sm:px-0">
-          <div className="bg-white shadow rounded-lg p-6">
-            <h2 className="text-2xl font-bold mb-6 text-gray-900">Daily Check-in</h2>
+          <div className="glass-card p-8">
+            <h2 className="text-2xl font-bold mb-6 text-gray-800">Daily Check-in</h2>
             <p className="mb-6 text-gray-600">
               Track your lifestyle factors and happiness to discover what contributes most to your well-being.
             </p>

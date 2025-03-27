@@ -46,25 +46,25 @@ export default async function History() {
   }));
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <nav className="bg-white shadow-sm">
+    <div className="min-h-screen">
+      <nav className="glass-nav fixed top-0 left-0 right-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
             <div className="flex items-center">
-              <h1 className="text-xl font-semibold">History</h1>
+              <h1 className="text-xl font-semibold text-gray-800">History</h1>
             </div>
             <div className="flex items-center space-x-4">
-              <Link href="/" className="text-indigo-600 hover:text-indigo-900">Home</Link>
-              <Link href="/insights" className="text-indigo-600 hover:text-indigo-900">Insights</Link>
+              <Link href="/" className="text-indigo-600 hover:text-indigo-900 transition-colors">Home</Link>
+              <Link href="/insights" className="text-indigo-600 hover:text-indigo-900 transition-colors">Insights</Link>
             </div>
           </div>
         </div>
       </nav>
 
-      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8 pt-24">
         <div className="px-4 py-6 sm:px-0">
-          <div className="bg-white shadow rounded-lg p-6">
-            <h2 className="text-2xl font-bold mb-6 text-gray-900">Your History</h2>
+          <div className="glass-card p-8">
+            <h1 className="text-2xl font-bold mb-6 text-gray-800">Your History</h1>
             {entries.length === 0 ? (
               <div className="text-center py-8">
                 <p className="text-gray-500">You haven't recorded any entries yet.</p>

@@ -8,7 +8,30 @@
   --background-end-rgb: 255, 255, 255;
 }
 
+@layer components {
+  .glass-card {
+    @apply bg-white/70 backdrop-blur-lg rounded-xl shadow-lg border border-white/20;
+  }
+  
+  .glass-nav {
+    @apply bg-white/80 backdrop-blur-md border-b border-white/20;
+  }
+  
+  .glass-button {
+    @apply bg-white/70 hover:bg-white/90 backdrop-blur-sm border border-white/20 
+           text-gray-800 font-medium py-2 px-4 rounded-lg transition-all duration-200 
+           shadow-sm hover:shadow-md;
+  }
+  
+  .glass-input {
+    @apply bg-white/50 backdrop-blur-sm border border-white/20 rounded-lg 
+           focus:ring-2 focus:ring-indigo-500/50 focus:border-transparent 
+           transition-all duration-200;
+  }
+}
+
 body {
   color: rgb(var(--foreground-rgb));
-  background-color: #f9fafb;
+  background: linear-gradient(135deg, #f6f8fc 0%, #e9f0f7 100%);
+  min-height: 100vh;
 }
