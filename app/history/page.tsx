@@ -53,9 +53,19 @@ export default async function History() {
             <div className="flex items-center">
               <h1 className="text-xl font-semibold text-gray-800">History</h1>
             </div>
-            <div className="flex items-center space-x-4">
-              <Link href="/" className="text-indigo-600 hover:text-indigo-900 transition-colors">Home</Link>
-              <Link href="/insights" className="text-indigo-600 hover:text-indigo-900 transition-colors">Insights</Link>
+            <div className="flex items-center space-x-6 sm:space-x-8">
+              <Link 
+                href="/" 
+                className="text-indigo-600 hover:text-indigo-900 transition-colors px-3 py-2 text-sm sm:text-base"
+              >
+                Home
+              </Link>
+              <Link 
+                href="/insights" 
+                className="text-indigo-600 hover:text-indigo-900 transition-colors px-3 py-2 text-sm sm:text-base"
+              >
+                Insights
+              </Link>
             </div>
           </div>
         </div>

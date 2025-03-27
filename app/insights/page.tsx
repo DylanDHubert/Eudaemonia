@@ -39,17 +39,27 @@ export default async function InsightsPage() {
             <div className="flex items-center">
               <h1 className="text-xl font-semibold text-gray-800">Insights</h1>
             </div>
-            <div className="flex items-center space-x-4">
-              <Link href="/" className="text-indigo-600 hover:text-indigo-900 transition-colors">Home</Link>
-              <Link href="/history" className="text-indigo-600 hover:text-indigo-900 transition-colors">History</Link>
+            <div className="flex items-center space-x-6 sm:space-x-8">
+              <Link 
+                href="/" 
+                className="text-indigo-600 hover:text-indigo-900 transition-colors px-3 py-2 text-sm sm:text-base"
+              >
+                Home
+              </Link>
+              <Link 
+                href="/history" 
+                className="text-indigo-600 hover:text-indigo-900 transition-colors px-3 py-2 text-sm sm:text-base"
+              >
+                History
+              </Link>
             </div>
           </div>
         </div>
       </nav>
 
-      <main className="max-w-4xl mx-auto py-6 sm:px-6 lg:px-8 pt-24">
+      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8 pt-24">
         <div className="px-4 py-6 sm:px-0">
-          <div className="glass-card p-8">
+          <div className="glass-card p-4 sm:p-8">
             <h1 className="text-2xl font-bold mb-6 text-gray-800">Your Insights</h1>
             <p className="mb-6 text-gray-600">
               Discover correlations between your lifestyle factors and happiness.

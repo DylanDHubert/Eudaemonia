@@ -9,29 +9,30 @@
 }
 
 @layer components {
-  .glass-card {
-    @apply bg-white/70 backdrop-blur-lg rounded-xl shadow-lg border border-white/20;
-  }
-  
   .glass-nav {
-    @apply bg-white/80 backdrop-blur-md border-b border-white/20;
+    @apply bg-white/70 backdrop-blur-md border-b border-white/20 shadow-lg;
   }
-  
-  .glass-button {
-    @apply bg-white/70 hover:bg-white/90 backdrop-blur-sm border border-white/20 
-           text-gray-800 font-medium py-2 px-4 rounded-lg transition-all duration-200 
-           shadow-sm hover:shadow-md;
+
+  .glass-card {
+    @apply bg-white/60 backdrop-blur-md border border-white/20 shadow-lg rounded-xl;
   }
-  
+
   .glass-input {
-    @apply bg-white/50 backdrop-blur-sm border border-white/20 rounded-lg 
-           focus:ring-2 focus:ring-indigo-500/50 focus:border-transparent 
-           transition-all duration-200;
+    @apply bg-white/40 backdrop-blur-sm border border-white/30 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50;
+  }
+
+  .glass-button {
+    @apply bg-indigo-500/80 backdrop-blur-sm text-white rounded-md hover:bg-indigo-600/80 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500/50 transition-all duration-200;
   }
 }
 
 body {
   color: rgb(var(--foreground-rgb));
-  background: linear-gradient(135deg, #f6f8fc 0%, #e9f0f7 100%);
+  background: linear-gradient(
+    to bottom right,
+    #e0f2fe,
+    #dbeafe,
+    #eff6ff
+  );
   min-height: 100vh;
 }
