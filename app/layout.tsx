@@ -22,7 +22,7 @@ export default async function RootLayout({
   return (
     <html lang="en" className="h-full">
       <body className={`${GeistSans.className} h-full`}>
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 bg-[url('/grid.svg')] bg-center">
+        <div className="min-h-screen bg-gradient-to-br from-pink-300 to-rose-400 bg-[url('/grid.svg')] bg-center">
           {/* Only show Navigation if not on auth pages and user is authenticated */}
           {session && <Navigation user={session.user} />}
           

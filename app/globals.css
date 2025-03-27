@@ -18,11 +18,11 @@
   }
 
   .glass-input {
-    @apply bg-white/30 backdrop-blur-md border border-white/40 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50;
+    @apply bg-white/30 backdrop-blur-md border border-white/40 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-rose-500/50 focus:border-rose-500/50;
   }
 
   .glass-button {
-    @apply bg-indigo-500/70 backdrop-blur-md text-white rounded-md hover:bg-indigo-600/80 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500/50 transition-all duration-200 px-4 py-2;
+    @apply bg-rose-500/70 backdrop-blur-md text-white rounded-md hover:bg-rose-600/80 focus:outline-none focus:ring-1 focus:ring-offset-2 focus:ring-rose-500/50 transition-all duration-200 px-4 py-2;
   }
   
   /* Generic glassmorphism class that can be applied anywhere */
@@ -35,36 +35,11 @@ body {
   color: rgb(var(--foreground-rgb));
   background: linear-gradient(
     to bottom right,
-    #e0f2fe,
-    #dbeafe,
-    #eff6ff
+    #ffffff,
+    #ffffff,
+    #ffffff
   );
   min-height: 100vh;
-}
-
-/* Fix for react-datepicker z-index issue */
-.react-datepicker-wrapper {
-  position: relative;
-  z-index: 1;
-}
-
-.react-datepicker-popper {
-  z-index: 9999 !important;
-  position: fixed !important;
-  transform: none !important;
-  inset: auto !important;
-  margin-top: 8px !important;
-}
-
-/* Custom class for our datepicker popper */
-.datepicker-popper {
-  z-index: 9999 !important;
-  position: fixed !important;
-}
-
-/* Ensure inputs don't create stacking contexts that interfere with the datepicker */
-.glass-card {
-  isolation: isolate;
 }
 
 /* Custom DatePicker styling to match glassmorphism theme */
@@ -78,15 +53,15 @@ body {
 }
 
 .react-datepicker__day {
-  @apply hover:bg-indigo-100/80 hover:text-indigo-700 rounded-full transition-colors !important;
+  @apply hover:bg-rose-100/80 hover:text-rose-700 rounded-full transition-colors !important;
 }
 
 .react-datepicker__day--selected {
-  @apply bg-indigo-500/70 text-white hover:bg-indigo-600/70 !important;
+  @apply bg-rose-500/70 text-white hover:bg-rose-600/70 hover:text-white !important;
 }
 
 .react-datepicker__day--keyboard-selected {
-  @apply bg-indigo-400/50 text-indigo-900 hover:bg-indigo-500/50 hover:text-white !important;
+  @apply bg-rose-400/50 text-rose-500 hover:bg-rose-500/50 hover:text-white !important;
 }
 
 .react-datepicker__day--outside-month {

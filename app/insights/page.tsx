@@ -33,31 +33,7 @@ export default async function InsightsPage() {
   
   return (
     <div className="min-h-screen">
-      <nav className="glass-nav fixed top-0 left-0 right-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16">
-            <div className="flex items-center">
-              <h1 className="text-xl font-semibold text-gray-800">Insights</h1>
-            </div>
-            <div className="flex items-center space-x-6 sm:space-x-8">
-              <Link 
-                href="/" 
-                className="text-indigo-600 hover:text-indigo-900 transition-colors px-3 py-2 text-sm sm:text-base"
-              >
-                Home
-              </Link>
-              <Link 
-                href="/history" 
-                className="text-indigo-600 hover:text-indigo-900 transition-colors px-3 py-2 text-sm sm:text-base"
-              >
-                History
-              </Link>
-            </div>
-          </div>
-        </div>
-      </nav>
-
-      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8 pt-24">
+      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div className="px-4 py-6 sm:px-0">
           <div className="glass-card p-4 sm:p-8">
             <h1 className="text-2xl font-bold mb-6 text-gray-800">Your Insights</h1>

@@ -4,8 +4,8 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'react-toastify';
 import SameDayEntryModal from './SameDayEntryModal';
-import DatePicker from 'react-datepicker';
-import "react-datepicker/dist/react-datepicker.css";
+import DatePickerModal from './DatePickerModal';
+import { format } from 'date-fns';
 
 type EntryFormProps = {
   userId: string;
@@ -16,6 +16,7 @@ export default function EntryForm({ userId }: EntryFormProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [showSameDayModal, setShowSameDayModal] = useState(false);
+  const [datePickerOpen, setDatePickerOpen] = useState(false);
   const [existingEntryId, setExistingEntryId] = useState<string | null>(null);
   const [date, setDate] = useState(new Date());
   
@@ -160,9 +161,21 @@ export default function EntryForm({ userId }: EntryFormProps) {
     setShowSameDayModal(false);
     await submitEntry(false);
   };
-  
+
+  // Handle date picker click
+  const handleDateClick = () => {
+    setDatePickerOpen(true);
+  };
+
   return (
     <>
+      <DatePickerModal 
+        isOpen={datePickerOpen} 
+        onClose={() => setDatePickerOpen(false)}
+        date={date}
+        onDateChange={setDate}
+      />
+      
       {showSameDayModal && (
         <SameDayEntryModal 
           date={date.toISOString().split('T')[0]}
@@ -183,23 +196,25 @@ export default function EntryForm({ userId }: EntryFormProps) {
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Date
           </label>
-          <div className="relative">
-            <DatePicker
-              selected={date}
-              onChange={(date: Date) => setDate(date)}
-              className="glass-input w-full px-3 py-2"
-              dateFormat="MMMM d, yyyy"
-              popperClassName="datepicker-popper"
-              popperContainer={({ children }) => {
-                return (
-                  <div className="absolute top-full left-0 mt-2 z-[9999]">
-                    {children}
-                  </div>
-                );
-              }}
-              calendarClassName="glassmorphism"
-              showPopperArrow={false}
-            />
+          <div 
+            className="glass-input w-full px-3 py-2 cursor-pointer flex items-center"
+            onClick={handleDateClick}
+          >
+            <span>{format(date, 'MMMM d, yyyy')}</span>
+            <svg 
+              xmlns="http://www.w3.org/2000/svg" 
+              className="h-5 w-5 ml-auto text-gray-500" 
+              fill="none" 
+              viewBox="0 0 24 24" 
+              stroke="currentColor"
+            >
+              <path 
+                strokeLinecap="round" 
+                strokeLinejoin="round" 
+                strokeWidth={2} 
+                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" 
+              />
+            </svg>
           </div>
         </div>
         
