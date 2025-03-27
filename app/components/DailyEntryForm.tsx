@@ -1,6 +1,8 @@
 'use client';
 
 import { useState } from 'react';
+import DatePicker from 'react-datepicker';
+import "react-datepicker/dist/react-datepicker.css";
 
 interface DailyEntryFormProps {
   onSubmit: (data: any) => void;
@@ -8,18 +10,10 @@ interface DailyEntryFormProps {
 }
 
 export default function DailyEntryForm({ onSubmit, initialData }: DailyEntryFormProps) {
-  const [date, setDate] = useState<string>(
+  const [date, setDate] = useState<Date>(
     initialData?.date 
-      ? new Date(initialData.date).toLocaleDateString('en-US', { 
-          year: 'numeric',
-          month: '2-digit',
-          day: '2-digit'
-        })
-      : new Date().toLocaleDateString('en-US', {
-          year: 'numeric',
-          month: '2-digit',
-          day: '2-digit'
-        })
+      ? new Date(initialData.date)
+      : new Date()
   );
   const [sleepHours, setSleepHours] = useState(initialData?.sleepHours || 8);
   const [sleepQuality, setSleepQuality] = useState(initialData?.sleepQuality || 7);
@@ -37,23 +31,11 @@ export default function DailyEntryForm({ onSubmit, initialData }: DailyEntryForm
   const [happinessRating, setHappinessRating] = useState(initialData?.happinessRating || 7);
   const [notes, setNotes] = useState(initialData?.notes || '');
 
-  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    // Only allow numbers and forward slashes
-    if (/^[\d/]*$/.test(value)) {
-      setDate(value);
-    }
-  };
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Convert date string to Date object
-    const [month, day, year] = date.split('/');
-    const dateObj = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
-
     onSubmit({
-      date: dateObj,
+      date,
       sleepHours,
       sleepQuality,
       exercise,
@@ -76,21 +58,31 @@ export default function DailyEntryForm({ onSubmit, initialData }: DailyEntryForm
     <form onSubmit={handleSubmit} className="space-y-6 relative z-0">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="space-y-6">
-          <div className="relative z-10">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Date (MM/DD/YYYY)
+          <div className="glass-card p-4 relative">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Date
             </label>
-            <input
-              type="text"
-              value={date}
-              onChange={handleDateChange}
-              placeholder="MM/DD/YYYY"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-              maxLength={10}
-            />
+            <div className="relative">
+              <DatePicker
+                selected={date}
+                onChange={(date: Date) => setDate(date)}
+                className="glass-input w-full px-3 py-2"
+                dateFormat="MMMM d, yyyy"
+                popperClassName="datepicker-popper"
+                popperContainer={({ children }) => {
+                  return (
+                    <div className="absolute top-full left-0 mt-2 z-[9999]">
+                      {children}
+                    </div>
+                  );
+                }}
+                calendarClassName="glassmorphism"
+                showPopperArrow={false}
+              />
+            </div>
           </div>
           <div className="space-y-4">
-            <div>
+            <div className="glass-card p-4">
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Sleep Hours
               </label>
@@ -100,10 +92,10 @@ export default function DailyEntryForm({ onSubmit, initialData }: DailyEntryForm
                 onChange={(e) => setSleepHours(Number(e.target.value))}
                 min="0"
                 max="24"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                className="glass-input w-full px-3 py-2"
               />
             </div>
-            <div>
+            <div className="glass-card p-4">
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Sleep Quality (1-10)
               </label>
@@ -113,10 +105,10 @@ export default function DailyEntryForm({ onSubmit, initialData }: DailyEntryForm
                 onChange={(e) => setSleepQuality(Number(e.target.value))}
                 min="1"
                 max="10"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                className="glass-input w-full px-3 py-2"
               />
             </div>
-            <div>
+            <div className="glass-card p-4">
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Exercise
               </label>
@@ -137,14 +129,14 @@ export default function DailyEntryForm({ onSubmit, initialData }: DailyEntryForm
                       value={exerciseTime}
                       onChange={(e) => setExerciseTime(Number(e.target.value))}
                       min="0"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                      className="glass-input w-full px-3 py-2"
                       placeholder="Minutes"
                     />
                   </div>
                 )}
               </div>
             </div>
-            <div>
+            <div className="glass-card p-4">
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Meditation
               </label>
@@ -165,7 +157,7 @@ export default function DailyEntryForm({ onSubmit, initialData }: DailyEntryForm
                       value={meditationTime}
                       onChange={(e) => setMeditationTime(Number(e.target.value))}
                       min="0"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                      className="glass-input w-full px-3 py-2"
                       placeholder="Minutes"
                     />
                   </div>
@@ -176,7 +168,7 @@ export default function DailyEntryForm({ onSubmit, initialData }: DailyEntryForm
         </div>
         <div className="space-y-6">
           <div className="space-y-4">
-            <div>
+            <div className="glass-card p-4">
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Alcohol
               </label>
@@ -197,14 +189,14 @@ export default function DailyEntryForm({ onSubmit, initialData }: DailyEntryForm
                       value={alcoholUnits}
                       onChange={(e) => setAlcoholUnits(Number(e.target.value))}
                       min="0"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                      className="glass-input w-full px-3 py-2"
                       placeholder="Units"
                     />
                   </div>
                 )}
               </div>
             </div>
-            <div>
+            <div className="glass-card p-4">
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Weed
               </label>
@@ -224,16 +216,16 @@ export default function DailyEntryForm({ onSubmit, initialData }: DailyEntryForm
                       type="number"
                       value={weedAmount}
                       onChange={(e) => setWeedAmount(Number(e.target.value))}
-                      min="0"
+                      min="1"
                       max="5"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                      className="glass-input w-full px-3 py-2"
                       placeholder="Amount (1-5)"
                     />
                   </div>
                 )}
               </div>
             </div>
-            <div>
+            <div className="glass-card p-4">
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Social Time (hours)
               </label>
@@ -242,11 +234,10 @@ export default function DailyEntryForm({ onSubmit, initialData }: DailyEntryForm
                 value={socialTime}
                 onChange={(e) => setSocialTime(Number(e.target.value))}
                 min="0"
-                max="24"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                className="glass-input w-full px-3 py-2"
               />
             </div>
-            <div>
+            <div className="glass-card p-4">
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Work Hours
               </label>
@@ -256,12 +247,12 @@ export default function DailyEntryForm({ onSubmit, initialData }: DailyEntryForm
                 onChange={(e) => setWorkHours(Number(e.target.value))}
                 min="0"
                 max="24"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                className="glass-input w-full px-3 py-2"
               />
             </div>
           </div>
           <div className="space-y-4">
-            <div>
+            <div className="glass-card p-4">
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Stress Level (1-10)
               </label>
@@ -271,10 +262,10 @@ export default function DailyEntryForm({ onSubmit, initialData }: DailyEntryForm
                 onChange={(e) => setStressLevel(Number(e.target.value))}
                 min="1"
                 max="10"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                className="glass-input w-full px-3 py-2"
               />
             </div>
-            <div>
+            <div className="glass-card p-4">
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Happiness Rating (1-10)
               </label>
@@ -284,10 +275,10 @@ export default function DailyEntryForm({ onSubmit, initialData }: DailyEntryForm
                 onChange={(e) => setHappinessRating(Number(e.target.value))}
                 min="1"
                 max="10"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                className="glass-input w-full px-3 py-2"
               />
             </div>
-            <div>
+            <div className="glass-card p-4">
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Notes
               </label>
@@ -295,19 +286,16 @@ export default function DailyEntryForm({ onSubmit, initialData }: DailyEntryForm
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 rows={4}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                className="glass-input w-full px-3 py-2"
                 placeholder="Any additional notes about your day..."
-              />
+              ></textarea>
             </div>
           </div>
         </div>
       </div>
       <div className="flex justify-end">
-        <button
-          type="submit"
-          className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-        >
-          Save Entry
+        <button type="submit" className="glass-button">
+          Submit
         </button>
       </div>
     </form>

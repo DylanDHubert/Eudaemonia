@@ -10,19 +10,24 @@
 
 @layer components {
   .glass-nav {
-    @apply bg-white/70 backdrop-blur-md border-b border-white/20 shadow-lg;
+    @apply bg-white/50 backdrop-blur-lg border-b border-white/30 shadow-md;
   }
 
   .glass-card {
-    @apply bg-white/60 backdrop-blur-md border border-white/20 shadow-lg rounded-xl;
+    @apply bg-white/40 backdrop-blur-lg border border-white/30 shadow-lg rounded-xl;
   }
 
   .glass-input {
-    @apply bg-white/40 backdrop-blur-sm border border-white/30 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50;
+    @apply bg-white/30 backdrop-blur-md border border-white/40 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50;
   }
 
   .glass-button {
-    @apply bg-indigo-500/80 backdrop-blur-sm text-white rounded-md hover:bg-indigo-600/80 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500/50 transition-all duration-200;
+    @apply bg-indigo-500/70 backdrop-blur-md text-white rounded-md hover:bg-indigo-600/80 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500/50 transition-all duration-200 px-4 py-2;
+  }
+  
+  /* Generic glassmorphism class that can be applied anywhere */
+  .glassmorphism {
+    @apply bg-white/30 backdrop-blur-lg border border-white/30 shadow-lg;
   }
 }
 
@@ -35,4 +40,78 @@ body {
     #eff6ff
   );
   min-height: 100vh;
+}
+
+/* Fix for react-datepicker z-index issue */
+.react-datepicker-wrapper {
+  position: relative;
+  z-index: 1;
+}
+
+.react-datepicker-popper {
+  z-index: 9999 !important;
+  position: fixed !important;
+  transform: none !important;
+  inset: auto !important;
+  margin-top: 8px !important;
+}
+
+/* Custom class for our datepicker popper */
+.datepicker-popper {
+  z-index: 9999 !important;
+  position: fixed !important;
+}
+
+/* Ensure inputs don't create stacking contexts that interfere with the datepicker */
+.glass-card {
+  isolation: isolate;
+}
+
+/* Custom DatePicker styling to match glassmorphism theme */
+.react-datepicker {
+  @apply bg-white/40 backdrop-blur-lg border border-white/30 shadow-lg rounded-lg !important;
+  font-family: inherit !important;
+}
+
+.react-datepicker__header {
+  @apply bg-white/50 backdrop-blur-md border-b border-white/30 !important;
+}
+
+.react-datepicker__day {
+  @apply hover:bg-indigo-100/80 hover:text-indigo-700 rounded-full transition-colors !important;
+}
+
+.react-datepicker__day--selected {
+  @apply bg-indigo-500/70 text-white hover:bg-indigo-600/70 !important;
+}
+
+.react-datepicker__day--keyboard-selected {
+  @apply bg-indigo-400/50 text-indigo-900 hover:bg-indigo-500/50 hover:text-white !important;
+}
+
+.react-datepicker__day--outside-month {
+  @apply text-gray-400/70 !important;
+}
+
+.react-datepicker__triangle {
+  display: none !important;
+}
+
+.react-datepicker__current-month, 
+.react-datepicker__day-name {
+  @apply text-gray-700 !important;
+}
+
+.react-datepicker__navigation {
+  @apply top-3 !important;
+}
+
+/* Make sure the calendar is always visible and interactive */
+.react-datepicker, 
+.react-datepicker__month-container, 
+.react-datepicker__month, 
+.react-datepicker__week, 
+.react-datepicker__day {
+  pointer-events: auto !important;
+  visibility: visible !important;
 }

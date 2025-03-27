@@ -179,16 +179,28 @@ export default function EntryForm({ userId }: EntryFormProps) {
           </div>
         )}
         
-        <div className="glass-card p-4">
+        <div className="glass-card p-4 relative">
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Date
           </label>
-          <DatePicker
-            selected={date}
-            onChange={(date: Date) => setDate(date)}
-            className="glass-input w-full px-3 py-2"
-            dateFormat="MMMM d, yyyy"
-          />
+          <div className="relative">
+            <DatePicker
+              selected={date}
+              onChange={(date: Date) => setDate(date)}
+              className="glass-input w-full px-3 py-2"
+              dateFormat="MMMM d, yyyy"
+              popperClassName="datepicker-popper"
+              popperContainer={({ children }) => {
+                return (
+                  <div className="absolute top-full left-0 mt-2 z-[9999]">
+                    {children}
+                  </div>
+                );
+              }}
+              calendarClassName="glassmorphism"
+              showPopperArrow={false}
+            />
+          </div>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

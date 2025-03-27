@@ -4,7 +4,16 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { signOut } from 'next-auth/react';
 
-export default function Navigation() {
+type NavigationProps = {
+  user: {
+    id: string;
+    name?: string | null;
+    email?: string | null;
+    image?: string | null;
+  }
+}
+
+export default function Navigation({ user }: NavigationProps) {
   const pathname = usePathname();
 
   const getPageTitle = () => {
@@ -20,6 +29,10 @@ export default function Navigation() {
     }
   };
 
+  const getUserName = () => {
+    return user?.name || user?.email?.split('@')[0] || 'User';
+  };
+
   const isActive = (path: string) => pathname === path;
 
   return (
@@ -28,7 +41,7 @@ export default function Navigation() {
         <div className="flex justify-between h-16">
           <div className="flex items-center">
             <h1 className="text-xl font-semibold text-gray-800">
-              {getPageTitle()}
+              {pathname === '/' ? `Hello, ${getUserName()}` : getPageTitle()}
             </h1>
           </div>
           <div className="flex items-center space-x-6 sm:space-x-8">
@@ -64,9 +77,9 @@ export default function Navigation() {
             </Link>
             <button
               onClick={() => signOut({ callbackUrl: '/login' })}
-              className="glass-button text-sm sm:text-base px-4 py-2"
+              className="glass-button"
             >
-              Logout
+              Sign Out
             </button>
           </div>
         </div>
