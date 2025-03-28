@@ -18,7 +18,7 @@ export async function PUT(
     const { id } = params;
     const body = await request.json();
     
-    // First, check if the entry exists and belongs to the user
+    // Verify the entry exists and belongs to the user
     const existingEntry = await db.dailyEntry.findFirst({
       where: {
         id,
@@ -28,16 +28,6 @@ export async function PUT(
     
     if (!existingEntry) {
       return NextResponse.json({ error: 'Entry not found' }, { status: 404 });
-    }
-    
-    // Validate required fields
-    const requiredFields = ['sleepHours', 'sleepQuality', 'exercise', 'alcohol', 
-                           'weed', 'meditation', 'stressLevel', 'happinessRating'];
-    
-    for (const field of requiredFields) {
-      if (body[field] === undefined) {
-        return NextResponse.json({ error: `Missing required field: ${field}` }, { status: 400 });
-      }
     }
     
     // Update the entry
@@ -59,11 +49,27 @@ export async function PUT(
         workHours: body.workHours ? parseFloat(body.workHours) : null,
         stressLevel: parseInt(body.stressLevel),
         happinessRating: parseInt(body.happinessRating),
+        meals: body.meals ? parseInt(body.meals) : null,
+        foodQuality: body.foodQuality ? parseInt(body.foodQuality) : null,
         notes: body.notes || null,
+        customCategoryEntries: {
+          deleteMany: {}, // Remove existing entries
+          create: body.customCategoryEntries?.map((entry: any) => ({
+            customCategoryId: entry.customCategoryId,
+            value: entry.value
+          })) || []
+        }
+      },
+      include: {
+        customCategoryEntries: {
+          include: {
+            customCategory: true
+          }
+        }
       }
     });
     
-    return NextResponse.json({ message: 'Entry updated successfully', entry: updatedEntry }, { status: 200 });
+    return NextResponse.json({ message: 'Entry updated successfully', entry: updatedEntry });
   } catch (error) {
     console.error('Entry update error:', error);
     return NextResponse.json({ error: 'Error updating entry' }, { status: 500 });

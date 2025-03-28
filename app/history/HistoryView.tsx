@@ -3,6 +3,13 @@
 import { useState } from 'react';
 import { format } from 'date-fns';
 
+interface CustomCategory {
+  id: string;
+  name: string;
+  type: 'numeric' | 'scale' | 'boolean';
+  value: number;
+}
+
 interface FormattedEntry {
   id: string;
   date: string;
@@ -18,9 +25,12 @@ interface FormattedEntry {
   meditationTime: number | null;
   socialTime: number | null;
   workHours: number | null;
+  meals: number | null;
+  foodQuality: number | null;
   stressLevel: number;
   happinessRating: number;
   notes: string | null;
+  customCategories: CustomCategory[];
   createdAt: string;
   updatedAt: string;
 }
@@ -72,6 +82,16 @@ export default function HistoryView({ initialEntries }: HistoryViewProps) {
                   {entry.meditation ? `${entry.meditationTime} minutes` : 'No'}
                 </span>
               </div>
+              <div className="flex justify-between">
+                <span className="text-gray-600">Meals</span>
+                <span className="font-medium">{entry.meals || 'Not recorded'}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-600">Food Quality</span>
+                <span className="font-medium">
+                  {entry.foodQuality ? `${entry.foodQuality}/10` : 'Not recorded'}
+                </span>
+              </div>
             </div>
 
             <div className="space-y-2">
@@ -98,10 +118,28 @@ export default function HistoryView({ initialEntries }: HistoryViewProps) {
             </div>
           </div>
 
+          {entry.customCategories.length > 0 && (
+            <div className="mt-4 pt-4 border-t border-gray-200">
+              <h3 className="text-lg font-medium text-gray-900 mb-2">Custom Categories</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {entry.customCategories.map((category) => (
+                  <div key={category.id} className="flex justify-between">
+                    <span className="text-gray-600">{category.name}</span>
+                    <span className="font-medium">
+                      {category.type === 'scale' ? `${category.value}/10` : 
+                       category.type === 'boolean' ? (category.value === 1 ? 'Yes' : 'No') : 
+                       category.value}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           {entry.notes && (
             <div className="mt-4 pt-4 border-t border-gray-200">
-              <h3 className="text-sm font-medium text-gray-600 mb-2">Notes</h3>
-              <p className="text-gray-700 whitespace-pre-wrap">{entry.notes}</p>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">Notes</h3>
+              <p className="text-gray-600">{entry.notes}</p>
             </div>
           )}
         </div>

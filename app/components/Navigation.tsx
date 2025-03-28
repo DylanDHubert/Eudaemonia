@@ -75,6 +75,16 @@ export default function Navigation({ user }: NavigationProps) {
             >
               History
             </Link>
+            <Link
+              href="/categories"
+              className={`text-sm sm:text-base px-3 py-2 rounded-md transition-colors ${
+                isActive('/categories')
+                  ? 'text-rose-600 bg-white/50' 
+                  : 'text-stone-600 hover:text-rose-600 hover:bg-white/30'
+              }`}
+            >
+              Categories
+            </Link>
             <button
               onClick={() => signOut({ callbackUrl: '/login' })}
               className="glass-button"

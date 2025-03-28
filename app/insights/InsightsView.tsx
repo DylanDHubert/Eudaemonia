@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { 
   Chart as ChartJS, 
   CategoryScale,
@@ -30,6 +30,13 @@ ChartJS.register(
 );
 
 // Types for our entries
+type CustomCategory = {
+  id: string;
+  name: string;
+  type: 'numeric' | 'scale' | 'boolean';
+  value: number;
+};
+
 type DailyEntry = {
   id: string;
   date: string;
@@ -45,9 +52,12 @@ type DailyEntry = {
   meditationTime: number | null;
   socialTime: number | null;
   workHours: number | null;
+  meals: number | null;
+  foodQuality: number | null;
   stressLevel: number;
   happinessRating: number;
   notes: string | null;
+  customCategories: CustomCategory[];
   createdAt: string;
   updatedAt: string;
 };
@@ -69,6 +79,62 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
   const [scatterData, setScatterData] = useState<{ x: number; y: number }[]>([]);
   const [timeSeriesData, setTimeSeriesData] = useState<any>(null);
   const [viewMode, setViewMode] = useState<'correlations' | 'trends'>('correlations');
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  
+  // Mapping of internal factor names to display names
+  const factorNameMap = useMemo<Record<string, string>>(() => ({
+    sleepHours: 'Sleep Hours',
+    sleepQuality: 'Sleep Quality',
+    exercise: 'Exercise',
+    exerciseTime: 'Exercise Time',
+    meditation: 'Meditation',
+    meditationTime: 'Meditation Time',
+    alcohol: 'Alcohol Consumption',
+    alcoholUnits: 'Alcohol Units',
+    weed: 'Weed Use',
+    weedAmount: 'Weed Amount',
+    socialTime: 'Social Time',
+    workHours: 'Work Hours',
+    meals: 'Number of Meals',
+    foodQuality: 'Food Quality',
+    stressLevel: 'Stress Level'
+  }), []);
+  
+  // Reverse mapping of display names to internal names
+  const displayToInternalMap = useMemo<Record<string, string>>(() => 
+    Object.entries(factorNameMap)
+      .reduce<Record<string, string>>((acc, [internal, display]) => ({...acc, [display]: internal}), {}), 
+    [factorNameMap]
+  );
+  
+  // List of boolean factors (all others are numeric)
+  const booleanFactors = useMemo(() => ['exercise', 'meditation', 'alcohol', 'weed'], []);
+  
+  // Helper function to get display name from internal name
+  const getDisplayName = useCallback((internalName: string): string => {
+    // Check if it's a custom category first
+    if (entries.length > 0 && entries[0].customCategories.some(cat => cat.name === internalName)) {
+      return internalName;
+    }
+    return factorNameMap[internalName] || internalName;
+  }, [entries, factorNameMap]);
+  
+  // Helper function to get internal name from display name
+  const getInternalName = useCallback((displayName: string): string => {
+    return displayToInternalMap[displayName] || displayName;
+  }, [displayToInternalMap]);
+  
+  // Helper function to check if a factor is boolean
+  const isBooleanFactor = useCallback((factorName: string): boolean => {
+    // First check if it's already an internal name
+    if (booleanFactors.includes(factorName)) {
+      return true;
+    }
+    
+    // Then check if it's a display name that maps to a boolean factor
+    const internalName = getInternalName(factorName);
+    return booleanFactors.includes(internalName);
+  }, [booleanFactors, getInternalName]);
   
   // Prepare time series data for the happiness trend chart
   const prepareTimeSeriesData = useCallback(() => {
@@ -108,230 +174,282 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
     }
     
     const calculateCorrelations = () => {
-      // Factors to correlate with happiness
-      const factors = [
-        { key: 'sleepHours', name: 'Sleep Hours', type: 'numeric' },
-        { key: 'sleepQuality', name: 'Sleep Quality', type: 'numeric' },
-        { key: 'exercise', name: 'Exercise', type: 'boolean' },
-        { key: 'exerciseTime', name: 'Exercise Time', type: 'numeric' },
-        { key: 'alcohol', name: 'Alcohol', type: 'boolean' },
-        { key: 'alcoholUnits', name: 'Alcohol Units', type: 'numeric' },
-        { key: 'weed', name: 'Weed', type: 'boolean' },
-        { key: 'weedAmount', name: 'Weed Amount', type: 'numeric' },
-        { key: 'meditation', name: 'Meditation', type: 'boolean' },
-        { key: 'meditationTime', name: 'Meditation Time', type: 'numeric' },
-        { key: 'socialTime', name: 'Social Time', type: 'numeric' },
-        { key: 'workHours', name: 'Work Hours', type: 'numeric' },
-        { key: 'stressLevel', name: 'Stress Level', type: 'numeric' },
-      ];
-      
-      const results: Correlation[] = [];
-      
-      factors.forEach(factor => {
-        let correlation = 0;
-        let description = '';
-        
-        if (factor.type === 'numeric') {
-          // Only include entries where this factor is not null
-          const validEntries = entries.filter(e => e[factor.key as keyof DailyEntry] !== null);
-          
-          if (validEntries.length >= minimumEntries) {
-            // Calculate Pearson correlation for numeric factors
-            const { r, description: desc } = calculatePearsonCorrelation(
-              validEntries.map(e => Number(e[factor.key as keyof DailyEntry])),
-              validEntries.map(e => e.happinessRating)
-            );
-            correlation = r;
-            description = desc;
-          } else {
-            description = `Not enough data for ${factor.name} (need at least ${minimumEntries} entries)`;
+      if (entries.length < minimumEntries) return;
+
+      const correlations: Correlation[] = [];
+
+      // Helper function to get numeric values for a factor
+      const getNumericValues = (factor: string) => {
+        return entries.map(entry => {
+          switch (factor) {
+            case 'sleepHours':
+              return entry.sleepHours;
+            case 'sleepQuality':
+              return entry.sleepQuality;
+            case 'exerciseTime':
+              return entry.exercise ? entry.exerciseTime || 0 : 0;
+            case 'meditationTime':
+              return entry.meditation ? entry.meditationTime || 0 : 0;
+            case 'alcoholUnits':
+              return entry.alcohol ? entry.alcoholUnits || 0 : 0;
+            case 'weedAmount':
+              return entry.weed ? entry.weedAmount || 0 : 0;
+            case 'socialTime':
+              return entry.socialTime || 0;
+            case 'workHours':
+              return entry.workHours || 0;
+            case 'meals':
+              return entry.meals || 0;
+            case 'foodQuality':
+              return entry.foodQuality || 0;
+            case 'stressLevel':
+              return entry.stressLevel;
+            default:
+              // Check if it's a custom category
+              const customCategory = entry.customCategories.find(cat => cat.name === factor);
+              return customCategory ? customCategory.value : 0;
           }
+        });
+      };
+
+      // Helper function to get boolean values for a factor
+      const getBooleanValues = (factor: string) => {
+        return entries.map(entry => {
+          switch (factor) {
+            case 'exercise':
+              return entry.exercise;
+            case 'meditation':
+              return entry.meditation;
+            case 'alcohol':
+              return entry.alcohol;
+            case 'weed':
+              return entry.weed;
+            default:
+              return false;
+          }
+        });
+      };
+
+      // Calculate correlations for numeric factors
+      const numericFactors = [
+        'sleepHours',
+        'sleepQuality',
+        'exerciseTime',
+        'meditationTime',
+        'alcoholUnits',
+        'weedAmount',
+        'socialTime',
+        'workHours',
+        'meals',
+        'foodQuality',
+        'stressLevel'
+      ];
+
+      // Add custom categories to numeric factors
+      if (entries.length > 0) {
+        const firstEntry = entries[0];
+        firstEntry.customCategories.forEach(cat => {
+          if (cat.type === 'numeric' || cat.type === 'scale') {
+            numericFactors.push(cat.name);
+          } else if (cat.type === 'boolean') {
+            // Custom boolean categories will be added later
+          }
+        });
+      }
+
+      numericFactors.forEach(factor => {
+        const values = getNumericValues(factor);
+        const correlation = calculatePearsonCorrelation(values, entries.map(e => e.happinessRating));
+        if (!isNaN(correlation)) {
+          correlations.push({
+            factor,
+            correlation,
+            description: getCorrelationDescription(factor, correlation)
+          });
         }
-        else if (factor.type === 'boolean') {
-          // For boolean factors, compare happiness ratings when true vs false
-          const { pointBiserial, description: desc } = calculatePointBiserialCorrelation(
-            entries.map(e => Boolean(e[factor.key as keyof DailyEntry])),
-            entries.map(e => e.happinessRating)
-          );
-          correlation = pointBiserial;
-          description = desc;
+      });
+
+      // Calculate correlations for boolean factors
+      const customBooleanFactors = [...booleanFactors];
+      
+      // Add custom boolean categories
+      if (entries.length > 0) {
+        const firstEntry = entries[0];
+        firstEntry.customCategories.forEach(cat => {
+          if (cat.type === 'boolean') {
+            customBooleanFactors.push(cat.name);
+          }
+        });
+      }
+      
+      customBooleanFactors.forEach(factor => {
+        let values: boolean[];
+        
+        // Check if this is a custom boolean category
+        if (entries.length > 0 && entries[0].customCategories.some(cat => cat.name === factor && cat.type === 'boolean')) {
+          values = entries.map(entry => {
+            const customCat = entry.customCategories.find(cat => cat.name === factor);
+            return customCat ? customCat.value === 1 : false;
+          });
+        } else {
+          values = getBooleanValues(factor);
         }
         
-        results.push({
-          factor: factor.name,
-          correlation,
-          description
-        });
+        const correlation = calculatePointBiserialCorrelation(values, entries.map(e => e.happinessRating));
+        if (!isNaN(correlation)) {
+          correlations.push({
+            factor,
+            correlation,
+            description: getCorrelationDescription(factor, correlation)
+          });
+        }
       });
-      
-      // Sort by absolute correlation value (strongest first)
-      return results.sort((a, b) => Math.abs(b.correlation) - Math.abs(a.correlation));
+
+      // Sort correlations by absolute value
+      correlations.sort((a, b) => Math.abs(b.correlation) - Math.abs(a.correlation));
+      setCorrelations(correlations);
     };
     
-    setCorrelations(calculateCorrelations());
+    calculateCorrelations();
     
     // Prepare time series data for happiness
     prepareTimeSeriesData();
     
   }, [entries, minimumEntries, prepareTimeSeriesData]);
   
+  // Update scatter data when selectedFactor changes
   useEffect(() => {
-    if (selectedFactor && entries.length >= minimumEntries) {
-      const factor = selectedFactor.toLowerCase().replace(/\s+/g, '');
+    if (!selectedFactor || entries.length < minimumEntries) return;
+    
+    try {
+      // Step 1: Determine the internal factor name
+      const internalName = getInternalName(selectedFactor);
       
-      // Find the matching key in our data structure
-      let factorKey: keyof DailyEntry;
+      // Step 2: Generate appropriate scatter data based on factor type
+      let newScatterData: { x: number; y: number }[] = [];
       
-      switch (factor) {
-        case 'sleephours': factorKey = 'sleepHours'; break;
-        case 'sleepquality': factorKey = 'sleepQuality'; break;
-        case 'exercise': factorKey = 'exercise'; break;
-        case 'exercisetime': factorKey = 'exerciseTime'; break;
-        case 'alcohol': factorKey = 'alcohol'; break;
-        case 'alcoholunits': factorKey = 'alcoholUnits'; break;
-        case 'weed': factorKey = 'weed'; break;
-        case 'weedamount': factorKey = 'weedAmount'; break;
-        case 'meditation': factorKey = 'meditation'; break;
-        case 'meditationtime': factorKey = 'meditationTime'; break;
-        case 'socialtime': factorKey = 'socialTime'; break;
-        case 'workhours': factorKey = 'workHours'; break;
-        case 'stresslevel': factorKey = 'stressLevel'; break;
-        default: return;
-      }
-      
-      // For boolean factors, we'll create a bar chart-like visualization
-      if (factorKey === 'exercise' || factorKey === 'alcohol' || factorKey === 'weed' || factorKey === 'meditation') {
-        const trueValues = entries.filter(e => e[factorKey] === true).map(e => e.happinessRating);
-        const falseValues = entries.filter(e => e[factorKey] === false).map(e => e.happinessRating);
+      // Step 3: Handle boolean factors (exercise, meditation, alcohol, weed)
+      if (booleanFactors.includes(internalName)) {
+        // For boolean factors, create a bar chart showing happiness averages for true/false values
+        const validEntriesWithKey = entries.filter(e => internalName in e && e[internalName as keyof DailyEntry] !== undefined);
         
-        const trueAvg = trueValues.length ? trueValues.reduce((a: number, b: number) => a + b, 0) / trueValues.length : 0;
-        const falseAvg = falseValues.length ? falseValues.reduce((a: number, b: number) => a + b, 0) / falseValues.length : 0;
-        
-        // We'll just use two points for the scatter plot in this case
-        setScatterData([
-          { x: 0, y: falseAvg },
-          { x: 1, y: trueAvg }
-        ]);
-      } else {
-        // For numeric factors, create scatter plot data
-        const validEntries = entries.filter(e => e[factorKey] !== null);
-        
-        if (validEntries.length >= minimumEntries) {
-          const scatter = validEntries.map(entry => ({
-            x: Number(entry[factorKey]),
-            y: entry.happinessRating
-          }));
+        if (validEntriesWithKey.length >= minimumEntries) {
+          // Group by true/false value
+          const trueEntries = validEntriesWithKey.filter(e => e[internalName as keyof DailyEntry] === true);
+          const falseEntries = validEntriesWithKey.filter(e => e[internalName as keyof DailyEntry] === false);
           
-          setScatterData(scatter);
+          // Calculate averages
+          const trueAvg = trueEntries.length > 0 
+            ? trueEntries.reduce((sum, e) => sum + e.happinessRating, 0) / trueEntries.length 
+            : 0;
+          const falseAvg = falseEntries.length > 0 
+            ? falseEntries.reduce((sum, e) => sum + e.happinessRating, 0) / falseEntries.length 
+            : 0;
+          
+          newScatterData = [
+            { x: 0, y: falseAvg },
+            { x: 1, y: trueAvg }
+          ];
         }
       }
+      // Step 4: Handle custom categories
+      else if (entries.length > 0 && entries.some(e => 
+        e.customCategories && Array.isArray(e.customCategories) && e.customCategories.some(cat => cat.name === selectedFactor)
+      )) {
+        // Get entries that have this custom category
+        const validEntries = entries.filter(e => 
+          e.customCategories && Array.isArray(e.customCategories) && e.customCategories.some(cat => cat.name === selectedFactor)
+        );
+        
+        if (validEntries.length >= minimumEntries) {
+          newScatterData = validEntries.map(entry => {
+            const category = entry.customCategories.find(cat => cat.name === selectedFactor);
+            return {
+              x: category ? category.value : 0,
+              y: entry.happinessRating
+            };
+          });
+        }
+      }
+      // Step 5: Handle numeric factors
+      else {
+        // Get entries that have a valid value for this factor
+        const validEntries = entries.filter(e => 
+          internalName in e && 
+          e[internalName as keyof DailyEntry] !== null && 
+          e[internalName as keyof DailyEntry] !== undefined
+        );
+        
+        if (validEntries.length >= minimumEntries) {
+          newScatterData = validEntries.map(entry => {
+            // Safely get the numeric value 
+            const value = entry[internalName as keyof DailyEntry];
+            const numericValue = typeof value === 'number' ? value : 
+                                typeof value === 'boolean' ? (value ? 1 : 0) : 0;
+            
+            return {
+              x: numericValue,
+              y: entry.happinessRating
+            };
+          });
+        }
+      }
+
+      // Step 6: Update state if we have valid data
+      if (newScatterData.length > 0) {
+        setScatterData(newScatterData);
+        setIsModalOpen(true);
+      } else {
+        // Show modal with message that not enough data is available
+        setScatterData([]);
+        setIsModalOpen(true);
+      }
+    } catch (error) {
+      console.error("Error processing factor:", selectedFactor, error);
     }
-  }, [selectedFactor, entries, minimumEntries]);
+  }, [selectedFactor, entries, minimumEntries, getInternalName, booleanFactors, isBooleanFactor]);
   
   // Function to calculate Pearson correlation
-  const calculatePearsonCorrelation = (x: number[], y: number[]) => {
+  const calculatePearsonCorrelation = (x: number[], y: number[]): number => {
     const n = x.length;
-    
-    if (n === 0) return { r: 0, description: 'No data available' };
-    
-    // Calculate means
-    const meanX = x.reduce((a, b) => a + b, 0) / n;
-    const meanY = y.reduce((a, b) => a + b, 0) / n;
-    
-    // Calculate deviations
-    let ssXY = 0;
-    let ssXX = 0;
-    let ssYY = 0;
-    
-    for (let i = 0; i < n; i++) {
-      const devX = x[i] - meanX;
-      const devY = y[i] - meanY;
-      
-      ssXY += devX * devY;
-      ssXX += devX * devX;
-      ssYY += devY * devY;
-    }
-    
-    const r = ssXY / Math.sqrt(ssXX * ssYY);
-    
-    // Interpret the correlation
-    let description = '';
-    
-    if (isNaN(r)) {
-      return { r: 0, description: 'Unable to calculate correlation' };
-    }
-    
-    const absR = Math.abs(r);
-    
-    if (absR < 0.1) {
-      description = 'No correlation';
-    } else if (absR < 0.3) {
-      description = r > 0 ? 'Weak positive correlation' : 'Weak negative correlation';
-    } else if (absR < 0.5) {
-      description = r > 0 ? 'Moderate positive correlation' : 'Moderate negative correlation';
-    } else if (absR < 0.7) {
-      description = r > 0 ? 'Good positive correlation' : 'Good negative correlation';
-    } else {
-      description = r > 0 ? 'Strong positive correlation' : 'Strong negative correlation';
-    }
-    
-    return { r, description };
+    if (n !== y.length) return 0;
+
+    const sumX = x.reduce((a, b) => a + b, 0);
+    const sumY = y.reduce((a, b) => a + b, 0);
+    const sumXY = x.reduce((a, b, i) => a + b * y[i], 0);
+    const sumX2 = x.reduce((a, b) => a + b * b, 0);
+    const sumY2 = y.reduce((a, b) => a + b * b, 0);
+
+    const numerator = n * sumXY - sumX * sumY;
+    const denominator = Math.sqrt((n * sumX2 - sumX * sumX) * (n * sumY2 - sumY * sumY));
+
+    return denominator === 0 ? 0 : numerator / denominator;
   };
   
   // Function to calculate point-biserial correlation (for boolean variables)
-  const calculatePointBiserialCorrelation = (x: boolean[], y: number[]) => {
+  const calculatePointBiserialCorrelation = (x: boolean[], y: number[]): number => {
     const n = x.length;
-    
-    if (n === 0) return { pointBiserial: 0, description: 'No data available' };
-    
-    // Convert boolean to 0/1
-    const numericX = x.map(val => val ? 1 : 0);
-    
-    // Calculate means
-    const meanX = numericX.reduce((a: number, b: number) => a + b, 0) / n;
-    const meanY = y.reduce((a: number, b: number) => a + b, 0) / n;
-    
-    // Calculate group means
-    const trueValues = y.filter((_, i) => x[i]);
-    const falseValues = y.filter((_, i) => !x[i]);
-    
-    const meanTrue = trueValues.length ? trueValues.reduce((a: number, b: number) => a + b, 0) / trueValues.length : 0;
-    const meanFalse = falseValues.length ? falseValues.reduce((a: number, b: number) => a + b, 0) / falseValues.length : 0;
-    
-    // Calculate standard deviation of y
-    let ssYY = 0;
-    for (let i = 0; i < n; i++) {
-      const devY = y[i] - meanY;
-      ssYY += devY * devY;
-    }
-    const stdY = Math.sqrt(ssYY / n);
-    
-    // Calculate point-biserial correlation
-    const propTrue = trueValues.length / n;
-    const propFalse = falseValues.length / n;
-    
-    const pointBiserial = ((meanTrue - meanFalse) / stdY) * Math.sqrt(propTrue * propFalse);
-    
-    // Interpret the correlation
-    let description = '';
-    
-    if (isNaN(pointBiserial)) {
-      return { pointBiserial: 0, description: 'Unable to calculate correlation' };
-    }
-    
-    const difference = meanTrue - meanFalse;
-    
-    if (Math.abs(pointBiserial) < 0.1) {
-      description = 'No effect';
-    } else if (Math.abs(pointBiserial) < 0.3) {
-      description = difference > 0 ? 'Slight positive effect' : 'Slight negative effect';
-    } else if (Math.abs(pointBiserial) < 0.5) {
-      description = difference > 0 ? 'Moderate positive effect' : 'Moderate negative effect';
-    } else {
-      description = difference > 0 ? 'Strong positive effect' : 'Strong negative effect';
-    }
-    
-    return { pointBiserial, description };
+    if (n !== y.length) return 0;
+
+    const trueGroup = y.filter((_, i) => x[i]);
+    const falseGroup = y.filter((_, i) => !x[i]);
+
+    if (trueGroup.length === 0 || falseGroup.length === 0) return 0;
+
+    const trueMean = trueGroup.reduce((a, b) => a + b, 0) / trueGroup.length;
+    const falseMean = falseGroup.reduce((a, b) => a + b, 0) / falseGroup.length;
+    const yMean = y.reduce((a, b) => a + b, 0) / n;
+
+    const yStdDev = Math.sqrt(
+      y.reduce((a, b) => a + Math.pow(b - yMean, 2), 0) / (n - 1)
+    );
+
+    if (yStdDev === 0) return 0;
+
+    const p = trueGroup.length / n;
+    const q = 1 - p;
+
+    return (trueMean - falseMean) * Math.sqrt(p * q) / yStdDev;
   };
   
   // Helper function to get color based on correlation value
@@ -348,8 +466,10 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
   };
   
   // Generate options for scatter plot
-  const getScatterOptions = (isBooleanFactor: boolean) => {
-    const xTitle = isBooleanFactor ? '' : (selectedFactor || '');
+  const getScatterOptions = (factorName: string): any => {
+    // Determine if this is a boolean factor
+    const isBoolean = isBooleanFactor(factorName);
+    const xTitle = isBoolean ? '' : getDisplayName(factorName);
     
     return {
       responsive: true,
@@ -360,7 +480,7 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
         tooltip: {
           callbacks: {
             label: function(context: any) {
-              if (isBooleanFactor) {
+              if (isBoolean) {
                 const labels = ['No', 'Yes'];
                 return `${labels[context.parsed.x]}: ${context.parsed.y.toFixed(1)} happiness`;
               }
@@ -375,7 +495,7 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
             display: true,
             text: xTitle,
           },
-          ticks: isBooleanFactor ? {
+          ticks: isBoolean ? {
             callback: function(value: any) {
               return ['No', 'Yes'][value];
             }
@@ -394,15 +514,15 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
   };
   
   // Generate scatter chart data
-  const getScatterChartData = (isBooleanFactor: boolean) => {
+  const getScatterChartData = (factorName: string): any => {
     return {
       datasets: [
         {
-          label: `${selectedFactor} vs. Happiness`,
+          label: `${getDisplayName(factorName)} vs. Happiness`,
           data: scatterData,
           backgroundColor: 'rgba(79, 70, 229, 0.6)',
-          pointRadius: isBooleanFactor ? 10 : 6,
-          pointHoverRadius: isBooleanFactor ? 12 : 8,
+          pointRadius: isBooleanFactor(factorName) ? 10 : 6,
+          pointHoverRadius: isBooleanFactor(factorName) ? 12 : 8,
         },
       ],
     };
@@ -432,6 +552,46 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
     }
   };
   
+  // Get correlation description
+  const getCorrelationDescription = (factor: string, correlation: number) => {
+    const factorNames: { [key: string]: string } = {
+      sleepHours: 'Sleep Hours',
+      sleepQuality: 'Sleep Quality',
+      exercise: 'Exercise',
+      exerciseTime: 'Exercise Time',
+      meditation: 'Meditation',
+      meditationTime: 'Meditation Time',
+      alcohol: 'Alcohol Consumption',
+      alcoholUnits: 'Alcohol Units',
+      weed: 'Weed Use',
+      weedAmount: 'Weed Amount',
+      socialTime: 'Social Time',
+      workHours: 'Work Hours',
+      meals: 'Number of Meals',
+      foodQuality: 'Food Quality',
+      stressLevel: 'Stress Level'
+    };
+
+    const factorName = factorNames[factor] || factor;
+    const strength = Math.abs(correlation);
+    const direction = correlation > 0 ? 'positive' : 'negative';
+
+    if (strength < 0.2) {
+      return `No significant correlation between ${factorName} and happiness`;
+    } else if (strength < 0.4) {
+      return `Weak ${direction} correlation between ${factorName} and happiness`;
+    } else if (strength < 0.6) {
+      return `Moderate ${direction} correlation between ${factorName} and happiness`;
+    } else if (strength < 0.8) {
+      return `Strong ${direction} correlation between ${factorName} and happiness`;
+    } else {
+      return `Very strong ${direction} correlation between ${factorName} and happiness`;
+    }
+  };
+  
+  // Helper function to format factor names for display
+  const formatFactorName = getDisplayName;
+  
   if (entries.length < minimumEntries) {
     return (
       <div className="text-center py-6">
@@ -448,12 +608,12 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
       <div className="flex space-x-2 mb-6">
         <button 
           onClick={() => setViewMode('correlations')}
-          className={`px-4 py-2 rounded ${viewMode === 'correlations' ? 'bg-rose-400 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}>
+          className={`px-4 py-2 rounded-lg transition-colors ${viewMode === 'correlations' ? 'bg-rose-400 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}>
           Correlations
         </button>
         <button 
           onClick={() => setViewMode('trends')}
-          className={`px-4 py-2 rounded ${viewMode === 'trends' ? 'bg-rose-400 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}>
+          className={`px-4 py-2 rounded-lg transition-colors ${viewMode === 'trends' ? 'bg-rose-400 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}>
           Happiness Trend
         </button>
       </div>
@@ -462,72 +622,95 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
         <>
           <div className="mb-8">
             <h3 className="text-lg font-medium mb-4">Factors Affecting Your Happiness</h3>
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Factor</th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Correlation</th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Interpretation</th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {correlations.length === 0 ? (
+            <div className="glass-card p-4 sm:p-6 rounded-lg overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead>
                     <tr>
-                      <td colSpan={4} className="px-6 py-4 text-center text-gray-500">
-                        No correlation data available
-                      </td>
+                      <th scope="col" className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Factor</th>
+                      <th scope="col" className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Correlation</th>
+                      <th scope="col" className="hidden sm:table-cell px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Interpretation</th>
+                      <th scope="col" className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                     </tr>
-                  ) : (
-                    correlations.map((correlation, index) => (
-                      <tr key={index} className={selectedFactor === correlation.factor ? 'bg-pink-50' : 'hover:bg-gray-50'}>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{correlation.factor}</td>
-                        <td className={`px-6 py-4 whitespace-nowrap text-sm ${getCorrelationColor(correlation.correlation)}`}>
-                          {formatDecimal(correlation.correlation)}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{correlation.description}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          <button
-                            onClick={() => setSelectedFactor(correlation.factor)}
-                            className="text-pink-600 hover:text-pink-900"
-                          >
-                            View
-                          </button>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200">
+                    {correlations.length === 0 ? (
+                      <tr>
+                        <td colSpan={4} className="px-4 sm:px-6 py-4 text-center text-gray-500">
+                          No correlation data available
                         </td>
                       </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
+                    ) : (
+                      correlations.map((correlation, index) => (
+                        <tr key={index} className={selectedFactor === correlation.factor ? 'bg-pink-50/50' : 'hover:bg-gray-50/50'}>
+                          <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                            {formatFactorName(correlation.factor)}
+                          </td>
+                          <td className={`px-4 sm:px-6 py-4 whitespace-nowrap text-sm ${getCorrelationColor(correlation.correlation)}`}>
+                            {formatDecimal(correlation.correlation)}
+                          </td>
+                          <td className="hidden sm:table-cell px-6 py-4 text-sm text-gray-500">{correlation.description}</td>
+                          <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm">
+                            <button
+                              onClick={() => setSelectedFactor(correlation.factor)}
+                              className="text-pink-600 hover:text-pink-900 transition-colors"
+                            >
+                              View
+                            </button>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
           
-          {selectedFactor && (
-            <div className="border-t pt-6">
-              <h3 className="text-lg font-medium mb-4">{selectedFactor} vs. Happiness</h3>
-              <div className="h-64 relative">
-                {scatterData.length > 0 && (
-                  <Scatter 
-                    options={getScatterOptions(
-                      ['Exercise', 'Alcohol', 'Weed', 'Meditation'].includes(selectedFactor)
-                    )} 
-                    data={getScatterChartData(
-                      ['Exercise', 'Alcohol', 'Weed', 'Meditation'].includes(selectedFactor)
-                    )} 
-                  />
-                )}
-              </div>
-              <div className="mt-4">
-                <p className="text-sm text-gray-500">
-                  {correlations.find(c => c.factor === selectedFactor)?.description || 'No interpretation available'}
-                </p>
+          {/* Modal for scatter plot */}
+          {isModalOpen && selectedFactor && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+              <div className="glass-card p-6 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-lg font-medium">{formatFactorName(selectedFactor)} vs. Happiness</h3>
+                  <button
+                    onClick={() => {
+                      setIsModalOpen(false);
+                      setSelectedFactor(null);
+                    }}
+                    className="text-gray-500 hover:text-gray-700"
+                  >
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+                <div className="h-96 relative">
+                  {selectedFactor && scatterData.length > 0 ? (
+                    <Scatter 
+                      options={getScatterOptions(selectedFactor)} 
+                      data={getScatterChartData(selectedFactor)} 
+                    />
+                  ) : (
+                    <div className="flex items-center justify-center h-full">
+                      <p className="text-gray-500">Not enough data available for {formatFactorName(selectedFactor)}.</p>
+                    </div>
+                  )}
+                </div>
+                <div className="mt-4">
+                  <p className="text-sm text-gray-500">
+                    {selectedFactor && (correlations.find(c => 
+                      c.factor === selectedFactor || 
+                      c.factor === getInternalName(selectedFactor))?.description || 
+                      'No interpretation available')}
+                  </p>
+                </div>
               </div>
             </div>
           )}
         </>
       ) : (
-        <div>
+        <div className="glass-card p-4 sm:p-6 rounded-lg">
           <h3 className="text-lg font-medium mb-4">Your Happiness Over Time</h3>
           <div className="h-64 relative">
             {timeSeriesData && <Line options={timeSeriesOptions} data={timeSeriesData} />}

@@ -35,8 +35,13 @@ export default function EntryForm({ userId }: EntryFormProps) {
     workHours: '',
     stressLevel: '',
     happinessRating: '',
+    meals: '',
+    foodQuality: '',
     notes: ''
   });
+
+  const [customCategories, setCustomCategories] = useState<any[]>([]);
+  const [customValues, setCustomValues] = useState<Record<string, string>>({});
 
   // Check if an entry already exists for the selected date
   useEffect(() => {
@@ -61,11 +66,35 @@ export default function EntryForm({ userId }: EntryFormProps) {
     }
   }, [date]);
 
+  // Fetch custom categories when component mounts
+  useEffect(() => {
+    const fetchCustomCategories = async () => {
+      try {
+        const response = await fetch('/api/categories');
+        if (response.ok) {
+          const data = await response.json();
+          setCustomCategories(data);
+        }
+      } catch (error) {
+        console.error('Error fetching custom categories:', error);
+      }
+    };
+
+    fetchCustomCategories();
+  }, [userId]);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target;
     setFormData(prev => ({
       ...prev,
       [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value
+    }));
+  };
+
+  const handleCustomValueChange = (categoryId: string, value: string) => {
+    setCustomValues(prev => ({
+      ...prev,
+      [categoryId]: value
     }));
   };
 
@@ -80,6 +109,11 @@ export default function EntryForm({ userId }: EntryFormProps) {
       
       const method = overwrite && existingEntryId ? 'PUT' : 'POST';
       
+      const customCategoryEntries = customCategories.map(category => ({
+        customCategoryId: category.id,
+        value: parseFloat(customValues[category.id] || '0')
+      })).filter(entry => !isNaN(entry.value));
+      
       const response = await fetch(url, {
         method,
         headers: {
@@ -88,6 +122,7 @@ export default function EntryForm({ userId }: EntryFormProps) {
         body: JSON.stringify({
           ...formData,
           date: date.toISOString(),
+          customCategoryEntries
         })
       });
       
@@ -121,8 +156,13 @@ export default function EntryForm({ userId }: EntryFormProps) {
         workHours: '',
         stressLevel: '',
         happinessRating: '',
+        meals: '',
+        foodQuality: '',
         notes: ''
       }));
+      
+      // Reset custom values
+      setCustomValues({});
       
       // Refresh page data
       router.refresh();
@@ -382,35 +422,109 @@ export default function EntryForm({ userId }: EntryFormProps) {
           
           <div className="glass-card p-4">
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Stress Level (1-10)
+              Number of Meals
             </label>
             <input
               type="number"
-              name="stressLevel"
-              value={formData.stressLevel}
+              name="meals"
+              value={formData.meals}
               onChange={handleChange}
               className="glass-input w-full px-3 py-2"
-              required
-              min="1"
+              min="0"
               max="10"
+              placeholder="How many meals did you have today?"
             />
           </div>
           
           <div className="glass-card p-4">
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Happiness Rating (1-10)
+              Food Quality (1-10)
             </label>
             <input
               type="number"
-              name="happinessRating"
-              value={formData.happinessRating}
+              name="foodQuality"
+              value={formData.foodQuality}
               onChange={handleChange}
               className="glass-input w-full px-3 py-2"
-              required
               min="1"
               max="10"
+              placeholder="Rate your food quality"
             />
           </div>
+          
+          {/* Custom Categories */}
+          {customCategories.length > 0 && (
+            <div className="col-span-2">
+              <h3 className="text-lg font-medium text-gray-900 mb-4">Custom Categories</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {customCategories.map((category) => (
+                  <div key={category.id} className="glass-card p-4">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      {category.name}
+                    </label>
+                    {category.description && (
+                      <p className="text-sm text-gray-500 mb-2">{category.description}</p>
+                    )}
+                    {category.type === 'boolean' ? (
+                      <div className="mt-2">
+                        <label className="inline-flex items-center">
+                          <input
+                            type="checkbox"
+                            checked={customValues[category.id] === '1'}
+                            onChange={(e) => handleCustomValueChange(category.id, e.target.checked ? '1' : '0')}
+                            className="form-checkbox h-5 w-5 text-indigo-600"
+                          />
+                          <span className="ml-2 text-gray-700">Yes</span>
+                        </label>
+                      </div>
+                    ) : (
+                      <input
+                        type="number"
+                        value={customValues[category.id] || ''}
+                        onChange={(e) => handleCustomValueChange(category.id, e.target.value)}
+                        className="glass-input w-full px-3 py-2"
+                        min={category.type === 'scale' ? 1 : undefined}
+                        max={category.type === 'scale' ? 10 : undefined}
+                        placeholder={category.type === 'scale' ? '1-10' : 'Enter value'}
+                      />
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+        
+        <div className="glass-card p-4">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Stress Level (1-10)
+          </label>
+          <input
+            type="number"
+            name="stressLevel"
+            value={formData.stressLevel}
+            onChange={handleChange}
+            className="glass-input w-full px-3 py-2"
+            required
+            min="1"
+            max="10"
+          />
+        </div>
+        
+        <div className="glass-card p-4">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Happiness Rating (1-10)
+          </label>
+          <input
+            type="number"
+            name="happinessRating"
+            value={formData.happinessRating}
+            onChange={handleChange}
+            className="glass-input w-full px-3 py-2"
+            required
+            min="1"
+            max="10"
+          />
         </div>
         
         <div className="glass-card p-4">
