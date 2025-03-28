@@ -47,6 +47,7 @@ model User {
   accounts      Account[]
   sessions      Session[]
   dailyEntries  DailyEntry[]
+  customCategories CustomCategory[]
 }
 
 model VerificationToken {
@@ -55,6 +56,34 @@ model VerificationToken {
   expires    DateTime
 
   @@unique([identifier, token])
+}
+
+model CustomCategory {
+  id          String   @id @default(cuid())
+  name        String
+  type        String   // 'numeric', 'scale', or 'boolean'
+  min         Float?
+  max         Float?
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  entries     CustomCategoryEntry[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([userId, name])
+}
+
+model CustomCategoryEntry {
+  id              String   @id @default(cuid())
+  value           Float
+  dailyEntryId    String
+  dailyEntry      DailyEntry @relation(fields: [dailyEntryId], references: [id], onDelete: Cascade)
+  customCategoryId String
+  customCategory  CustomCategory @relation(fields: [customCategoryId], references: [id], onDelete: Cascade)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([dailyEntryId, customCategoryId])
 }
 
 model DailyEntry {
@@ -70,14 +99,19 @@ model DailyEntry {
   weedAmount   Int? // scale 1-5
   meditation   Boolean
   meditationTime Int? // minutes
-  socialTime   Int? // minutes spent socializing
+  socialTime   Float? // hours spent socializing
   workHours    Float?
   stressLevel  Int // 1-10 scale
   happinessRating Int // 1-10 scale
   notes        String? @db.Text
   
+  // Food tracking fields
+  meals        Int? // number of meals
+  foodQuality  Int? // 1-10 scale
+  
   userId       String
   user         User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  customCategoryEntries CustomCategoryEntry[]
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 

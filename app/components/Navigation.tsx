@@ -19,11 +19,15 @@ export default function Navigation({ user }: NavigationProps) {
   const getPageTitle = () => {
     switch (pathname) {
       case '/':
-        return 'Home';
+        return 'Dashboard';
+      case '/entry':
+        return 'Daily Entry';
       case '/insights':
         return 'Insights';
       case '/history':
         return 'History';
+      case '/how-to-use':
+        return 'How to Use';
       default:
         return 'Eudaemonia';
     }
@@ -53,7 +57,17 @@ export default function Navigation({ user }: NavigationProps) {
                   : 'text-stone-600 hover:text-rose-600 hover:bg-white/30'
               }`}
             >
-              Home
+              Dashboard
+            </Link>
+            <Link 
+              href="/entry" 
+              className={`text-sm sm:text-base px-3 py-2 rounded-md transition-colors ${
+                isActive('/entry')
+                  ? 'text-rose-600 bg-white/50' 
+                  : 'text-stone-600 hover:text-rose-600 hover:bg-white/30'
+              }`}
+            >
+              Entry
             </Link>
             <Link 
               href="/insights" 
@@ -74,6 +88,26 @@ export default function Navigation({ user }: NavigationProps) {
               }`}
             >
               History
+            </Link>
+            <Link
+              href="/categories"
+              className={`text-sm sm:text-base px-3 py-2 rounded-md transition-colors ${
+                isActive('/categories')
+                  ? 'text-rose-600 bg-white/50' 
+                  : 'text-stone-600 hover:text-rose-600 hover:bg-white/30'
+              }`}
+            >
+              Categories
+            </Link>
+            <Link
+              href="/how-to-use"
+              className={`text-sm sm:text-base px-3 py-2 rounded-md transition-colors ${
+                isActive('/how-to-use')
+                  ? 'text-rose-600 bg-white/50' 
+                  : 'text-stone-600 hover:text-rose-600 hover:bg-white/30'
+              }`}
+            >
+              Help
             </Link>
             <button
               onClick={() => signOut({ callbackUrl: '/login' })}

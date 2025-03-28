@@ -12,10 +12,17 @@ export default async function History() {
     redirect('/login');
   }
 
-  // Fetch the user's entries
+  // Fetch the user's entries with custom categories
   const entries = await db.dailyEntry.findMany({
     where: {
       userId: session.user.id
+    },
+    include: {
+      customCategoryEntries: {
+        include: {
+          customCategory: true
+        }
+      }
     },
     orderBy: {
       date: 'desc'
@@ -38,9 +45,17 @@ export default async function History() {
     meditationTime: entry.meditationTime,
     socialTime: entry.socialTime,
     workHours: entry.workHours,
+    meals: entry.meals,
+    foodQuality: entry.foodQuality,
     stressLevel: entry.stressLevel,
     happinessRating: entry.happinessRating,
     notes: entry.notes,
+    customCategories: entry.customCategoryEntries.map(cce => ({
+      id: cce.customCategory.id,
+      name: cce.customCategory.name,
+      type: cce.customCategory.type as 'numeric' | 'scale' | 'boolean',
+      value: cce.value
+    })),
     createdAt: entry.createdAt.toISOString(),
     updatedAt: entry.updatedAt.toISOString()
   }));

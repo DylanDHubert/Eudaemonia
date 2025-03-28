@@ -38,23 +38,34 @@ export async function POST(request: Request) {
         weedAmount: body.weedAmount ? parseInt(body.weedAmount) : null,
         meditation: Boolean(body.meditation),
         meditationTime: body.meditationTime ? parseInt(body.meditationTime) : null,
-        socialTime: body.socialTime ? parseInt(body.socialTime) : null,
+        socialTime: body.socialTime ? parseFloat(body.socialTime) : null,
         workHours: body.workHours ? parseFloat(body.workHours) : null,
         stressLevel: parseInt(body.stressLevel),
         happinessRating: parseInt(body.happinessRating),
+        meals: body.meals ? parseInt(body.meals) : null,
+        foodQuality: body.foodQuality ? parseInt(body.foodQuality) : null,
         notes: body.notes || null,
         userId: session.user.id,
+        customCategoryEntries: {
+          create: body.customCategoryEntries?.map((entry: any) => ({
+            customCategoryId: entry.customCategoryId,
+            value: entry.value
+          })) || []
+        }
+      },
+      include: {
+        customCategoryEntries: true
       }
     });
     
-    return NextResponse.json({ message: 'Entry created successfully', entry }, { status: 201 });
+    return NextResponse.json({ message: 'Entry created successfully', entry });
   } catch (error) {
     console.error('Entry creation error:', error);
     return NextResponse.json({ error: 'Error creating entry' }, { status: 500 });
   }
 }
 
-// GET: Fetch all entries for the current user
+// GET: Fetch entries
 export async function GET(request: Request) {
   try {
     const session = await getServerSession(authOptions);
@@ -64,45 +75,36 @@ export async function GET(request: Request) {
     }
     
     const { searchParams } = new URL(request.url);
+    const date = searchParams.get('date');
+    const limitParam = searchParams.get('limit');
+    const limit = limitParam ? parseInt(limitParam) : undefined;
     
-    // Optional date filtering
-    const dateParam = searchParams.get('date');
-    const startDate = searchParams.get('startDate');
-    const endDate = searchParams.get('endDate');
-    
-    // Build the where clause for the query
-    let where: any = { userId: session.user.id };
-    
-    // Exact date filtering (for checking same-day entries)
-    if (dateParam) {
-      const date = new Date(dateParam);
-      
-      // Set time to start of day
-      const startOfDay = new Date(date);
-      startOfDay.setHours(0, 0, 0, 0);
-      
-      // Set time to end of day
-      const endOfDay = new Date(date);
-      endOfDay.setHours(23, 59, 59, 999);
-      
-      where.date = {
-        gte: startOfDay,
-        lte: endOfDay
-      };
-    }
-    // Date range filtering
-    else if (startDate || endDate) {
-      where.date = {};
-      if (startDate) where.date.gte = new Date(startDate);
-      if (endDate) where.date.lte = new Date(endDate);
-    }
+    const where = {
+      userId: session.user.id,
+      ...(date ? {
+        date: {
+          gte: new Date(`${date}T00:00:00.000Z`),
+          lt: new Date(`${date}T23:59:59.999Z`)
+        }
+      } : {})
+    };
     
     const entries = await db.dailyEntry.findMany({
       where,
-      orderBy: { date: 'desc' },
+      include: {
+        customCategoryEntries: {
+          include: {
+            customCategory: true
+          }
+        }
+      },
+      orderBy: {
+        date: 'desc'
+      },
+      ...(limit ? { take: limit } : {})
     });
     
-    return NextResponse.json({ entries }, { status: 200 });
+    return NextResponse.json({ entries });
   } catch (error) {
     console.error('Error fetching entries:', error);
     return NextResponse.json({ error: 'Error fetching entries' }, { status: 500 });

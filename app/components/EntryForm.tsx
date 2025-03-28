@@ -35,8 +35,13 @@ export default function EntryForm({ userId }: EntryFormProps) {
     workHours: '',
     stressLevel: '',
     happinessRating: '',
+    meals: '',
+    foodQuality: '',
     notes: ''
   });
+
+  const [customCategories, setCustomCategories] = useState<any[]>([]);
+  const [customValues, setCustomValues] = useState<Record<string, string>>({});
 
   // Check if an entry already exists for the selected date
   useEffect(() => {
@@ -61,11 +66,35 @@ export default function EntryForm({ userId }: EntryFormProps) {
     }
   }, [date]);
 
+  // Fetch custom categories when component mounts
+  useEffect(() => {
+    const fetchCustomCategories = async () => {
+      try {
+        const response = await fetch('/api/categories');
+        if (response.ok) {
+          const data = await response.json();
+          setCustomCategories(data);
+        }
+      } catch (error) {
+        console.error('Error fetching custom categories:', error);
+      }
+    };
+
+    fetchCustomCategories();
+  }, [userId]);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target;
     setFormData(prev => ({
       ...prev,
       [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value
+    }));
+  };
+
+  const handleCustomValueChange = (categoryId: string, value: string) => {
+    setCustomValues(prev => ({
+      ...prev,
+      [categoryId]: value
     }));
   };
 
@@ -80,6 +109,11 @@ export default function EntryForm({ userId }: EntryFormProps) {
       
       const method = overwrite && existingEntryId ? 'PUT' : 'POST';
       
+      const customCategoryEntries = customCategories.map(category => ({
+        customCategoryId: category.id,
+        value: parseFloat(customValues[category.id] || '0')
+      })).filter(entry => !isNaN(entry.value));
+      
       const response = await fetch(url, {
         method,
         headers: {
@@ -88,6 +122,7 @@ export default function EntryForm({ userId }: EntryFormProps) {
         body: JSON.stringify({
           ...formData,
           date: date.toISOString(),
+          customCategoryEntries
         })
       });
       
@@ -121,8 +156,13 @@ export default function EntryForm({ userId }: EntryFormProps) {
         workHours: '',
         stressLevel: '',
         happinessRating: '',
+        meals: '',
+        foodQuality: '',
         notes: ''
       }));
+      
+      // Reset custom values
+      setCustomValues({});
       
       // Refresh page data
       router.refresh();
@@ -221,7 +261,7 @@ export default function EntryForm({ userId }: EntryFormProps) {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="glass-card p-4">
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Sleep Hours
+              Sleep Hours (0-24)
             </label>
             <input
               type="number"
@@ -259,20 +299,24 @@ export default function EntryForm({ userId }: EntryFormProps) {
                 name="exercise"
                 checked={formData.exercise}
                 onChange={handleChange}
-                className="glass-input h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                className="glass-input h-4 w-4 text-rose-500 focus:ring-rose-500 border-rose-300 rounded"
               />
               <span className="text-sm font-medium text-gray-700">Exercise</span>
             </label>
             {formData.exercise && (
-              <input
-                type="number"
-                name="exerciseTime"
-                value={formData.exerciseTime}
-                onChange={handleChange}
-                className="glass-input mt-2 w-full px-3 py-2"
-                placeholder="Minutes"
-                min="0"
-              />
+              <>
+                <label className="block text-xs font-medium text-gray-600 mt-2 mb-1">
+                  Exercise minutes
+                </label>
+                <input
+                  type="number"
+                  name="exerciseTime"
+                  value={formData.exerciseTime}
+                  onChange={handleChange}
+                  className="glass-input mt-1 w-full px-3 py-2"
+                  min="0"
+                />
+              </>
             )}
           </div>
           
@@ -283,21 +327,25 @@ export default function EntryForm({ userId }: EntryFormProps) {
                 name="alcohol"
                 checked={formData.alcohol}
                 onChange={handleChange}
-                className="glass-input h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                className="glass-input h-4 w-4 text-rose-500 focus:ring-rose-500 border-rose-300 rounded"
               />
               <span className="text-sm font-medium text-gray-700">Alcohol</span>
             </label>
             {formData.alcohol && (
-              <input
-                type="number"
-                name="alcoholUnits"
-                value={formData.alcoholUnits}
-                onChange={handleChange}
-                className="glass-input mt-2 w-full px-3 py-2"
-                placeholder="Units"
-                min="0"
-                step="0.5"
-              />
+              <>
+                <label className="block text-xs font-medium text-gray-600 mt-2 mb-1">
+                  Alcohol units
+                </label>
+                <input
+                  type="number"
+                  name="alcoholUnits"
+                  value={formData.alcoholUnits}
+                  onChange={handleChange}
+                  className="glass-input mt-1 w-full px-3 py-2"
+                  min="0"
+                  step="0.5"
+                />
+              </>
             )}
           </div>
           
@@ -308,21 +356,25 @@ export default function EntryForm({ userId }: EntryFormProps) {
                 name="weed"
                 checked={formData.weed}
                 onChange={handleChange}
-                className="glass-input h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                className="glass-input h-4 w-4 text-rose-500 focus:ring-rose-500 border-rose-300 rounded"
               />
               <span className="text-sm font-medium text-gray-700">Weed</span>
             </label>
             {formData.weed && (
-              <input
-                type="number"
-                name="weedAmount"
-                value={formData.weedAmount}
-                onChange={handleChange}
-                className="glass-input mt-2 w-full px-3 py-2"
-                placeholder="Amount (1-5)"
-                min="1"
-                max="5"
-              />
+              <>
+                <label className="block text-xs font-medium text-gray-600 mt-2 mb-1">
+                  Weed amount (1-5)
+                </label>
+                <input
+                  type="number"
+                  name="weedAmount"
+                  value={formData.weedAmount}
+                  onChange={handleChange}
+                  className="glass-input mt-1 w-full px-3 py-2"
+                  min="1"
+                  max="5"
+                />
+              </>
             )}
           </div>
           
@@ -333,26 +385,30 @@ export default function EntryForm({ userId }: EntryFormProps) {
                 name="meditation"
                 checked={formData.meditation}
                 onChange={handleChange}
-                className="glass-input h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                className="glass-input h-4 w-4 text-rose-500 focus:ring-rose-500 border-rose-300 rounded"
               />
               <span className="text-sm font-medium text-gray-700">Meditation</span>
             </label>
             {formData.meditation && (
-              <input
-                type="number"
-                name="meditationTime"
-                value={formData.meditationTime}
-                onChange={handleChange}
-                className="glass-input mt-2 w-full px-3 py-2"
-                placeholder="Minutes"
-                min="0"
-              />
+              <>
+                <label className="block text-xs font-medium text-gray-600 mt-2 mb-1">
+                  Meditation minutes
+                </label>
+                <input
+                  type="number"
+                  name="meditationTime"
+                  value={formData.meditationTime}
+                  onChange={handleChange}
+                  className="glass-input mt-1 w-full px-3 py-2"
+                  min="0"
+                />
+              </>
             )}
           </div>
           
           <div className="glass-card p-4">
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Social Time (minutes)
+              Social Time (hours)
             </label>
             <input
               type="number"
@@ -361,6 +417,8 @@ export default function EntryForm({ userId }: EntryFormProps) {
               onChange={handleChange}
               className="glass-input w-full px-3 py-2"
               min="0"
+              max="24"
+              step="0.5"
             />
           </div>
           
@@ -382,35 +440,106 @@ export default function EntryForm({ userId }: EntryFormProps) {
           
           <div className="glass-card p-4">
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Stress Level (1-10)
+              Number of Meals
             </label>
             <input
               type="number"
-              name="stressLevel"
-              value={formData.stressLevel}
+              name="meals"
+              value={formData.meals}
               onChange={handleChange}
               className="glass-input w-full px-3 py-2"
-              required
-              min="1"
+              min="0"
               max="10"
             />
           </div>
           
           <div className="glass-card p-4">
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Happiness Rating (1-10)
+              Food Quality (1-10)
             </label>
             <input
               type="number"
-              name="happinessRating"
-              value={formData.happinessRating}
+              name="foodQuality"
+              value={formData.foodQuality}
               onChange={handleChange}
               className="glass-input w-full px-3 py-2"
-              required
               min="1"
               max="10"
             />
           </div>
+          
+          {/* Custom Categories */}
+          {customCategories.length > 0 && (
+            <div className="col-span-2">
+              <h3 className="text-lg font-medium text-gray-900 mb-4">Custom Categories</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {customCategories.map((category) => (
+                  <div key={category.id} className="glass-card p-4">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      {category.name}
+                    </label>
+                    {category.description && (
+                      <p className="text-sm text-gray-500 mb-2">{category.description}</p>
+                    )}
+                    {category.type === 'boolean' ? (
+                      <div className="mt-2">
+                        <label className="inline-flex items-center">
+                          <input
+                            type="checkbox"
+                            checked={customValues[category.id] === '1'}
+                            onChange={(e) => handleCustomValueChange(category.id, e.target.checked ? '1' : '0')}
+                            className="glass-input h-4 w-4 text-rose-500 focus:ring-rose-500 border-rose-300 rounded"
+                          />
+                          <span className="ml-2 text-gray-700">Yes</span>
+                        </label>
+                      </div>
+                    ) : (
+                      <input
+                        type="number"
+                        value={customValues[category.id] || ''}
+                        onChange={(e) => handleCustomValueChange(category.id, e.target.value)}
+                        className="glass-input w-full px-3 py-2"
+                        min={category.type === 'scale' ? 1 : undefined}
+                        max={category.type === 'scale' ? 10 : undefined}
+                      />
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+        
+        <div className="glass-card p-4">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Stress Level (1-10)
+          </label>
+          <input
+            type="number"
+            name="stressLevel"
+            value={formData.stressLevel}
+            onChange={handleChange}
+            className="glass-input w-full px-3 py-2"
+            required
+            min="1"
+            max="10"
+          />
+        </div>
+        
+        <div className="glass-card p-4">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Happiness Rating (1-10)
+          </label>
+          <input
+            type="number"
+            name="happinessRating"
+            value={formData.happinessRating}
+            onChange={handleChange}
+            className="glass-input w-full px-3 py-2"
+            required
+            min="1"
+            max="10"
+          />
         </div>
         
         <div className="glass-card p-4">
@@ -423,7 +552,6 @@ export default function EntryForm({ userId }: EntryFormProps) {
             onChange={handleChange}
             className="glass-input w-full px-3 py-2"
             rows={4}
-            placeholder="Any additional notes about your day..."
           />
         </div>
         

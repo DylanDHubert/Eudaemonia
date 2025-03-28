@@ -13,10 +13,17 @@ export default async function InsightsPage() {
     redirect('/login');
   }
   
-  // Get all entries for the current user
+  // Get all entries for the current user with custom categories
   const entries = await db.dailyEntry.findMany({
     where: {
       userId: session.user.id,
+    },
+    include: {
+      customCategoryEntries: {
+        include: {
+          customCategory: true
+        }
+      }
     },
     orderBy: {
       date: 'desc',
@@ -27,6 +34,12 @@ export default async function InsightsPage() {
   const formattedEntries = entries.map((entry: any) => ({
     ...entry,
     date: format(new Date(entry.date), 'yyyy-MM-dd'),
+    customCategories: entry.customCategoryEntries.map((cce: any) => ({
+      id: cce.customCategory.id,
+      name: cce.customCategory.name,
+      type: cce.customCategory.type,
+      value: cce.value
+    })),
     createdAt: entry.createdAt.toISOString(),
     updatedAt: entry.updatedAt.toISOString(),
   }));

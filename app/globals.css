@@ -2,6 +2,16 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  :root {
+    --font-sans: 'Poppins', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+  }
+  
+  html {
+    font-family: var(--font-poppins), system-ui, sans-serif;
+  }
+}
+
 :root {
   --foreground-rgb: 0, 0, 0;
   --background-start-rgb: 214, 219, 220;
@@ -14,7 +24,7 @@
   }
 
   .glass-card {
-    @apply bg-white/40 backdrop-blur-lg border border-white/30 shadow-lg rounded-xl;
+    @apply bg-white bg-opacity-80 backdrop-blur-sm rounded-xl shadow-md;
   }
 
   .glass-input {
@@ -23,6 +33,11 @@
 
   .glass-button {
     @apply bg-rose-500/70 backdrop-blur-md text-white rounded-md hover:bg-rose-600/80 focus:outline-none focus:ring-1 focus:ring-offset-2 focus:ring-rose-500/50 transition-all duration-200 px-4 py-2;
+  }
+  
+  /* Custom checkbox styling to match the glassmorphism theme */
+  input[type="checkbox"] {
+    @apply h-4 w-4 text-rose-500 focus:ring-rose-500 border-rose-300 rounded bg-white/50;
   }
   
   /* Generic glassmorphism class that can be applied anywhere */
@@ -89,4 +104,115 @@ body {
 .react-datepicker__day {
   pointer-events: auto !important;
   visibility: visible !important;
+}
+
+/* ActivityHeatmap styles */
+.grid-container {
+  overflow-x: auto;
+}
+
+.grid-display {
+  display: flex;
+  gap: 4px;
+}
+
+.week-column {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.day-cell {
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  position: relative;
+}
+
+.today-cell {
+  outline: 2px solid #f43f5e;
+  outline-offset: -1px;
+}
+
+.no-data-cell {
+  background: repeating-linear-gradient(
+    -45deg,
+    rgba(200, 200, 200, 0.2),
+    rgba(200, 200, 200, 0.2) 3px,
+    rgba(240, 240, 240, 0.4) 3px,
+    rgba(240, 240, 240, 0.4) 6px
+  );
+}
+
+/* Correlation Matrix styles */
+.correlation-table {
+  border-spacing: 4px;
+  border-collapse: separate;
+  margin: 0 auto;
+}
+
+.correlation-table th,
+.correlation-table td {
+  border: none;
+  font-size: 10px;
+}
+
+.correlation-table td {
+  width: 24px;
+  height: 24px;
+  min-width: 24px;
+  min-height: 24px;
+  max-width: 24px;
+  max-height: 24px;
+  border-radius: 4px;
+  text-align: center;
+  padding: 0;
+  line-height: 0;
+}
+
+@media (max-width: 640px) {
+  .correlation-table th, 
+  .correlation-table td {
+    font-size: 8px !important;
+  }
+
+  .correlation-table th {
+    height: 100px !important;
+  }
+
+  input[type="number"] {
+    /* Disable the increment/decrement buttons for better mobile UX */
+    -moz-appearance: textfield;
+  }
+  
+  input[type="number"]::-webkit-inner-spin-button,
+  input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  
+  .glass-input {
+    @apply text-base py-3; /* Larger touch target and font for mobile */
+  }
+  
+  /* Improve tap targets on mobile */
+  button, 
+  [type="button"], 
+  [type="reset"], 
+  [type="submit"] {
+    @apply py-3;
+  }
+  
+  /* Ensure labels are visible enough on mobile */
+  label {
+    @apply text-base font-medium;
+  }
+}
+
+/* Small screens tooltip enhancement */
+@media (max-width: 768px) {
+  [title] {
+    position: relative;
+    cursor: pointer;
+  }
 }
