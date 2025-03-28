@@ -261,7 +261,7 @@ export default function EntryForm({ userId }: EntryFormProps) {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="glass-card p-4">
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Sleep Hours
+              Sleep Hours (0-24)
             </label>
             <input
               type="number"
@@ -304,15 +304,19 @@ export default function EntryForm({ userId }: EntryFormProps) {
               <span className="text-sm font-medium text-gray-700">Exercise</span>
             </label>
             {formData.exercise && (
-              <input
-                type="number"
-                name="exerciseTime"
-                value={formData.exerciseTime}
-                onChange={handleChange}
-                className="glass-input mt-2 w-full px-3 py-2"
-                placeholder="Minutes"
-                min="0"
-              />
+              <>
+                <label className="block text-xs font-medium text-gray-600 mt-2 mb-1">
+                  Exercise minutes
+                </label>
+                <input
+                  type="number"
+                  name="exerciseTime"
+                  value={formData.exerciseTime}
+                  onChange={handleChange}
+                  className="glass-input mt-1 w-full px-3 py-2"
+                  min="0"
+                />
+              </>
             )}
           </div>
           
@@ -328,16 +332,20 @@ export default function EntryForm({ userId }: EntryFormProps) {
               <span className="text-sm font-medium text-gray-700">Alcohol</span>
             </label>
             {formData.alcohol && (
-              <input
-                type="number"
-                name="alcoholUnits"
-                value={formData.alcoholUnits}
-                onChange={handleChange}
-                className="glass-input mt-2 w-full px-3 py-2"
-                placeholder="Units"
-                min="0"
-                step="0.5"
-              />
+              <>
+                <label className="block text-xs font-medium text-gray-600 mt-2 mb-1">
+                  Alcohol units
+                </label>
+                <input
+                  type="number"
+                  name="alcoholUnits"
+                  value={formData.alcoholUnits}
+                  onChange={handleChange}
+                  className="glass-input mt-1 w-full px-3 py-2"
+                  min="0"
+                  step="0.5"
+                />
+              </>
             )}
           </div>
           
@@ -353,16 +361,20 @@ export default function EntryForm({ userId }: EntryFormProps) {
               <span className="text-sm font-medium text-gray-700">Weed</span>
             </label>
             {formData.weed && (
-              <input
-                type="number"
-                name="weedAmount"
-                value={formData.weedAmount}
-                onChange={handleChange}
-                className="glass-input mt-2 w-full px-3 py-2"
-                placeholder="Amount (1-5)"
-                min="1"
-                max="5"
-              />
+              <>
+                <label className="block text-xs font-medium text-gray-600 mt-2 mb-1">
+                  Weed amount (1-5)
+                </label>
+                <input
+                  type="number"
+                  name="weedAmount"
+                  value={formData.weedAmount}
+                  onChange={handleChange}
+                  className="glass-input mt-1 w-full px-3 py-2"
+                  min="1"
+                  max="5"
+                />
+              </>
             )}
           </div>
           
@@ -378,21 +390,25 @@ export default function EntryForm({ userId }: EntryFormProps) {
               <span className="text-sm font-medium text-gray-700">Meditation</span>
             </label>
             {formData.meditation && (
-              <input
-                type="number"
-                name="meditationTime"
-                value={formData.meditationTime}
-                onChange={handleChange}
-                className="glass-input mt-2 w-full px-3 py-2"
-                placeholder="Minutes"
-                min="0"
-              />
+              <>
+                <label className="block text-xs font-medium text-gray-600 mt-2 mb-1">
+                  Meditation minutes
+                </label>
+                <input
+                  type="number"
+                  name="meditationTime"
+                  value={formData.meditationTime}
+                  onChange={handleChange}
+                  className="glass-input mt-1 w-full px-3 py-2"
+                  min="0"
+                />
+              </>
             )}
           </div>
           
           <div className="glass-card p-4">
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Social Time (minutes)
+              Social Time (hours)
             </label>
             <input
               type="number"
@@ -401,6 +417,8 @@ export default function EntryForm({ userId }: EntryFormProps) {
               onChange={handleChange}
               className="glass-input w-full px-3 py-2"
               min="0"
+              max="24"
+              step="0.5"
             />
           </div>
           
@@ -432,7 +450,6 @@ export default function EntryForm({ userId }: EntryFormProps) {
               className="glass-input w-full px-3 py-2"
               min="0"
               max="10"
-              placeholder="How many meals did you have today?"
             />
           </div>
           
@@ -448,7 +465,6 @@ export default function EntryForm({ userId }: EntryFormProps) {
               className="glass-input w-full px-3 py-2"
               min="1"
               max="10"
-              placeholder="Rate your food quality"
             />
           </div>
           
@@ -485,7 +501,6 @@ export default function EntryForm({ userId }: EntryFormProps) {
                         className="glass-input w-full px-3 py-2"
                         min={category.type === 'scale' ? 1 : undefined}
                         max={category.type === 'scale' ? 10 : undefined}
-                        placeholder={category.type === 'scale' ? '1-10' : 'Enter value'}
                       />
                     )}
                   </div>
@@ -537,7 +552,6 @@ export default function EntryForm({ userId }: EntryFormProps) {
             onChange={handleChange}
             className="glass-input w-full px-3 py-2"
             rows={4}
-            placeholder="Any additional notes about your day..."
           />
         </div>
         

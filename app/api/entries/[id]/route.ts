@@ -45,7 +45,7 @@ export async function PUT(
         weedAmount: body.weedAmount ? parseInt(body.weedAmount) : null,
         meditation: Boolean(body.meditation),
         meditationTime: body.meditationTime ? parseInt(body.meditationTime) : null,
-        socialTime: body.socialTime ? parseInt(body.socialTime) : null,
+        socialTime: body.socialTime ? parseFloat(body.socialTime) : null,
         workHours: body.workHours ? parseFloat(body.workHours) : null,
         stressLevel: parseInt(body.stressLevel),
         happinessRating: parseInt(body.happinessRating),

@@ -15,6 +15,7 @@ import {
 } from 'chart.js';
 import { Line, Bar, Scatter } from 'react-chartjs-2';
 import { format, subDays } from 'date-fns';
+import CorrelationMatrix from '../components/CorrelationMatrix';
 
 // Register ChartJS components
 ChartJS.register(
@@ -78,7 +79,7 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
   const [selectedFactor, setSelectedFactor] = useState<string | null>(null);
   const [scatterData, setScatterData] = useState<{ x: number; y: number }[]>([]);
   const [timeSeriesData, setTimeSeriesData] = useState<any>(null);
-  const [viewMode, setViewMode] = useState<'correlations' | 'trends'>('correlations');
+  const [viewMode, setViewMode] = useState<'correlations' | 'trends' | 'matrix'>('correlations');
   const [isModalOpen, setIsModalOpen] = useState(false);
   
   // Mapping of internal factor names to display names
@@ -616,6 +617,11 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
           className={`px-4 py-2 rounded-lg transition-colors ${viewMode === 'trends' ? 'bg-rose-400 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}>
           Happiness Trend
         </button>
+        <button 
+          onClick={() => setViewMode('matrix')}
+          className={`px-4 py-2 rounded-lg transition-colors ${viewMode === 'matrix' ? 'bg-rose-400 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}>
+          Matrix View
+        </button>
       </div>
       
       {viewMode === 'correlations' ? (
@@ -709,7 +715,7 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
             </div>
           )}
         </>
-      ) : (
+      ) : viewMode === 'trends' ? (
         <div className="glass-card p-4 sm:p-6 rounded-lg">
           <h3 className="text-lg font-medium mb-4">Your Happiness Over Time</h3>
           <div className="h-64 relative">
@@ -718,6 +724,18 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
           <div className="mt-4">
             <p className="text-sm text-gray-500">
               This chart shows your happiness ratings over time. Look for patterns to understand how your happiness changes.
+            </p>
+          </div>
+        </div>
+      ) : (
+        <div className="glass-card p-4 sm:p-6 rounded-lg">
+          <h3 className="text-lg font-medium mb-4">Feature Correlation Matrix</h3>
+          <div className="relative">
+            <CorrelationMatrix />
+          </div>
+          <div className="mt-4">
+            <p className="text-sm text-gray-500">
+              This matrix shows correlations between different factors. Deeper colors indicate stronger relationships.
             </p>
           </div>
         </div>

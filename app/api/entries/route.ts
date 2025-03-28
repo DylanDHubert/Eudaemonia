@@ -38,7 +38,7 @@ export async function POST(request: Request) {
         weedAmount: body.weedAmount ? parseInt(body.weedAmount) : null,
         meditation: Boolean(body.meditation),
         meditationTime: body.meditationTime ? parseInt(body.meditationTime) : null,
-        socialTime: body.socialTime ? parseInt(body.socialTime) : null,
+        socialTime: body.socialTime ? parseFloat(body.socialTime) : null,
         workHours: body.workHours ? parseFloat(body.workHours) : null,
         stressLevel: parseInt(body.stressLevel),
         happinessRating: parseInt(body.happinessRating),
@@ -76,6 +76,8 @@ export async function GET(request: Request) {
     
     const { searchParams } = new URL(request.url);
     const date = searchParams.get('date');
+    const limitParam = searchParams.get('limit');
+    const limit = limitParam ? parseInt(limitParam) : undefined;
     
     const where = {
       userId: session.user.id,
@@ -98,7 +100,8 @@ export async function GET(request: Request) {
       },
       orderBy: {
         date: 'desc'
-      }
+      },
+      ...(limit ? { take: limit } : {})
     });
     
     return NextResponse.json({ entries });

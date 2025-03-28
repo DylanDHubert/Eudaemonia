@@ -48,7 +48,7 @@ export async function POST(request: Request) {
         weedAmount: weedAmount ? parseInt(weedAmount) : null,
         meditation,
         meditationTime: meditationTime ? parseInt(meditationTime) : null,
-        socialTime: socialTime ? parseInt(socialTime) : null,
+        socialTime: socialTime ? parseFloat(socialTime) : null,
         workHours: workHours ? parseFloat(workHours) : null,
         stressLevel: parseInt(stressLevel),
         happinessRating: parseInt(happinessRating),

@@ -99,7 +99,7 @@ model DailyEntry {
   weedAmount   Int? // scale 1-5
   meditation   Boolean
   meditationTime Int? // minutes
-  socialTime   Int? // minutes spent socializing
+  socialTime   Float? // hours spent socializing
   workHours    Float?
   stressLevel  Int // 1-10 scale
   happinessRating Int // 1-10 scale

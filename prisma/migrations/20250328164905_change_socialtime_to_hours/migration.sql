@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "DailyEntry" ALTER COLUMN "socialTime" SET DATA TYPE DOUBLE PRECISION;
