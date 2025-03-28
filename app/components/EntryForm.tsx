@@ -299,7 +299,7 @@ export default function EntryForm({ userId }: EntryFormProps) {
                 name="exercise"
                 checked={formData.exercise}
                 onChange={handleChange}
-                className="glass-input h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                className="glass-input h-4 w-4 text-rose-500 focus:ring-rose-500 border-rose-300 rounded"
               />
               <span className="text-sm font-medium text-gray-700">Exercise</span>
             </label>
@@ -323,7 +323,7 @@ export default function EntryForm({ userId }: EntryFormProps) {
                 name="alcohol"
                 checked={formData.alcohol}
                 onChange={handleChange}
-                className="glass-input h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                className="glass-input h-4 w-4 text-rose-500 focus:ring-rose-500 border-rose-300 rounded"
               />
               <span className="text-sm font-medium text-gray-700">Alcohol</span>
             </label>
@@ -348,7 +348,7 @@ export default function EntryForm({ userId }: EntryFormProps) {
                 name="weed"
                 checked={formData.weed}
                 onChange={handleChange}
-                className="glass-input h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                className="glass-input h-4 w-4 text-rose-500 focus:ring-rose-500 border-rose-300 rounded"
               />
               <span className="text-sm font-medium text-gray-700">Weed</span>
             </label>
@@ -373,7 +373,7 @@ export default function EntryForm({ userId }: EntryFormProps) {
                 name="meditation"
                 checked={formData.meditation}
                 onChange={handleChange}
-                className="glass-input h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                className="glass-input h-4 w-4 text-rose-500 focus:ring-rose-500 border-rose-300 rounded"
               />
               <span className="text-sm font-medium text-gray-700">Meditation</span>
             </label>
@@ -472,7 +472,7 @@ export default function EntryForm({ userId }: EntryFormProps) {
                             type="checkbox"
                             checked={customValues[category.id] === '1'}
                             onChange={(e) => handleCustomValueChange(category.id, e.target.checked ? '1' : '0')}
-                            className="form-checkbox h-5 w-5 text-indigo-600"
+                            className="glass-input h-4 w-4 text-rose-500 focus:ring-rose-500 border-rose-300 rounded"
                           />
                           <span className="ml-2 text-gray-700">Yes</span>
                         </label>

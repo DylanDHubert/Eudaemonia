@@ -25,6 +25,11 @@
     @apply bg-rose-500/70 backdrop-blur-md text-white rounded-md hover:bg-rose-600/80 focus:outline-none focus:ring-1 focus:ring-offset-2 focus:ring-rose-500/50 transition-all duration-200 px-4 py-2;
   }
   
+  /* Custom checkbox styling to match the glassmorphism theme */
+  input[type="checkbox"] {
+    @apply h-4 w-4 text-rose-500 focus:ring-rose-500 border-rose-300 rounded bg-white/50;
+  }
+  
   /* Generic glassmorphism class that can be applied anywhere */
   .glassmorphism {
     @apply bg-white/30 backdrop-blur-lg border border-white/30 shadow-lg;
