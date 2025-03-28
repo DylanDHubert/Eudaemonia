@@ -448,12 +448,12 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
       <div className="flex space-x-2 mb-6">
         <button 
           onClick={() => setViewMode('correlations')}
-          className={`px-4 py-2 rounded ${viewMode === 'correlations' ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}>
+          className={`px-4 py-2 rounded ${viewMode === 'correlations' ? 'bg-rose-400 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}>
           Correlations
         </button>
         <button 
           onClick={() => setViewMode('trends')}
-          className={`px-4 py-2 rounded ${viewMode === 'trends' ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}>
+          className={`px-4 py-2 rounded ${viewMode === 'trends' ? 'bg-rose-400 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}>
           Happiness Trend
         </button>
       </div>
@@ -481,7 +481,7 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
                     </tr>
                   ) : (
                     correlations.map((correlation, index) => (
-                      <tr key={index} className={selectedFactor === correlation.factor ? 'bg-indigo-50' : 'hover:bg-gray-50'}>
+                      <tr key={index} className={selectedFactor === correlation.factor ? 'bg-pink-50' : 'hover:bg-gray-50'}>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{correlation.factor}</td>
                         <td className={`px-6 py-4 whitespace-nowrap text-sm ${getCorrelationColor(correlation.correlation)}`}>
                           {formatDecimal(correlation.correlation)}
@@ -490,7 +490,7 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                           <button
                             onClick={() => setSelectedFactor(correlation.factor)}
-                            className="text-indigo-600 hover:text-indigo-900"
+                            className="text-pink-600 hover:text-pink-900"
                           >
                             View
                           </button>

@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'react-toastify';
 import SameDayEntryModal from './SameDayEntryModal';
+import DatePickerModal from './DatePickerModal';
+import { format } from 'date-fns';
 
 type EntryFormProps = {
   userId: string;
@@ -14,12 +16,13 @@ export default function EntryForm({ userId }: EntryFormProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [showSameDayModal, setShowSameDayModal] = useState(false);
+  const [datePickerOpen, setDatePickerOpen] = useState(false);
   const [existingEntryId, setExistingEntryId] = useState<string | null>(null);
+  const [date, setDate] = useState(new Date());
   
   const [formData, setFormData] = useState({
-    date: new Date().toISOString().split('T')[0],
-    sleepHours: 7,
-    sleepQuality: 5,
+    sleepHours: '',
+    sleepQuality: '',
     exercise: false,
     exerciseTime: '',
     alcohol: false,
@@ -30,8 +33,8 @@ export default function EntryForm({ userId }: EntryFormProps) {
     meditationTime: '',
     socialTime: '',
     workHours: '',
-    stressLevel: 5,
-    happinessRating: 5,
+    stressLevel: '',
+    happinessRating: '',
     notes: ''
   });
 
@@ -39,7 +42,7 @@ export default function EntryForm({ userId }: EntryFormProps) {
   useEffect(() => {
     const checkExistingEntry = async () => {
       try {
-        const response = await fetch(`/api/entries?date=${formData.date}`);
+        const response = await fetch(`/api/entries?date=${date.toISOString().split('T')[0]}`);
         if (response.ok) {
           const data = await response.json();
           if (data.entries && data.entries.length > 0) {
@@ -53,28 +56,16 @@ export default function EntryForm({ userId }: EntryFormProps) {
       }
     };
 
-    if (formData.date) {
+    if (date) {
       checkExistingEntry();
     }
-  }, [formData.date]);
+  }, [date]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value, type } = e.target as HTMLInputElement;
-    
-    // Handle checkbox inputs
-    if (type === 'checkbox') {
-      const checked = (e.target as HTMLInputElement).checked;
-      setFormData(prev => ({
-        ...prev,
-        [name]: checked
-      }));
-      return;
-    }
-    
-    // Handle all other inputs
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value, type } = e.target;
     setFormData(prev => ({
       ...prev,
-      [name]: value
+      [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value
     }));
   };
 
@@ -94,7 +85,10 @@ export default function EntryForm({ userId }: EntryFormProps) {
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify(formData)
+        body: JSON.stringify({
+          ...formData,
+          date: date.toISOString(),
+        })
       });
       
       if (!response.ok) {
@@ -113,7 +107,20 @@ export default function EntryForm({ userId }: EntryFormProps) {
       // Reset form values that should be reset after submission
       setFormData(prev => ({
         ...prev,
-        date: new Date().toISOString().split('T')[0],
+        sleepHours: '',
+        sleepQuality: '',
+        exercise: false,
+        exerciseTime: '',
+        alcohol: false,
+        alcoholUnits: '',
+        weed: false,
+        weedAmount: '',
+        meditation: false,
+        meditationTime: '',
+        socialTime: '',
+        workHours: '',
+        stressLevel: '',
+        happinessRating: '',
         notes: ''
       }));
       
@@ -132,7 +139,7 @@ export default function EntryForm({ userId }: EntryFormProps) {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     
     // If an entry already exists for this date, show the modal
@@ -154,12 +161,24 @@ export default function EntryForm({ userId }: EntryFormProps) {
     setShowSameDayModal(false);
     await submitEntry(false);
   };
-  
+
+  // Handle date picker click
+  const handleDateClick = () => {
+    setDatePickerOpen(true);
+  };
+
   return (
     <>
+      <DatePickerModal 
+        isOpen={datePickerOpen} 
+        onClose={() => setDatePickerOpen(false)}
+        date={date}
+        onDateChange={setDate}
+      />
+      
       {showSameDayModal && (
         <SameDayEntryModal 
-          date={formData.date}
+          date={date.toISOString().split('T')[0]}
           onClose={() => setShowSameDayModal(false)}
           onOverwrite={handleOverwrite}
           onContinue={handleContinue}
@@ -173,265 +192,237 @@ export default function EntryForm({ userId }: EntryFormProps) {
           </div>
         )}
         
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-          {/* Date Selection */}
-          <div>
-            <label htmlFor="date" className="block text-sm font-medium text-gray-700">Date</label>
-            <input
-              type="date"
-              id="date"
-              name="date"
-              value={formData.date}
-              onChange={handleChange}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-            />
-            {existingEntryId && (
-              <p className="mt-1 text-xs text-amber-600">
-                You already have an entry for this date
-              </p>
-            )}
-          </div>
-          
-          {/* Sleep Hours */}
-          <div>
-            <label htmlFor="sleepHours" className="block text-sm font-medium text-gray-700">Hours of Sleep</label>
-            <input
-              type="number"
-              id="sleepHours"
-              name="sleepHours"
-              min="0"
-              max="24"
-              step="0.5"
-              value={formData.sleepHours}
-              onChange={handleChange}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-            />
-          </div>
-          
-          {/* Sleep Quality */}
-          <div>
-            <label htmlFor="sleepQuality" className="block text-sm font-medium text-gray-700">Sleep Quality (1-10)</label>
-            <input
-              type="range"
-              id="sleepQuality"
-              name="sleepQuality"
-              min="1"
-              max="10"
-              value={formData.sleepQuality}
-              onChange={handleChange}
-              className="mt-1 block w-full"
-            />
-            <div className="flex justify-between">
-              <span className="text-xs text-gray-500">Poor</span>
-              <span className="text-xs text-gray-500">Excellent</span>
-            </div>
-          </div>
-          
-          {/* Exercise */}
-          <div>
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                id="exercise"
-                name="exercise"
-                checked={formData.exercise}
-                onChange={handleChange}
-                className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+        <div className="glass-card p-4 relative">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Date
+          </label>
+          <div 
+            className="glass-input w-full px-3 py-2 cursor-pointer flex items-center"
+            onClick={handleDateClick}
+          >
+            <span>{format(date, 'MMMM d, yyyy')}</span>
+            <svg 
+              xmlns="http://www.w3.org/2000/svg" 
+              className="h-5 w-5 ml-auto text-gray-500" 
+              fill="none" 
+              viewBox="0 0 24 24" 
+              stroke="currentColor"
+            >
+              <path 
+                strokeLinecap="round" 
+                strokeLinejoin="round" 
+                strokeWidth={2} 
+                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" 
               />
-              <label htmlFor="exercise" className="ml-2 block text-sm font-medium text-gray-700">Exercise</label>
-            </div>
-            
-            {formData.exercise && (
-              <div className="mt-2">
-                <label htmlFor="exerciseTime" className="block text-sm font-medium text-gray-700">Minutes</label>
-                <input
-                  type="number"
-                  id="exerciseTime"
-                  name="exerciseTime"
-                  min="0"
-                  value={formData.exerciseTime}
-                  onChange={handleChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                />
-              </div>
-            )}
-          </div>
-          
-          {/* Alcohol */}
-          <div>
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                id="alcohol"
-                name="alcohol"
-                checked={formData.alcohol}
-                onChange={handleChange}
-                className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-              />
-              <label htmlFor="alcohol" className="ml-2 block text-sm font-medium text-gray-700">Alcohol</label>
-            </div>
-            
-            {formData.alcohol && (
-              <div className="mt-2">
-                <label htmlFor="alcoholUnits" className="block text-sm font-medium text-gray-700">Standard Drinks</label>
-                <input
-                  type="number"
-                  id="alcoholUnits"
-                  name="alcoholUnits"
-                  min="0"
-                  step="0.5"
-                  value={formData.alcoholUnits}
-                  onChange={handleChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                />
-              </div>
-            )}
-          </div>
-          
-          {/* Weed */}
-          <div>
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                id="weed"
-                name="weed"
-                checked={formData.weed}
-                onChange={handleChange}
-                className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-              />
-              <label htmlFor="weed" className="ml-2 block text-sm font-medium text-gray-700">Weed</label>
-            </div>
-            
-            {formData.weed && (
-              <div className="mt-2">
-                <label htmlFor="weedAmount" className="block text-sm font-medium text-gray-700">Amount (1-5)</label>
-                <input
-                  type="range"
-                  id="weedAmount"
-                  name="weedAmount"
-                  min="1"
-                  max="5"
-                  value={formData.weedAmount || "1"}
-                  onChange={handleChange}
-                  className="mt-1 block w-full"
-                />
-                <div className="flex justify-between">
-                  <span className="text-xs text-gray-500">Little</span>
-                  <span className="text-xs text-gray-500">Lots</span>
-                </div>
-              </div>
-            )}
-          </div>
-          
-          {/* Meditation */}
-          <div>
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                id="meditation"
-                name="meditation"
-                checked={formData.meditation}
-                onChange={handleChange}
-                className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-              />
-              <label htmlFor="meditation" className="ml-2 block text-sm font-medium text-gray-700">Meditation</label>
-            </div>
-            
-            {formData.meditation && (
-              <div className="mt-2">
-                <label htmlFor="meditationTime" className="block text-sm font-medium text-gray-700">Minutes</label>
-                <input
-                  type="number"
-                  id="meditationTime"
-                  name="meditationTime"
-                  min="0"
-                  value={formData.meditationTime}
-                  onChange={handleChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                />
-              </div>
-            )}
-          </div>
-          
-          {/* Social Time */}
-          <div>
-            <label htmlFor="socialTime" className="block text-sm font-medium text-gray-700">Social Time (minutes)</label>
-            <input
-              type="number"
-              id="socialTime"
-              name="socialTime"
-              min="0"
-              value={formData.socialTime}
-              onChange={handleChange}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-            />
-          </div>
-          
-          {/* Work Hours */}
-          <div>
-            <label htmlFor="workHours" className="block text-sm font-medium text-gray-700">Work Hours</label>
-            <input
-              type="number"
-              id="workHours"
-              name="workHours"
-              min="0"
-              max="24"
-              step="0.5"
-              value={formData.workHours}
-              onChange={handleChange}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-            />
-          </div>
-          
-          {/* Stress Level */}
-          <div>
-            <label htmlFor="stressLevel" className="block text-sm font-medium text-gray-700">Stress Level (1-10)</label>
-            <input
-              type="range"
-              id="stressLevel"
-              name="stressLevel"
-              min="1"
-              max="10"
-              value={formData.stressLevel}
-              onChange={handleChange}
-              className="mt-1 block w-full"
-            />
-            <div className="flex justify-between">
-              <span className="text-xs text-gray-500">Low</span>
-              <span className="text-xs text-gray-500">High</span>
-            </div>
-          </div>
-          
-          {/* Happiness Rating */}
-          <div>
-            <label htmlFor="happinessRating" className="block text-sm font-medium text-gray-700">Happiness Rating (1-10)</label>
-            <input
-              type="range"
-              id="happinessRating"
-              name="happinessRating"
-              min="1"
-              max="10"
-              value={formData.happinessRating}
-              onChange={handleChange}
-              className="mt-1 block w-full"
-            />
-            <div className="flex justify-between">
-              <span className="text-xs text-gray-500">Low</span>
-              <span className="text-xs text-gray-500">High</span>
-            </div>
+            </svg>
           </div>
         </div>
         
-        {/* Notes */}
-        <div>
-          <label htmlFor="notes" className="block text-sm font-medium text-gray-700">Notes</label>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="glass-card p-4">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Sleep Hours
+            </label>
+            <input
+              type="number"
+              name="sleepHours"
+              value={formData.sleepHours}
+              onChange={handleChange}
+              className="glass-input w-full px-3 py-2"
+              required
+              min="0"
+              max="24"
+              step="0.5"
+            />
+          </div>
+          
+          <div className="glass-card p-4">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Sleep Quality (1-10)
+            </label>
+            <input
+              type="number"
+              name="sleepQuality"
+              value={formData.sleepQuality}
+              onChange={handleChange}
+              className="glass-input w-full px-3 py-2"
+              required
+              min="1"
+              max="10"
+            />
+          </div>
+          
+          <div className="glass-card p-4">
+            <label className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                name="exercise"
+                checked={formData.exercise}
+                onChange={handleChange}
+                className="glass-input h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+              />
+              <span className="text-sm font-medium text-gray-700">Exercise</span>
+            </label>
+            {formData.exercise && (
+              <input
+                type="number"
+                name="exerciseTime"
+                value={formData.exerciseTime}
+                onChange={handleChange}
+                className="glass-input mt-2 w-full px-3 py-2"
+                placeholder="Minutes"
+                min="0"
+              />
+            )}
+          </div>
+          
+          <div className="glass-card p-4">
+            <label className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                name="alcohol"
+                checked={formData.alcohol}
+                onChange={handleChange}
+                className="glass-input h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+              />
+              <span className="text-sm font-medium text-gray-700">Alcohol</span>
+            </label>
+            {formData.alcohol && (
+              <input
+                type="number"
+                name="alcoholUnits"
+                value={formData.alcoholUnits}
+                onChange={handleChange}
+                className="glass-input mt-2 w-full px-3 py-2"
+                placeholder="Units"
+                min="0"
+                step="0.5"
+              />
+            )}
+          </div>
+          
+          <div className="glass-card p-4">
+            <label className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                name="weed"
+                checked={formData.weed}
+                onChange={handleChange}
+                className="glass-input h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+              />
+              <span className="text-sm font-medium text-gray-700">Weed</span>
+            </label>
+            {formData.weed && (
+              <input
+                type="number"
+                name="weedAmount"
+                value={formData.weedAmount}
+                onChange={handleChange}
+                className="glass-input mt-2 w-full px-3 py-2"
+                placeholder="Amount (1-5)"
+                min="1"
+                max="5"
+              />
+            )}
+          </div>
+          
+          <div className="glass-card p-4">
+            <label className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                name="meditation"
+                checked={formData.meditation}
+                onChange={handleChange}
+                className="glass-input h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+              />
+              <span className="text-sm font-medium text-gray-700">Meditation</span>
+            </label>
+            {formData.meditation && (
+              <input
+                type="number"
+                name="meditationTime"
+                value={formData.meditationTime}
+                onChange={handleChange}
+                className="glass-input mt-2 w-full px-3 py-2"
+                placeholder="Minutes"
+                min="0"
+              />
+            )}
+          </div>
+          
+          <div className="glass-card p-4">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Social Time (minutes)
+            </label>
+            <input
+              type="number"
+              name="socialTime"
+              value={formData.socialTime}
+              onChange={handleChange}
+              className="glass-input w-full px-3 py-2"
+              min="0"
+            />
+          </div>
+          
+          <div className="glass-card p-4">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Work Hours
+            </label>
+            <input
+              type="number"
+              name="workHours"
+              value={formData.workHours}
+              onChange={handleChange}
+              className="glass-input w-full px-3 py-2"
+              min="0"
+              max="24"
+              step="0.5"
+            />
+          </div>
+          
+          <div className="glass-card p-4">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Stress Level (1-10)
+            </label>
+            <input
+              type="number"
+              name="stressLevel"
+              value={formData.stressLevel}
+              onChange={handleChange}
+              className="glass-input w-full px-3 py-2"
+              required
+              min="1"
+              max="10"
+            />
+          </div>
+          
+          <div className="glass-card p-4">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Happiness Rating (1-10)
+            </label>
+            <input
+              type="number"
+              name="happinessRating"
+              value={formData.happinessRating}
+              onChange={handleChange}
+              className="glass-input w-full px-3 py-2"
+              required
+              min="1"
+              max="10"
+            />
+          </div>
+        </div>
+        
+        <div className="glass-card p-4">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Notes
+          </label>
           <textarea
-            id="notes"
             name="notes"
-            rows={3}
             value={formData.notes}
             onChange={handleChange}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+            className="glass-input w-full px-3 py-2"
+            rows={4}
             placeholder="Any additional notes about your day..."
           />
         </div>
@@ -440,7 +431,7 @@ export default function EntryForm({ userId }: EntryFormProps) {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:bg-indigo-400"
+            className="glass-button w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:bg-indigo-400"
           >
             {isLoading ? (
               <>

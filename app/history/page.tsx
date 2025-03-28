@@ -46,25 +46,11 @@ export default async function History() {
   }));
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <nav className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16">
-            <div className="flex items-center">
-              <h1 className="text-xl font-semibold">History</h1>
-            </div>
-            <div className="flex items-center space-x-4">
-              <Link href="/" className="text-indigo-600 hover:text-indigo-900">Home</Link>
-              <Link href="/insights" className="text-indigo-600 hover:text-indigo-900">Insights</Link>
-            </div>
-          </div>
-        </div>
-      </nav>
-
+    <div className="min-h-screen">
       <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div className="px-4 py-6 sm:px-0">
-          <div className="bg-white shadow rounded-lg p-6">
-            <h2 className="text-2xl font-bold mb-6 text-gray-900">Your History</h2>
+          <div className="glass-card p-8">
+            <h1 className="text-2xl font-bold mb-6 text-gray-800">Your History</h1>
             {entries.length === 0 ? (
               <div className="text-center py-8">
                 <p className="text-gray-500">You haven't recorded any entries yet.</p>
