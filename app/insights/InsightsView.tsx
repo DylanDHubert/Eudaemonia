@@ -14,7 +14,7 @@ import {
   ScatterController
 } from 'chart.js';
 import { Line, Bar, Scatter } from 'react-chartjs-2';
-import { format, subDays } from 'date-fns';
+import { format, subDays, parseISO } from 'date-fns';
 import CorrelationMatrix from '../components/CorrelationMatrix';
 
 // Register ChartJS components
@@ -79,8 +79,11 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
   const [selectedFactor, setSelectedFactor] = useState<string | null>(null);
   const [scatterData, setScatterData] = useState<{ x: number; y: number }[]>([]);
   const [timeSeriesData, setTimeSeriesData] = useState<any>(null);
+  const [factorTimeSeriesData, setFactorTimeSeriesData] = useState<any>(null);
+  const [factorCounts, setFactorCounts] = useState<number[]>([]);
   const [viewMode, setViewMode] = useState<'correlations' | 'trends' | 'matrix'>('correlations');
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [entryCounts, setEntryCounts] = useState<number[]>([]);
   
   // Mapping of internal factor names to display names
   const factorNameMap = useMemo<Record<string, string>>(() => ({
@@ -92,8 +95,8 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
     meditationTime: 'Meditation Time',
     alcohol: 'Alcohol Consumption',
     alcoholUnits: 'Alcohol Units',
-    weed: 'Weed Use',
-    weedAmount: 'Weed Amount',
+    weed: 'Cannabis',
+    weedAmount: 'Cannabis Amount',
     socialTime: 'Social Time',
     workHours: 'Work Hours',
     meals: 'Number of Meals',
@@ -110,6 +113,21 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
   
   // List of boolean factors (all others are numeric)
   const booleanFactors = useMemo(() => ['exercise', 'meditation', 'alcohol', 'weed'], []);
+  
+  // List of numeric factors
+  const numericFactors = [
+    'sleepHours',
+    'sleepQuality',
+    'exerciseTime',
+    'meditationTime',
+    'alcoholUnits',
+    'weedAmount',
+    'socialTime',
+    'workHours',
+    'meals',
+    'foodQuality',
+    'stressLevel'
+  ];
   
   // Helper function to get display name from internal name
   const getDisplayName = useCallback((internalName: string): string => {
@@ -146,9 +164,35 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
       new Date(a.date).getTime() - new Date(b.date).getTime()
     );
     
-    // Format dates and get happiness values
-    const dates = sortedEntries.map(entry => format(new Date(entry.date), 'MMM d'));
-    const happinessValues = sortedEntries.map(entry => entry.happinessRating);
+    // Group entries by date and calculate average happiness
+    const entriesByDate = new Map<string, { date: string; happiness: number; count: number }>();
+    
+    sortedEntries.forEach(entry => {
+      const date = format(parseISO(entry.date), 'MMM d');
+      const existing = entriesByDate.get(date);
+      
+      if (existing) {
+        existing.happiness += entry.happinessRating;
+        existing.count += 1;
+      } else {
+        entriesByDate.set(date, {
+          date,
+          happiness: entry.happinessRating,
+          count: 1
+        });
+      }
+    });
+    
+    // Convert map to arrays and calculate averages
+    const dates: string[] = [];
+    const happinessValues: number[] = [];
+    const counts: number[] = [];
+    
+    entriesByDate.forEach(({ date, happiness, count }) => {
+      dates.push(date);
+      happinessValues.push(happiness / count);
+      counts.push(count);
+    });
     
     // Prepare dataset for Chart.js
     const data = {
@@ -166,6 +210,7 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
     };
     
     setTimeSeriesData(data);
+    setEntryCounts(counts);
   }, [entries]);
   
   useEffect(() => {
@@ -232,32 +277,6 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
       };
 
       // Calculate correlations for numeric factors
-      const numericFactors = [
-        'sleepHours',
-        'sleepQuality',
-        'exerciseTime',
-        'meditationTime',
-        'alcoholUnits',
-        'weedAmount',
-        'socialTime',
-        'workHours',
-        'meals',
-        'foodQuality',
-        'stressLevel'
-      ];
-
-      // Add custom categories to numeric factors
-      if (entries.length > 0) {
-        const firstEntry = entries[0];
-        firstEntry.customCategories.forEach(cat => {
-          if (cat.type === 'numeric' || cat.type === 'scale') {
-            numericFactors.push(cat.name);
-          } else if (cat.type === 'boolean') {
-            // Custom boolean categories will be added later
-          }
-        });
-      }
-
       numericFactors.forEach(factor => {
         const values = getNumericValues(factor);
         const correlation = calculatePearsonCorrelation(values, entries.map(e => e.happinessRating));
@@ -318,7 +337,7 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
     
   }, [entries, minimumEntries, prepareTimeSeriesData]);
   
-  // Update scatter data when selectedFactor changes
+  // Update scatter data and time series data when selectedFactor changes
   useEffect(() => {
     if (!selectedFactor || entries.length < minimumEntries) return;
     
@@ -329,7 +348,73 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
       // Step 2: Generate appropriate scatter data based on factor type
       let newScatterData: { x: number; y: number }[] = [];
       
-      // Step 3: Handle boolean factors (exercise, meditation, alcohol, weed)
+      // Step 3: Prepare time series data for the selected factor
+      const sortedEntries = [...entries].sort((a, b) => 
+        new Date(a.date).getTime() - new Date(b.date).getTime()
+      );
+      
+      // Group entries by date and calculate average values
+      const entriesByDate = new Map<string, { date: string; value: number; count: number }>();
+      
+      sortedEntries.forEach(entry => {
+        const date = format(parseISO(entry.date), 'MMM d');
+        
+        // Get the value based on factor type
+        let value: number;
+        if (booleanFactors.includes(internalName)) {
+          value = entry[internalName as keyof DailyEntry] ? 1 : 0;
+        } else if (entries[0].customCategories.some(cat => cat.name === selectedFactor)) {
+          const customCat = entry.customCategories.find(cat => cat.name === selectedFactor);
+          value = customCat ? customCat.value : 0;
+        } else {
+          const rawValue = entry[internalName as keyof DailyEntry];
+          value = typeof rawValue === 'number' ? rawValue : 
+                  typeof rawValue === 'boolean' ? (rawValue ? 1 : 0) : 0;
+        }
+        
+        const existing = entriesByDate.get(date);
+        if (existing) {
+          existing.value += value;
+          existing.count += 1;
+        } else {
+          entriesByDate.set(date, {
+            date,
+            value,
+            count: 1
+          });
+        }
+      });
+      
+      // Convert map to arrays and calculate averages
+      const factorDates: string[] = [];
+      const factorValues: number[] = [];
+      const newFactorCounts: number[] = [];
+      
+      entriesByDate.forEach(({ date, value, count }) => {
+        factorDates.push(date);
+        factorValues.push(value / count);
+        newFactorCounts.push(count);
+      });
+      
+      // Prepare time series data for the selected factor
+      const factorTimeSeriesData = {
+        labels: factorDates,
+        datasets: [
+          {
+            label: getDisplayName(selectedFactor),
+            data: factorValues,
+            borderColor: 'rgb(79, 70, 229)',
+            backgroundColor: 'rgba(79, 70, 229, 0.5)',
+            tension: 0.3,
+            fill: false,
+          }
+        ]
+      };
+      
+      setFactorTimeSeriesData(factorTimeSeriesData);
+      setFactorCounts(newFactorCounts);
+      
+      // Step 4: Handle boolean factors (exercise, meditation, alcohol, weed)
       if (booleanFactors.includes(internalName)) {
         // For boolean factors, create a bar chart showing happiness averages for true/false values
         const validEntriesWithKey = entries.filter(e => internalName in e && e[internalName as keyof DailyEntry] !== undefined);
@@ -353,7 +438,7 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
           ];
         }
       }
-      // Step 4: Handle custom categories
+      // Step 5: Handle custom categories
       else if (entries.length > 0 && entries.some(e => 
         e.customCategories && Array.isArray(e.customCategories) && e.customCategories.some(cat => cat.name === selectedFactor)
       )) {
@@ -372,7 +457,7 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
           });
         }
       }
-      // Step 5: Handle numeric factors
+      // Step 6: Handle numeric factors
       else {
         // Get entries that have a valid value for this factor
         const validEntries = entries.filter(e => 
@@ -396,7 +481,7 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
         }
       }
 
-      // Step 6: Update state if we have valid data
+      // Step 7: Update state if we have valid data
       if (newScatterData.length > 0) {
         setScatterData(newScatterData);
         setIsModalOpen(true);
@@ -408,7 +493,7 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
     } catch (error) {
       console.error("Error processing factor:", selectedFactor, error);
     }
-  }, [selectedFactor, entries, minimumEntries, getInternalName, booleanFactors, isBooleanFactor]);
+  }, [selectedFactor, entries, minimumEntries, getInternalName, booleanFactors, isBooleanFactor, getDisplayName]);
   
   // Function to calculate Pearson correlation
   const calculatePearsonCorrelation = (x: number[], y: number[]): number => {
@@ -478,6 +563,10 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
         legend: {
           display: false,
         },
+        title: {
+          display: true,
+          text: `${getDisplayName(factorName)} vs. Happiness`,
+        },
         tooltip: {
           callbacks: {
             label: function(context: any) {
@@ -540,6 +629,15 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
         display: true,
         text: 'Your Happiness Over Time',
       },
+      tooltip: {
+        callbacks: {
+          label: function(context: any) {
+            const index = context.dataIndex;
+            const count = entryCounts[index];
+            return `${context.dataset.label}: ${context.parsed.y.toFixed(1)} (${count}x)`;
+          }
+        }
+      }
     },
     scales: {
       y: {
@@ -553,6 +651,53 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
     }
   };
   
+  // Generate options for time series chart
+  const getFactorTimeSeriesOptions = (factorName: string): any => {
+    return {
+      responsive: true,
+      plugins: {
+        legend: {
+          display: false,
+        },
+        title: {
+          display: true,
+          text: `${getDisplayName(factorName)} Over Time`,
+        },
+        tooltip: {
+          callbacks: {
+            label: function(context: any) {
+              const index = context.dataIndex;
+              const count = factorCounts[index];
+              if (booleanFactors.includes(getInternalName(factorName))) {
+                return `${context.dataset.label}: ${context.parsed.y === 1 ? 'Yes' : 'No'} (${count}x)`;
+              }
+              return `${context.dataset.label}: ${context.parsed.y.toFixed(1)} (${count}x)`;
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          title: {
+            display: true,
+            text: 'Date'
+          }
+        },
+        y: {
+          title: {
+            display: true,
+            text: getDisplayName(factorName)
+          },
+          ticks: booleanFactors.includes(getInternalName(factorName)) ? {
+            callback: function(value: any) {
+              return value === 1 ? 'Yes' : 'No';
+            }
+          } : undefined
+        }
+      }
+    };
+  };
+  
   // Get correlation description
   const getCorrelationDescription = (factor: string, correlation: number) => {
     const factorNames: { [key: string]: string } = {
@@ -564,8 +709,8 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
       meditationTime: 'Meditation Time',
       alcohol: 'Alcohol Consumption',
       alcoholUnits: 'Alcohol Units',
-      weed: 'Weed Use',
-      weedAmount: 'Weed Amount',
+      weed: 'Cannabis',
+      weedAmount: 'Cannabis Amount',
       socialTime: 'Social Time',
       workHours: 'Work Hours',
       meals: 'Number of Meals',
@@ -673,12 +818,11 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
             </div>
           </div>
           
-          {/* Modal for scatter plot */}
+          {/* Modal for scatter plot and time series */}
           {isModalOpen && selectedFactor && (
             <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-              <div className="glass-card p-6 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-                <div className="flex justify-between items-center mb-4">
-                  <h3 className="text-lg font-medium">{formatFactorName(selectedFactor)} vs. Happiness</h3>
+              <div className="glass-card p-3 rounded-lg max-w-4xl w-full max-h-[50vh] overflow-y-auto">
+                <div className="flex justify-end mb-1">
                   <button
                     onClick={() => {
                       setIsModalOpen(false);
@@ -691,19 +835,29 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
                     </svg>
                   </button>
                 </div>
-                <div className="h-96 relative">
-                  {selectedFactor && scatterData.length > 0 ? (
-                    <Scatter 
-                      options={getScatterOptions(selectedFactor)} 
-                      data={getScatterChartData(selectedFactor)} 
-                    />
-                  ) : (
-                    <div className="flex items-center justify-center h-full">
-                      <p className="text-gray-500">Not enough data available for {formatFactorName(selectedFactor)}.</p>
-                    </div>
-                  )}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                  <div className="h-64 relative">
+                    {selectedFactor && scatterData.length > 0 ? (
+                      <Scatter 
+                        options={getScatterOptions(selectedFactor)} 
+                        data={getScatterChartData(selectedFactor)} 
+                      />
+                    ) : (
+                      <div className="flex items-center justify-center h-full">
+                        <p className="text-gray-500">Not enough data available for {formatFactorName(selectedFactor)}.</p>
+                      </div>
+                    )}
+                  </div>
+                  <div className="h-64 relative">
+                    {factorTimeSeriesData && (
+                      <Line 
+                        options={getFactorTimeSeriesOptions(selectedFactor)} 
+                        data={factorTimeSeriesData} 
+                      />
+                    )}
+                  </div>
                 </div>
-                <div className="mt-4">
+                <div className="mt-1">
                   <p className="text-sm text-gray-500">
                     {selectedFactor && (correlations.find(c => 
                       c.factor === selectedFactor || 

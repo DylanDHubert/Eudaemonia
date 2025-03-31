@@ -34,6 +34,7 @@ interface Entry {
 export default function HappinessChart() {
   const [timeSeriesData, setTimeSeriesData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [entryCounts, setEntryCounts] = useState<number[]>([]);
 
   // Prepare time series data for the happiness trend chart
   const prepareTimeSeriesData = useCallback((entries: Entry[]) => {
@@ -44,9 +45,35 @@ export default function HappinessChart() {
       new Date(a.date).getTime() - new Date(b.date).getTime()
     );
     
-    // Format dates and get happiness values
-    const dates = sortedEntries.map(entry => format(parseISO(entry.date), 'MMM d'));
-    const happinessValues = sortedEntries.map(entry => entry.happinessRating);
+    // Group entries by date and calculate average happiness
+    const entriesByDate = new Map<string, { date: string; happiness: number; count: number }>();
+    
+    sortedEntries.forEach(entry => {
+      const date = format(parseISO(entry.date), 'MMM d');
+      const existing = entriesByDate.get(date);
+      
+      if (existing) {
+        existing.happiness += entry.happinessRating;
+        existing.count += 1;
+      } else {
+        entriesByDate.set(date, {
+          date,
+          happiness: entry.happinessRating,
+          count: 1
+        });
+      }
+    });
+    
+    // Convert map to arrays and calculate averages
+    const dates: string[] = [];
+    const happinessValues: number[] = [];
+    const counts: number[] = [];
+    
+    entriesByDate.forEach(({ date, happiness, count }) => {
+      dates.push(date);
+      happinessValues.push(happiness / count);
+      counts.push(count);
+    });
     
     // Prepare dataset for Chart.js
     const data = {
@@ -64,6 +91,7 @@ export default function HappinessChart() {
     };
     
     setTimeSeriesData(data);
+    setEntryCounts(counts);
   }, []);
 
   useEffect(() => {
@@ -98,6 +126,15 @@ export default function HappinessChart() {
       legend: {
         position: 'top' as const,
       },
+      tooltip: {
+        callbacks: {
+          label: function(context: any) {
+            const index = context.dataIndex;
+            const count = entryCounts[index];
+            return `${context.dataset.label}: ${context.parsed.y.toFixed(1)} (${count}x)`;
+          }
+        }
+      }
     },
     scales: {
       y: {

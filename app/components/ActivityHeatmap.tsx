@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { format, parseISO, subDays, eachDayOfInterval, getDay, isSameDay, isToday } from 'date-fns';
+import { format, parseISO, subDays, eachDayOfInterval, getDay, isSameDay, isToday, addDays } from 'date-fns';
 
 interface Entry {
   id: string;
@@ -38,28 +38,42 @@ export default function ActivityHeatmap() {
     fetchEntries();
   }, []);
 
-  // Generate the last 84 days (12 weeks exactly)
+  // Generate the date range starting from the current week's Sunday
   const endDate = new Date();
-  const startDate = subDays(endDate, 83); // 84 days including today
-  const dateRange = eachDayOfInterval({ start: startDate, end: endDate });
+  const currentDayOfWeek = getDay(endDate);
+  // If we're past Sunday, get next Sunday, otherwise get this week's Sunday
+  const daysUntilNextSunday = currentDayOfWeek === 0 ? 0 : 7 - currentDayOfWeek;
+  const weekEndDate = addDays(endDate, daysUntilNextSunday);
+  const startDate = subDays(weekEndDate, 83); // 84 days including the end date
+  const dateRange = eachDayOfInterval({ start: startDate, end: weekEndDate });
 
   // Day labels for the left side
-  const dayLabels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const dayLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
   
-  // Reorganize days into full weeks
-  const weeks: Date[][] = [];
+  // Create a 7x12 grid (12 weeks, 7 days each)
+  const weeks: Date[][] = Array(12).fill(null).map(() => Array(7).fill(null));
+  const monthLabels: string[] = Array(12).fill('');
   
-  // Create 12 empty weeks
-  for (let i = 0; i < 12; i++) {
-    weeks.push(Array(7).fill(null));
-  }
+  // First, get all dates in chronological order
+  const orderedDates = [...dateRange].sort((a, b) => a.getTime() - b.getTime());
   
-  // Fill the weeks with actual dates
-  dateRange.forEach((date, index) => {
+  // Fill the grid from left to right, top to bottom
+  let currentMonth = '';
+  orderedDates.forEach((date, index) => {
     const weekIndex = Math.floor(index / 7);
+    // Adjust dayIndex to make Sunday the last day (6) and Monday the first day (0)
     const dayOfWeek = getDay(date);
+    const dayIndex = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+    
     if (weekIndex < 12) {
-      weeks[weekIndex][dayOfWeek] = date;
+      weeks[weekIndex][dayIndex] = date;
+      
+      // Track month changes - only set label if it's the first day of a new month
+      const month = format(date, 'MMM');
+      if (month !== currentMonth) {
+        currentMonth = month;
+        monthLabels[weekIndex] = month;
+      }
     }
   });
 
@@ -69,31 +83,31 @@ export default function ActivityHeatmap() {
     
     return entries.find(entry => {
       const entryDate = parseISO(entry.date);
-      return isSameDay(entryDate, date);
+      // Normalize both dates to start of day for comparison
+      const normalizedEntryDate = new Date(entryDate.getFullYear(), entryDate.getMonth(), entryDate.getDate());
+      const normalizedDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+      return normalizedEntryDate.getTime() === normalizedDate.getTime();
     });
   };
 
-  // Indigo color values for reference
-  const indigoColors: Record<string, string> = {
-    '50': '#eef2ff',
-    '100': '#e0e7ff', 
-    '200': '#c7d2fe',
-    '300': '#a5b4fc',
-    '400': '#818cf8',
-    '500': '#6366f1',
-    '600': '#4f46e5'
+  // Happiness color values for reference
+  const happinessColors: Record<string, string> = {
+    '1': '#cc3258',  // Deep red
+    '2': '#c12e6b',  // Deep rose
+    '3': '#b72b7d',  // Deep magenta
+    '4': '#ac2790',  // Deep purple
+    '5': '#a123a2',  // Deep violet
+    '6': '#9720b5',  // Violet
+    '7': '#8c1cc7',  // Light violet
+    '8': '#8118da',  // Light purple
+    '9': '#7715ec',  // Very light purple
+    '10': '#6c11ff'  // Lightest purple
   };
 
-  // Calculate background color for happiness (indigo scale)
+  // Calculate background color for happiness
   const getHappinessColor = (happiness: number) => {
-    // Map happiness rating (1-10) to indigo colors
-    if (happiness <= 1) return indigoColors['50'];
-    if (happiness <= 3) return indigoColors['100'];
-    if (happiness <= 5) return indigoColors['200'];
-    if (happiness <= 6) return indigoColors['300'];
-    if (happiness <= 7) return indigoColors['400'];
-    if (happiness <= 8) return indigoColors['500'];
-    return indigoColors['600']; // 9-10
+    // Map happiness rating (1-10) directly to colors
+    return happinessColors[happiness.toString()] || happinessColors['1'];
   };
 
   // Calculate stress gradient height (from bottom)
@@ -123,9 +137,12 @@ export default function ActivityHeatmap() {
     const entry = getEntryForDate(date);
     const isCurrentDay = isToday(date);
     
+    // Check if this is the first day of a month
+    const isFirstDayOfMonth = date.getDate() === 1;
+    
     if (!entry) {
       return {
-        className: `day-cell no-data-cell${isCurrentDay ? ' today-cell' : ''}`,
+        className: `day-cell no-data-cell${isCurrentDay ? ' today-cell' : ''}${isFirstDayOfMonth ? ' first-day-of-month' : ''}`,
         style: {}
       };
     }
@@ -135,7 +152,7 @@ export default function ActivityHeatmap() {
     const stressGradient = getStressGradient(entry.stressLevel);
     
     return {
-      className: `day-cell${isCurrentDay ? ' today-cell' : ''}`,
+      className: `day-cell${isCurrentDay ? ' today-cell' : ''}${isFirstDayOfMonth ? ' first-day-of-month' : ''}`,
       style: {
         backgroundColor: happinessColor,
         backgroundImage: stressGradient
@@ -161,14 +178,14 @@ export default function ActivityHeatmap() {
     );
   }
 
-  // Generate indigo color stops for happiness legend
-  const generateIndigoColorStops = () => {
-    return ['50', '100', '200', '300', '400', '500', '600'].map((shade) => (
+  // Generate color stops for happiness legend
+  const generateHappinessColorStops = () => {
+    return Object.entries(happinessColors).map(([rating, color]) => (
       <div 
-        key={`indigo-${shade}`} 
+        key={`happiness-${rating}`} 
         className="h-4 flex-1" 
-        style={{ backgroundColor: indigoColors[shade] }}
-        title={`Indigo-${shade}`}
+        style={{ backgroundColor: color }}
+        title={`Rating ${rating}`}
       />
     ));
   };
@@ -180,9 +197,9 @@ export default function ActivityHeatmap() {
       <div className="w-full flex justify-center min-w-[300px]">
         <div className="flex">
           {/* Day labels */}
-          <div className="flex flex-col mr-2 text-xs text-gray-600 justify-between">
+          <div className="flex flex-col mr-3 text-xs text-gray-600 justify-between" style={{ height: 'calc(24px * 7 + 6.75px * 6)' }}>
             {dayLabels.map((day) => (
-              <div key={day} className="flex items-center justify-end w-6 sm:w-8 h-[24px]">
+              <div key={day} className="flex items-center justify-end w-10 h-[24px]">
                 {day}
               </div>
             ))}
@@ -201,9 +218,23 @@ export default function ActivityHeatmap() {
                         className={className}
                         style={style}
                         title={getTooltipContent(day)}
-                      />
+                      >
+                        {day && (
+                          <span className={`text-[8px] absolute inset-0 flex items-center justify-center ${getEntryForDate(day) ? 'text-gray-300' : 'text-gray-500'}`}>
+                            {format(day, 'd')}
+                          </span>
+                        )}
+                      </div>
                     );
                   })}
+                </div>
+              ))}
+            </div>
+            {/* Month labels */}
+            <div className="flex text-xs text-gray-600">
+              {monthLabels.map((month, index) => (
+                <div key={index} className="flex-1 text-center">
+                  {month}
                 </div>
               ))}
             </div>
@@ -215,11 +246,11 @@ export default function ActivityHeatmap() {
       <div className="mt-4 sm:mt-6 px-2 sm:px-4">
         <div className="flex justify-between text-xs text-gray-600 mb-1">
           <div>Low</div>
-          <div>Happiness Level (Indigo)</div>
+          <div>Happiness Level</div>
           <div>High</div>
         </div>
         <div className="flex h-4 w-full rounded-sm overflow-hidden">
-          {generateIndigoColorStops()}
+          {generateHappinessColorStops()}
         </div>
         
         <div className="mt-3 sm:mt-4 flex flex-wrap justify-center items-center gap-2 sm:gap-4">

@@ -11,8 +11,8 @@ interface Entry {
   exerciseTime: number | null;
   alcohol: boolean;
   alcoholUnits: number | null;
-  weed: boolean;
-  weedAmount: number | null;
+  cannabis: boolean;
+  cannabisAmount: number | null;
   meditation: boolean;
   meditationTime: number | null;
   socialTime: number | null;
@@ -51,13 +51,35 @@ export default function CorrelationMatrix() {
 
   // Define a subset of fields for smaller matrix with shorter display names for better alignment
   const displayFields = useMemo(() => [
+    // Core metrics
     { id: 'happinessRating', name: 'Happiness' },
     { id: 'stressLevel', name: 'Stress' },
+    
+    // Sleep metrics
     { id: 'sleepHours', name: 'Sleep Hours' },
     { id: 'sleepQuality', name: 'Sleep Quality' },
-    { id: 'exerciseTime', name: 'Exercise' },
+    
+    // Exercise metrics
+    { id: 'exercise', name: 'Exercise' },
+    { id: 'exerciseTime', name: 'Exercise Time' },
+    
+    // Meditation metrics
+    { id: 'meditation', name: 'Meditation' },
+    { id: 'meditationTime', name: 'Meditation Time' },
+    
+    // Substance metrics
+    { id: 'alcohol', name: 'Alcohol' },
+    { id: 'alcoholUnits', name: 'Alcohol Units' },
+    { id: 'cannabis', name: 'Cannabis' },
+    { id: 'cannabisAmount', name: 'Cannabis Amount' },
+    
+    // Social and work metrics
     { id: 'socialTime', name: 'Social Time' },
     { id: 'workHours', name: 'Work Hours' },
+    
+    // Food metrics
+    { id: 'meals', name: 'Meals' },
+    { id: 'foodQuality', name: 'Food Quality' },
   ], []);
 
   // Calculate the correlation between two variables
@@ -70,11 +92,12 @@ export default function CorrelationMatrix() {
       // Handle boolean fields
       if (fieldId === 'exercise') return entry.exercise ? 1 : 0;
       if (fieldId === 'alcohol') return entry.alcohol ? 1 : 0;
-      if (fieldId === 'weed') return entry.weed ? 1 : 0;
+      if (fieldId === 'cannabis') return entry.cannabis ? 1 : 0;
       if (fieldId === 'meditation') return entry.meditation ? 1 : 0;
       
       // Handle numeric fields
-      return (entry as any)[fieldId] ?? null;
+      const value = (entry as any)[fieldId];
+      return value !== null && value !== undefined ? value : null;
     };
     
     // Get all pairs of values for the two fields
@@ -88,11 +111,11 @@ export default function CorrelationMatrix() {
     
     // Calculate correlation
     const n = pairs.length;
-    const sumX = pairs.reduce((sum, pair) => sum + (pair.x || 0), 0);
-    const sumY = pairs.reduce((sum, pair) => sum + (pair.y || 0), 0);
-    const sumXY = pairs.reduce((sum, pair) => sum + ((pair.x || 0) * (pair.y || 0)), 0);
-    const sumXX = pairs.reduce((sum, pair) => sum + ((pair.x || 0) * (pair.x || 0)), 0);
-    const sumYY = pairs.reduce((sum, pair) => sum + ((pair.y || 0) * (pair.y || 0)), 0);
+    const sumX = pairs.reduce((sum, pair) => sum + pair.x, 0);
+    const sumY = pairs.reduce((sum, pair) => sum + pair.y, 0);
+    const sumXY = pairs.reduce((sum, pair) => sum + (pair.x * pair.y), 0);
+    const sumXX = pairs.reduce((sum, pair) => sum + (pair.x * pair.x), 0);
+    const sumYY = pairs.reduce((sum, pair) => sum + (pair.y * pair.y), 0);
     
     const numerator = n * sumXY - sumX * sumY;
     const denominator = Math.sqrt((n * sumXX - sumX * sumX) * (n * sumYY - sumY * sumY));
@@ -108,16 +131,16 @@ export default function CorrelationMatrix() {
     
     if (correlation === 1) {
       // Special case for perfect self-correlation (diagonal)
-      return '#4f46e5'; // indigo-600
+      return '#6c11ff'; // Lightest purple
     } else if (correlation > 0) {
-      // Positive correlation: indigo shades (matching happiness from heatmap)
-      const indigoColors = ['#eef2ff', '#e0e7ff', '#c7d2fe', '#a5b4fc', '#818cf8', '#6366f1', '#4f46e5'];
-      const colorIndex = Math.min(Math.floor(intensity * 7), 6);
-      return indigoColors[colorIndex];
+      // Positive correlation: purple shades (matching happiness from heatmap)
+      const purpleColors = ['#cc3258', '#c12e6b', '#b72b7d', '#ac2790', '#a123a2', '#9720b5', '#8c1cc7', '#8118da', '#7715ec', '#6c11ff'];
+      const colorIndex = Math.min(Math.floor(intensity * 10), 9);
+      return purpleColors[colorIndex];
     } else {
       // Negative correlation: rose shades
-      const roseColors = ['#fff1f2', '#ffe4e6', '#fecdd3', '#fda4af', '#fb7185', '#f43f5e', '#e11d48'];
-      const colorIndex = Math.min(Math.floor(intensity * 7), 6);
+      const roseColors = ['#cc3258', '#c12e6b', '#b72b7d', '#ac2790', '#a123a2', '#9720b5', '#8c1cc7', '#8118da', '#7715ec', '#6c11ff'];
+      const colorIndex = Math.min(Math.floor(intensity * 10), 9);
       return roseColors[colorIndex];
     }
   };
@@ -151,20 +174,36 @@ export default function CorrelationMatrix() {
 
   return (
     <div className="glass-card p-4 sm:p-6 w-full max-w-fit mx-auto">
-      <h3 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4 text-center text-gray-800">Feature Correlation Matrix</h3>
+      <h3 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4 pb-12 text-center text-gray-800">Feature Correlation Matrix</h3>
+      
+      {/* Column labels with better spacing and alignment */}
+      <div className="mb-2 ml-[115px] relative">
+        <div className="flex">
+          {displayFields.map((field, index) => (
+            <div key={field.id} className="w-[24px] mx-[3.5px] h-8 relative">
+              <div 
+                className="absolute origin-bottom-left rotate-[-90deg] whitespace-nowrap text-xs text-gray-600"
+                style={{ bottom: 0, left: 12 }}
+              >
+                {field.name}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
       
       <div className="flex">
         {/* Row labels */}
         <div className="flex flex-col mr-2 text-xs text-gray-600 justify-between">
           {displayFields.map(field => (
-            <div key={field.id} className="flex items-center justify-end w-[90px] h-[24px]">
+            <div key={field.id} className="flex items-center justify-end w-[100px] h-[24px]">
               {field.name}
             </div>
           ))}
         </div>
         
         {/* Heatmap grid */}
-        <div>
+        <div className="overflow-x-auto">
           <div className="grid-display">
             {displayFields.map(fieldX => (
               <div key={fieldX.id} className="week-column">
@@ -197,20 +236,27 @@ export default function CorrelationMatrix() {
           </div>
         </div>
       </div>
-      
-      {/* Column labels with better spacing and alignment */}
-      <div className="mt-8 ml-[96px] relative">
-        <div className="flex">
-          {displayFields.map((field, index) => (
-            <div key={field.id} className="w-[24px] mx-[2px] h-8 relative">
+
+      {/* Correlation Legend */}
+      <div className="mt-8 flex flex-col items-center">
+        <div className="text-xs text-gray-600 mb-2">Correlation Strength</div>
+        <div className="flex h-4 w-full max-w-md rounded-sm overflow-hidden">
+          {Array.from({ length: 10 }, (_, i) => {
+            const correlation = (i + 1) / 10;
+            return (
               <div 
-                className="absolute origin-bottom-left rotate-[-90deg] whitespace-nowrap text-xs text-gray-600"
-                style={{ bottom: 0, left: 12 }}
-              >
-                {field.name}
-              </div>
-            </div>
-          ))}
+                key={i}
+                className="h-full flex-1"
+                style={{ backgroundColor: getCorrelationColor(correlation) }}
+                title={`${formatCorrelation(correlation)}`}
+              />
+            );
+          })}
+        </div>
+        <div className="flex justify-between w-full max-w-md mt-4 text-xs text-gray-600">
+          <span>Strong Negative</span>
+          <span>No Correlation</span>
+          <span>Strong Positive</span>
         </div>
       </div>
     </div>

@@ -109,6 +109,7 @@ body {
 /* ActivityHeatmap styles */
 .grid-container {
   overflow-x: auto;
+  padding: 4px;
 }
 
 .grid-display {
@@ -119,7 +120,7 @@ body {
 .week-column {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 3.5px;
 }
 
 .day-cell {
@@ -127,11 +128,12 @@ body {
   height: 24px;
   border-radius: 4px;
   position: relative;
+  margin: 1.5px;
 }
 
 .today-cell {
-  outline: 2px solid #f43f5e;
-  outline-offset: -1px;
+  box-shadow: 0 0 0 1px #f43f5e, 0 0 8px rgba(244, 63, 94, 0.5);
+  z-index: 1;
 }
 
 .no-data-cell {
@@ -142,6 +144,16 @@ body {
     rgba(240, 240, 240, 0.4) 3px,
     rgba(240, 240, 240, 0.4) 6px
   );
+}
+
+.last-day-of-month {
+  border-bottom: 2px solid rgba(0, 0, 0, 0.2);
+  margin-bottom: 2px;
+}
+
+.first-day-of-month {
+  border-top: 2px solid rgba(0, 0, 0, 0.2);
+  margin-top: 2px;
 }
 
 /* Correlation Matrix styles */

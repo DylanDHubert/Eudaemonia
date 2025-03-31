@@ -83,8 +83,8 @@ export async function GET(request: Request) {
       userId: session.user.id,
       ...(date ? {
         date: {
-          gte: new Date(`${date}T00:00:00.000Z`),
-          lt: new Date(`${date}T23:59:59.999Z`)
+          gte: new Date(new Date(`${date}T00:00:00.000Z`).toISOString().split('T')[0]),
+          lt: new Date(new Date(`${date}T23:59:59.999Z`).toISOString().split('T')[0])
         }
       } : {})
     };
