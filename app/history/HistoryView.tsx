@@ -19,8 +19,8 @@ interface FormattedEntry {
   exerciseTime: number | null;
   alcohol: boolean;
   alcoholUnits: number | null;
-  cannabis: boolean;
-  cannabisAmount: number | null;
+  weed: boolean;
+  weedAmount: number | null;
   meditation: boolean;
   meditationTime: number | null;
   socialTime: number | null;
@@ -104,7 +104,7 @@ export default function HistoryView({ initialEntries }: HistoryViewProps) {
               <div className="flex justify-between">
                 <span className="text-gray-600">Cannabis</span>
                 <span className="font-medium">
-                  {entry.cannabis ? `${entry.cannabisAmount} grams` : 'No'}
+                  {entry.weed ? `${entry.weedAmount} grams` : 'No'}
                 </span>
               </div>
               <div className="flex justify-between">
