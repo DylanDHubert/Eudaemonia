@@ -57,21 +57,16 @@ export default function CorrelationMatrix() {
     
     // Sleep metrics
     { id: 'sleepHours', name: 'Sleep Hours' },
-    { id: 'sleepQuality', name: 'Sleep Quality' },
     
     // Exercise metrics
     { id: 'exercise', name: 'Exercise' },
-    { id: 'exerciseTime', name: 'Exercise Time' },
     
     // Meditation metrics
     { id: 'meditation', name: 'Meditation' },
-    { id: 'meditationTime', name: 'Meditation Time' },
     
     // Substance metrics
     { id: 'alcohol', name: 'Alcohol' },
-    { id: 'alcoholUnits', name: 'Alcohol Units' },
     { id: 'cannabis', name: 'Cannabis' },
-    { id: 'cannabisAmount', name: 'Cannabis Amount' },
     
     // Social and work metrics
     { id: 'socialTime', name: 'Social Time' },
@@ -176,63 +171,64 @@ export default function CorrelationMatrix() {
     <div className="glass-card p-4 sm:p-6 w-full max-w-fit mx-auto">
       <h3 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4 pb-12 text-center text-gray-800">Feature Correlation Matrix</h3>
       
-      {/* Column labels with better spacing and alignment */}
-      <div className="mb-2 ml-[115px] relative">
-        <div className="flex">
-          {displayFields.map((field, index) => (
-            <div key={field.id} className="w-[24px] sm:w-[24px] mx-[3.5px] h-8 relative">
-              <div 
-                className="absolute origin-bottom-left rotate-[-90deg] whitespace-nowrap text-[8px] sm:text-xs text-gray-600"
-                style={{ bottom: 0, left: 12 }}
-              >
-                {field.name}
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-      
       <div className="flex">
         {/* Row labels */}
-        <div className="flex flex-col mr-2 text-[8px] sm:text-xs text-gray-600 justify-between">
-          {displayFields.map(field => (
-            <div key={field.id} className="flex items-center justify-end w-[100px] h-[24px]">
+        <div className="flex flex-col mr-2 text-[8px] sm:text-xs text-gray-600">
+          {displayFields.map((field, index) => (
+            <div key={field.id} className="flex items-center justify-end w-[100px] h-[24px] mb-[3.5px]">
               {field.name}
             </div>
           ))}
         </div>
         
-        {/* Heatmap grid */}
-        <div className="overflow-x-auto">
-          <div className="grid-display">
-            {displayFields.map(fieldX => (
-              <div key={fieldX.id} className="week-column">
-                {displayFields.map(fieldY => {
-                  const correlation = calculateCorrelation(fieldX.id, fieldY.id);
-                  
-                  if (correlation === null) {
+        {/* Column labels and heatmap grid */}
+        <div className="flex flex-col">
+          {/* Column labels */}
+          <div className="flex mb-2">
+            {displayFields.map((field, index) => (
+              <div key={field.id} className="w-[24px] sm:w-[24px] mx-[3.5px] h-8 relative">
+                <div 
+                  className="absolute origin-bottom-left rotate-[-90deg] whitespace-nowrap text-[8px] sm:text-xs text-gray-600"
+                  style={{ bottom: 0, left: 12 }}
+                >
+                  {field.name}
+                </div>
+              </div>
+            ))}
+          </div>
+          
+          {/* Heatmap grid */}
+          <div className="overflow-x-auto">
+            <div className="grid-display">
+              {displayFields.map(fieldX => (
+                <div key={fieldX.id} className="week-column">
+                  {displayFields.map(fieldY => {
+                    const correlation = calculateCorrelation(fieldX.id, fieldY.id);
+                    
+                    if (correlation === null) {
+                      return (
+                        <div 
+                          key={`${fieldY.id}-${fieldX.id}`} 
+                          className="day-cell no-data-cell"
+                          title={`${fieldY.name} vs ${fieldX.name}: Insufficient data`}
+                        />
+                      );
+                    }
+                    
+                    const backgroundColor = getCorrelationColor(correlation);
+                    
                     return (
                       <div 
                         key={`${fieldY.id}-${fieldX.id}`} 
-                        className="day-cell no-data-cell"
-                        title={`${fieldY.name} vs ${fieldX.name}: Insufficient data`}
+                        className="day-cell"
+                        style={{ backgroundColor }}
+                        title={`${fieldY.name} vs ${fieldX.name}: ${formatCorrelation(correlation)}`}
                       />
                     );
-                  }
-                  
-                  const backgroundColor = getCorrelationColor(correlation);
-                  
-                  return (
-                    <div 
-                      key={`${fieldY.id}-${fieldX.id}`} 
-                      className="day-cell"
-                      style={{ backgroundColor }}
-                      title={`${fieldY.name} vs ${fieldX.name}: ${formatCorrelation(correlation)}`}
-                    />
-                  );
-                })}
-              </div>
-            ))}
+                  })}
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>

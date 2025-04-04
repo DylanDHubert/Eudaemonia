@@ -19,8 +19,15 @@ export default function SameDayEntryModal({
   const formattedDate = format(new Date(date), 'MMMM d, yyyy');
   
   return (
-    <div className="fixed inset-0 rounded-lg backdrop-blur-sm flex items-center justify-center z-[10000] overflow-y-auto" style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}>
-      <div className="bg-white/90 p-6 rounded-lg shadow-xl max-w-md w-[95vw]" onClick={e => e.stopPropagation()}>
+    <div 
+      className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-[10000] overflow-y-auto" 
+      style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}
+      onClick={() => onClose()}
+    >
+      <div 
+        className="bg-white/90 p-6 rounded-lg shadow-xl max-w-4xl w-[95vw] max-h-[80vh] overflow-y-auto" 
+        onClick={e => e.stopPropagation()}
+      >
         <div className="mb-4">
           <h3 className="text-lg font-medium text-gray-900">Entry Already Exists</h3>
           <p className="mt-2 text-sm text-gray-500">

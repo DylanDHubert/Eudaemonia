@@ -182,6 +182,20 @@ body {
   line-height: 0;
 }
 
+/* Correlation Matrix specific styles */
+.grid-display .week-column {
+  display: flex;
+  flex-direction: column;
+  gap: 3.5px;
+  width: 24px;
+}
+
+.grid-display .day-cell {
+  width: 24px;
+  height: 24px;
+  margin: 0;
+}
+
 @media (max-width: 640px) {
   .day-cell {
     width: 16px;
@@ -195,6 +209,16 @@ body {
 
   .grid-display {
     gap: 2px;
+  }
+
+  .grid-display .week-column {
+    width: 16px;
+    gap: 2px;
+  }
+
+  .grid-display .day-cell {
+    width: 16px;
+    height: 16px;
   }
 
   .correlation-table th, 

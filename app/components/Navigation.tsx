@@ -3,6 +3,8 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { signOut } from 'next-auth/react';
+import { useState } from 'react';
+import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
 
 type NavigationProps = {
   user: {
@@ -15,6 +17,7 @@ type NavigationProps = {
 
 export default function Navigation({ user }: NavigationProps) {
   const pathname = usePathname();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const getPageTitle = () => {
     switch (pathname) {
@@ -39,6 +42,14 @@ export default function Navigation({ user }: NavigationProps) {
 
   const isActive = (path: string) => pathname === path;
 
+  const toggleMenu = () => {
+    setIsMenuOpen(!isMenuOpen);
+  };
+
+  const closeMenu = () => {
+    setIsMenuOpen(false);
+  };
+
   return (
     <nav className="glass-nav fixed top-0 left-0 right-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -48,7 +59,24 @@ export default function Navigation({ user }: NavigationProps) {
               {pathname === '/' ? `Hello, ${getUserName()}` : getPageTitle()}
             </h1>
           </div>
-          <div className="flex items-center space-x-6 sm:space-x-8">
+          
+          {/* Mobile menu button */}
+          <div className="flex items-center sm:hidden">
+            <button
+              onClick={toggleMenu}
+              className="inline-flex items-center justify-center p-2 rounded-md text-stone-600 hover:text-rose-600 hover:bg-white/30 focus:outline-none"
+            >
+              <span className="sr-only">Open main menu</span>
+              {isMenuOpen ? (
+                <XMarkIcon className="block h-6 w-6" aria-hidden="true" />
+              ) : (
+                <Bars3Icon className="block h-6 w-6" aria-hidden="true" />
+              )}
+            </button>
+          </div>
+          
+          {/* Desktop navigation */}
+          <div className="hidden sm:flex sm:items-center sm:space-x-6">
             <Link 
               href="/" 
               className={`text-sm sm:text-base px-3 py-2 rounded-md transition-colors ${
@@ -118,6 +146,86 @@ export default function Navigation({ user }: NavigationProps) {
           </div>
         </div>
       </div>
+      
+      {/* Mobile menu */}
+      {isMenuOpen && (
+        <div className="sm:hidden bg-white/80 backdrop-blur-md">
+          <div className="px-2 pt-2 pb-3 space-y-1">
+            <Link 
+              href="/" 
+              className={`block px-3 py-2 rounded-md text-base font-medium ${
+                isActive('/')
+                  ? 'text-rose-600 bg-white/50' 
+                  : 'text-stone-600 hover:text-rose-600 hover:bg-white/30'
+              }`}
+              onClick={closeMenu}
+            >
+              Dashboard
+            </Link>
+            <Link 
+              href="/entry" 
+              className={`block px-3 py-2 rounded-md text-base font-medium ${
+                isActive('/entry')
+                  ? 'text-rose-600 bg-white/50' 
+                  : 'text-stone-600 hover:text-rose-600 hover:bg-white/30'
+              }`}
+              onClick={closeMenu}
+            >
+              Entry
+            </Link>
+            <Link 
+              href="/insights" 
+              className={`block px-3 py-2 rounded-md text-base font-medium ${
+                isActive('/insights')
+                  ? 'text-rose-600 bg-white/50' 
+                  : 'text-stone-600 hover:text-rose-600 hover:bg-white/30'
+              }`}
+              onClick={closeMenu}
+            >
+              Insights
+            </Link>
+            <Link 
+              href="/history" 
+              className={`block px-3 py-2 rounded-md text-base font-medium ${
+                isActive('/history')
+                  ? 'text-rose-600 bg-white/50' 
+                  : 'text-stone-600 hover:text-rose-600 hover:bg-white/30'
+              }`}
+              onClick={closeMenu}
+            >
+              History
+            </Link>
+            <Link
+              href="/categories"
+              className={`block px-3 py-2 rounded-md text-base font-medium ${
+                isActive('/categories')
+                  ? 'text-rose-600 bg-white/50' 
+                  : 'text-stone-600 hover:text-rose-600 hover:bg-white/30'
+              }`}
+              onClick={closeMenu}
+            >
+              Categories
+            </Link>
+            <Link
+              href="/how-to-use"
+              className={`block px-3 py-2 rounded-md text-base font-medium ${
+                isActive('/how-to-use')
+                  ? 'text-rose-600 bg-white/50' 
+                  : 'text-stone-600 hover:text-rose-600 hover:bg-white/30'
+              }`}
+              onClick={closeMenu}
+            >
+              Help
+            </Link>
+            <button
+              onClick={() => signOut({ callbackUrl: '/login' })}
+              className="w-full text-left px-3 py-2 rounded-md text-base font-medium text-white bg-rose-500/70 hover:bg-rose-600/80"
+            >
+              Sign Out
+            </button>
+          </div>
+        </div>
+      )}
     </nav>
   );
 } 

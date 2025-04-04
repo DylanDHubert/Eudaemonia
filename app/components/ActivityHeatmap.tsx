@@ -197,9 +197,9 @@ export default function ActivityHeatmap() {
       <div className="w-full flex justify-center min-w-[300px]">
         <div className="flex">
           {/* Day labels */}
-          <div className="flex flex-col mr-3 text-xs text-gray-600 justify-between" style={{ height: 'calc(24px * 7 + 6.75px * 6)' }}>
-            {dayLabels.map((day) => (
-              <div key={day} className="flex items-center justify-end w-10 h-[24px] sm:text-xs text-[10px]">
+          <div className="flex flex-col mr-3 text-xs text-gray-600">
+            {dayLabels.map((day, index) => (
+              <div key={day} className="flex items-center justify-end w-10 h-[24px] mb-[3.5px] sm:text-xs text-[10px]">
                 {day}
               </div>
             ))}

@@ -820,7 +820,7 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
           
           {/* Modal for scatter plot and time series */}
           {isModalOpen && selectedFactor && (
-            <div className="fixed inset-0 rounded-lg backdrop-blur-sm flex items-center justify-center z-[10000] overflow-y-auto" style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}>
+            <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-[10000] overflow-y-auto" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}>
               <div className="bg-white/90 p-6 rounded-lg shadow-xl max-w-4xl w-[95vw] max-h-[80vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
                 <div className="flex justify-end mb-1">
                   <button
