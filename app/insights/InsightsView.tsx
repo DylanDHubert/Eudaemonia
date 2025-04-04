@@ -781,7 +781,7 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
                       <th scope="col" className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Factor</th>
                       <th scope="col" className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Correlation</th>
                       <th scope="col" className="hidden sm:table-cell px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Interpretation</th>
-                      <th scope="col" className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                      <th scope="col" className="hidden sm:table-cell px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-200">
@@ -842,27 +842,24 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
                     </svg>
                   </button>
                 </div>
-                <div className="grid grid-cols-1 gap-2">
-                  <div className="h-[35vh] relative">
-                    {selectedFactor && scatterData.length > 0 ? (
+                <div className="grid grid-cols-1 gap-1">
+                  {selectedFactor && scatterData.length > 0 ? (
+                    <div className="h-[40vh] relative">
                       <Scatter 
                         options={getScatterOptions(selectedFactor)} 
                         data={getScatterChartData(selectedFactor)} 
                       />
-                    ) : (
-                      <div className="flex items-center justify-center h-full">
-                        <p className="text-gray-500">Not enough data available for {formatFactorName(selectedFactor)}.</p>
-                      </div>
-                    )}
-                  </div>
-                  <div className="h-[35vh] relative">
-                    {factorTimeSeriesData && (
+                    </div>
+                  ) : null}
+                  
+                  {factorTimeSeriesData && factorTimeSeriesData.datasets[0].data.length > 0 ? (
+                    <div className="h-[40vh] relative">
                       <Line 
                         options={getFactorTimeSeriesOptions(selectedFactor)} 
                         data={factorTimeSeriesData} 
                       />
-                    )}
-                  </div>
+                    </div>
+                  ) : null}
                 </div>
                 <div className="mt-0">
                   <p className="text-sm text-gray-500">
@@ -878,18 +875,24 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
         </>
       ) : viewMode === 'trends' ? (
         <div className="glass-card p-4 sm:p-6 rounded-lg">
-          <h3 className="text-lg font-medium mb-4">Your Happiness Over Time</h3>
-          <div className="h-96 relative">
-            {timeSeriesData && <Line options={timeSeriesOptions} data={timeSeriesData} />}
-          </div>
-          <div className="mt-4">
+          <h3 className="text-lg font-medium mb-2">Your Happiness Over Time</h3>
+          {timeSeriesData && timeSeriesData.datasets[0].data.length > 0 ? (
+            <div className="h-96 relative">
+              <Line options={timeSeriesOptions} data={timeSeriesData} />
+            </div>
+          ) : (
+            <div className="h-96 flex items-center justify-center">
+              <p className="text-gray-500">Not enough data to display happiness trends.</p>
+            </div>
+          )}
+          <div className="mt-2">
             <p className="text-sm text-gray-500">
               This chart shows your happiness ratings over time. Look for patterns to understand how your happiness changes.
             </p>
           </div>
         </div>
       ) : (
-        <div className="glass-card p-4 sm:p-6 rounded-lg">
+        <div className="glass-card p-4 sm:p-6 rounded-lg hidden sm:block">
           <h3 className="text-lg font-medium mb-4">Feature Correlation Matrix</h3>
           <div className="relative">
             <CorrelationMatrix />
