@@ -175,7 +175,7 @@ export default function CorrelationMatrix() {
         {/* Row labels */}
         <div className="flex flex-col mr-2 text-[8px] sm:text-xs text-gray-600">
           {displayFields.map((field, index) => (
-            <div key={field.id} className="flex items-center justify-end w-[100px] h-[24px] mb-[3.5px]">
+            <div key={field.id} className="flex items-center justify-end w-[100px] h-[24px] mb-[2.1px]">
               {field.name}
             </div>
           ))}
@@ -186,7 +186,7 @@ export default function CorrelationMatrix() {
           {/* Column labels */}
           <div className="flex mb-2">
             {displayFields.map((field, index) => (
-              <div key={field.id} className="w-[24px] sm:w-[24px] mx-[3.5px] h-8 relative">
+              <div key={field.id} className="w-[24px] sm:w-[24px] mx-[2.1px] h-8 relative">
                 <div 
                   className="absolute origin-bottom-left rotate-[-90deg] whitespace-nowrap text-[8px] sm:text-xs text-gray-600"
                   style={{ bottom: 0, left: 12 }}

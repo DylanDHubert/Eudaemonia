@@ -120,7 +120,7 @@ body {
 .week-column {
   display: flex;
   flex-direction: column;
-  gap: 3.5px;
+  gap: 2.1px;
 }
 
 .day-cell {
@@ -128,7 +128,7 @@ body {
   height: 24px;
   border-radius: 4px;
   position: relative;
-  margin: 1.5px;
+  margin: 0.9px;
 }
 
 .today-cell {

@@ -37,7 +37,7 @@ export default async function Dashboard() {
               <div className="glass-card p-5 sm:p-8 w-full md:w-64">
                 <div className="grid grid-cols-2 md:grid-cols-1 gap-3">
                   <Link href="/entry" className="glass-card p-4 hover:shadow-lg hover:bg-rose-50 hover:border-rose-200 border border-transparent transition-all text-center">
-                    <h3 className="text-lg font-semibold text-rose-600">Daily Check-in</h3>
+                    <h3 className="text-lg font-semibold text-rose-600">Entry</h3>
                   </Link>
                   
                   <Link href="/insights" className="glass-card p-4 hover:shadow-lg hover:bg-rose-50 hover:border-rose-200 border border-transparent transition-all text-center">

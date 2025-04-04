@@ -25,18 +25,18 @@ export default function SameDayEntryModal({
       onClick={() => onClose()}
     >
       <div 
-        className="bg-white/90 p-6 rounded-lg shadow-xl max-w-4xl w-[95vw] max-h-[80vh] overflow-y-auto" 
+        className="bg-white/90 p-4 rounded-lg shadow-xl w-[95vw] h-[90vh] overflow-y-auto" 
         onClick={e => e.stopPropagation()}
       >
-        <div className="mb-4">
+        <div className="mb-2">
           <h3 className="text-lg font-medium text-gray-900">Entry Already Exists</h3>
-          <p className="mt-2 text-sm text-gray-500">
+          <p className="mt-1 text-sm text-gray-500">
             You already have an entry for <span className="font-medium">{formattedDate}</span>. 
             What would you like to do?
           </p>
         </div>
         
-        <div className="space-y-3">
+        <div className="space-y-2">
           <button
             onClick={onOverwrite}
             className="glass-button w-full flex justify-center"
