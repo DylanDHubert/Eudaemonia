@@ -106,7 +106,7 @@ export default function CustomCategoriesManager({ userId }: CustomCategoriesMana
             id="name"
             value={newCategory.name}
             onChange={(e) => setNewCategory({ ...newCategory, name: e.target.value })}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm glass-input"
             required
           />
         </div>
@@ -118,7 +118,7 @@ export default function CustomCategoriesManager({ userId }: CustomCategoriesMana
             id="type"
             value={newCategory.type}
             onChange={(e) => setNewCategory({ ...newCategory, type: e.target.value as 'numeric' | 'scale' | 'boolean' })}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm glass-input"
           >
             <option value="numeric">Numeric</option>
             <option value="scale">Scale (1-10)</option>
@@ -127,7 +127,7 @@ export default function CustomCategoriesManager({ userId }: CustomCategoriesMana
         </div>
         <button
           type="submit"
-          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 glass-button w-full justify-center"
         >
           <PlusIcon className="h-5 w-5 mr-2" />
           Add Category
@@ -140,7 +140,7 @@ export default function CustomCategoriesManager({ userId }: CustomCategoriesMana
           {categories.map((category) => (
             <div
               key={category.id}
-              className="flex items-center justify-between p-4 bg-white rounded-lg shadow"
+              className="flex items-center justify-between p-4 bg-white rounded-lg shadow glass-card"
             >
               <div>
                 <h4 className="text-sm font-medium text-gray-900">{category.name}</h4>
@@ -151,7 +151,7 @@ export default function CustomCategoriesManager({ userId }: CustomCategoriesMana
               </div>
               <button
                 onClick={() => handleDelete(category.id)}
-                className="text-red-600 hover:text-red-800"
+                className="text-red-600 hover:text-red-800 p-2"
               >
                 <TrashIcon className="h-5 w-5" />
               </button>

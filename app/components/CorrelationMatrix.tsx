@@ -180,9 +180,9 @@ export default function CorrelationMatrix() {
       <div className="mb-2 ml-[115px] relative">
         <div className="flex">
           {displayFields.map((field, index) => (
-            <div key={field.id} className="w-[24px] mx-[3.5px] h-8 relative">
+            <div key={field.id} className="w-[24px] sm:w-[24px] mx-[3.5px] h-8 relative">
               <div 
-                className="absolute origin-bottom-left rotate-[-90deg] whitespace-nowrap text-xs text-gray-600"
+                className="absolute origin-bottom-left rotate-[-90deg] whitespace-nowrap text-[8px] sm:text-xs text-gray-600"
                 style={{ bottom: 0, left: 12 }}
               >
                 {field.name}
@@ -194,7 +194,7 @@ export default function CorrelationMatrix() {
       
       <div className="flex">
         {/* Row labels */}
-        <div className="flex flex-col mr-2 text-xs text-gray-600 justify-between">
+        <div className="flex flex-col mr-2 text-[8px] sm:text-xs text-gray-600 justify-between">
           {displayFields.map(field => (
             <div key={field.id} className="flex items-center justify-end w-[100px] h-[24px]">
               {field.name}
@@ -239,7 +239,7 @@ export default function CorrelationMatrix() {
 
       {/* Correlation Legend */}
       <div className="mt-8 flex flex-col items-center">
-        <div className="text-xs text-gray-600 mb-2">Correlation Strength</div>
+        <div className="text-[8px] sm:text-xs text-gray-600 mb-2">Correlation Strength</div>
         <div className="flex h-4 w-full max-w-md rounded-sm overflow-hidden">
           {Array.from({ length: 10 }, (_, i) => {
             const correlation = (i + 1) / 10;
@@ -253,7 +253,7 @@ export default function CorrelationMatrix() {
             );
           })}
         </div>
-        <div className="flex justify-between w-full max-w-md mt-4 text-xs text-gray-600">
+        <div className="flex justify-between w-full max-w-md mt-4 text-[8px] sm:text-xs text-gray-600">
           <span>Strong Negative</span>
           <span>No Correlation</span>
           <span>Strong Positive</span>

@@ -258,7 +258,7 @@ export default function EntryForm({ userId }: EntryFormProps) {
           </div>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 gap-6">
           <div className="glass-card p-4">
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Sleep Hours (0-24)
@@ -473,9 +473,9 @@ export default function EntryForm({ userId }: EntryFormProps) {
           
           {/* Custom Categories */}
           {customCategories.length > 0 && (
-            <div className="col-span-2">
+            <div className="col-span-1">
               <h3 className="text-lg font-medium text-gray-900 mb-4">Custom Categories</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4">
                 {customCategories.map((category) => (
                   <div key={category.id} className="glass-card p-4">
                     <label className="block text-sm font-medium text-gray-700 mb-1">

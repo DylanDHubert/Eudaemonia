@@ -183,6 +183,20 @@ body {
 }
 
 @media (max-width: 640px) {
+  .day-cell {
+    width: 16px;
+    height: 16px;
+    margin: 1px;
+  }
+
+  .week-column {
+    gap: 2px;
+  }
+
+  .grid-display {
+    gap: 2px;
+  }
+
   .correlation-table th, 
   .correlation-table td {
     font-size: 8px !important;
@@ -218,6 +232,11 @@ body {
   /* Ensure labels are visible enough on mobile */
   label {
     @apply text-base font-medium;
+  }
+  
+  /* Reduce padding on glass-card for mobile */
+  .glass-card {
+    @apply p-4;
   }
 }
 

@@ -199,7 +199,7 @@ export default function ActivityHeatmap() {
           {/* Day labels */}
           <div className="flex flex-col mr-3 text-xs text-gray-600 justify-between" style={{ height: 'calc(24px * 7 + 6.75px * 6)' }}>
             {dayLabels.map((day) => (
-              <div key={day} className="flex items-center justify-end w-10 h-[24px]">
+              <div key={day} className="flex items-center justify-end w-10 h-[24px] sm:text-xs text-[10px]">
                 {day}
               </div>
             ))}
@@ -220,7 +220,7 @@ export default function ActivityHeatmap() {
                         title={getTooltipContent(day)}
                       >
                         {day && (
-                          <span className={`text-[8px] absolute inset-0 flex items-center justify-center ${getEntryForDate(day) ? 'text-gray-300' : 'text-gray-500'}`}>
+                          <span className={`text-[6px] sm:text-[8px] absolute inset-0 flex items-center justify-center ${getEntryForDate(day) ? 'text-gray-300' : 'text-gray-500'}`}>
                             {format(day, 'd')}
                           </span>
                         )}

@@ -125,6 +125,12 @@ export default function HappinessChart() {
     plugins: {
       legend: {
         position: 'top' as const,
+        labels: {
+          boxWidth: 12,
+          font: {
+            size: window.innerWidth < 640 ? 10 : 12
+          }
+        }
       },
       tooltip: {
         callbacks: {
@@ -137,12 +143,29 @@ export default function HappinessChart() {
       }
     },
     scales: {
+      x: {
+        ticks: {
+          maxRotation: 45,
+          minRotation: 45,
+          font: {
+            size: window.innerWidth < 640 ? 8 : 10
+          }
+        }
+      },
       y: {
         min: 0,
         max: 10,
         title: {
           display: true,
-          text: 'Happiness Rating'
+          text: 'Happiness Rating',
+          font: {
+            size: window.innerWidth < 640 ? 10 : 12
+          }
+        },
+        ticks: {
+          font: {
+            size: window.innerWidth < 640 ? 8 : 10
+          }
         }
       }
     }

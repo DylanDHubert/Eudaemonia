@@ -60,7 +60,7 @@ export default function HistoryView({ initialEntries }: HistoryViewProps) {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4">
             <div className="space-y-2">
               <div className="flex justify-between">
                 <span className="text-gray-600">Sleep</span>

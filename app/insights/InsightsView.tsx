@@ -751,7 +751,7 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
   return (
     <div>
       {/* View mode tabs */}
-      <div className="flex space-x-2 mb-6">
+      <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2 mb-6">
         <button 
           onClick={() => setViewMode('correlations')}
           className={`px-4 py-2 rounded-lg transition-colors ${viewMode === 'correlations' ? 'bg-rose-400 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}>
@@ -820,8 +820,8 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
           
           {/* Modal for scatter plot and time series */}
           {isModalOpen && selectedFactor && (
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-              <div className="glass-card p-3 rounded-lg max-w-4xl w-full max-h-[50vh] overflow-y-auto">
+            <div className="fixed inset-0 rounded-lg backdrop-blur-sm flex items-center justify-center z-[10000] overflow-y-auto" style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}>
+              <div className="bg-white/90 p-6 rounded-lg shadow-xl max-w-4xl w-[95vw] max-h-[80vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
                 <div className="flex justify-end mb-1">
                   <button
                     onClick={() => {
@@ -835,7 +835,7 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
                     </svg>
                   </button>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                <div className="grid grid-cols-1 gap-4">
                   <div className="h-64 relative">
                     {selectedFactor && scatterData.length > 0 ? (
                       <Scatter 
