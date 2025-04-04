@@ -197,40 +197,42 @@ export default function ActivityHeatmap() {
       <div className="w-full flex justify-center min-w-[300px]">
         <div className="flex">
           {/* Day labels */}
-          <div className="flex flex-col mr-3 text-xs text-gray-600">
+          <div className="hidden sm:flex flex-col mr-3 text-xs text-gray-600">
             {dayLabels.map((day, index) => (
-              <div key={day} className="flex items-center justify-end w-10 h-[24px] mb-[1.5px] sm:mb-[2.1px] sm:text-xs text-[10px]">
+              <div key={day} className="flex items-center justify-end w-10 h-[24px] mb-[3.5px] sm:text-xs text-[10px]">
                 {day}
               </div>
             ))}
           </div>
           
           {/* Heatmap grid */}
-          <div className="grid grid-cols-12 gap-[1.5px] sm:gap-[2.1px]">
-            {weeks.map((week, weekIndex) => (
-              <div key={weekIndex} className="week-column">
-                {week.map((day, dayIndex) => {
-                  const { className, style } = getCellStyle(day);
-                  return (
-                    <div
-                      key={`${weekIndex}-${dayIndex}`}
-                      className={className}
-                      style={style}
-                      title={getTooltipContent(day)}
-                    >
-                      {day && (
-                        <span className={`text-[6px] sm:text-[8px] absolute inset-0 flex items-center justify-center ${getEntryForDate(day) ? 'text-gray-300' : 'text-gray-500'}`}>
-                          {format(day, 'd')}
-                        </span>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            ))}
+          <div className="grid-container pr-1">
+            <div className="grid-display">
+              {weeks.map((week, weekIndex) => (
+                <div key={weekIndex} className="week-column">
+                  {week.map((day, dayIndex) => {
+                    const { className, style } = getCellStyle(day);
+                    return (
+                      <div
+                        key={`${weekIndex}-${dayIndex}`}
+                        className={className}
+                        style={style}
+                        title={getTooltipContent(day)}
+                      >
+                        {day && (
+                          <span className={`text-[6px] sm:text-[8px] absolute inset-0 flex items-center justify-center ${getEntryForDate(day) ? 'text-gray-300' : 'text-gray-500'}`}>
+                            {format(day, 'd')}
+                          </span>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              ))}
+            </div>
           </div>
           {/* Month labels */}
-          <div className="flex text-xs text-gray-600">
+          <div className="hidden sm:flex text-xs text-gray-600">
             {monthLabels.map((month, index) => (
               <div key={index} className="flex-1 text-center">
                 {month}
