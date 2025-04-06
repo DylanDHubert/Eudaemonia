@@ -21,11 +21,11 @@ export default function SameDayEntryModal({
   return (
     <div 
       className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-[10000]" 
-      style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}
+      style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0, 0, 0, 0.5)' }}
       onClick={() => onClose()}
     >
       <div 
-        className="bg-white/90 p-4 rounded-lg shadow-xl w-[95vw] h-[90vh]" 
+        className="bg-white/90 p-4 rounded-lg shadow-xl w-[95vw] h-[90vh] overflow-y-auto" 
         onClick={e => e.stopPropagation()}
       >
         <div className="mb-2">

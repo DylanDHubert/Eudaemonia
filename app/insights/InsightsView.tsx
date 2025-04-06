@@ -764,7 +764,7 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
         </button>
         <button 
           onClick={() => setViewMode('matrix')}
-          className={`px-4 py-2 rounded-lg transition-colors ${viewMode === 'matrix' ? 'bg-rose-400 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}>
+          className={`hidden sm:block px-4 py-2 rounded-lg transition-colors ${viewMode === 'matrix' ? 'bg-rose-400 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}>
           Matrix View
         </button>
       </div>
@@ -827,9 +827,9 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
           
           {/* Modal for scatter plot and time series */}
           {isModalOpen && selectedFactor && (
-            <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-[10000]" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}>
-              <div className="bg-white/90 p-4 rounded-lg shadow-xl w-[95vw] h-[90vh]" onClick={e => e.stopPropagation()}>
-                <div className="flex justify-end mb-0">
+            <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-[10000]" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0, 0, 0, 0.5)' }}>
+              <div className="bg-white/90 p-2 sm:p-4 rounded-lg shadow-xl w-[95vw] h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+                <div className="flex justify-end">
                   <button
                     onClick={() => {
                       setIsModalOpen(false);
@@ -837,14 +837,14 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
                     }}
                     className="text-gray-500 hover:text-gray-700"
                   >
-                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                     </svg>
                   </button>
                 </div>
-                <div className="grid grid-cols-1 gap-1">
+                <div className="flex flex-col items-center gap-0">
                   {selectedFactor && scatterData.length > 0 ? (
-                    <div className="h-[40vh] relative">
+                    <div className="h-[35vh] sm:h-[40vh] w-full flex justify-center">
                       <Scatter 
                         options={getScatterOptions(selectedFactor)} 
                         data={getScatterChartData(selectedFactor)} 
@@ -853,7 +853,7 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
                   ) : null}
                   
                   {factorTimeSeriesData && factorTimeSeriesData.datasets[0].data.length > 0 ? (
-                    <div className="h-[40vh] relative">
+                    <div className="h-[35vh] sm:h-[40vh] w-full flex justify-center">
                       <Line 
                         options={getFactorTimeSeriesOptions(selectedFactor)} 
                         data={factorTimeSeriesData} 
@@ -861,8 +861,8 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
                     </div>
                   ) : null}
                 </div>
-                <div className="mt-0">
-                  <p className="text-sm text-gray-500">
+                <div className="text-center">
+                  <p className="text-xs sm:text-sm text-gray-500">
                     {selectedFactor && (correlations.find(c => 
                       c.factor === selectedFactor || 
                       c.factor === getInternalName(selectedFactor))?.description || 
