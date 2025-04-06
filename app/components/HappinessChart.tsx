@@ -35,6 +35,7 @@ export default function HappinessChart() {
   const [timeSeriesData, setTimeSeriesData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [entryCounts, setEntryCounts] = useState<number[]>([]);
+  const [fontSize, setFontSize] = useState(12);
 
   // Prepare time series data for the happiness trend chart
   const prepareTimeSeriesData = useCallback((entries: Entry[]) => {
@@ -118,6 +119,22 @@ export default function HappinessChart() {
     fetchEntries();
   }, [prepareTimeSeriesData]);
 
+  useEffect(() => {
+    // Update font size based on window width
+    const updateFontSize = () => {
+      setFontSize(window.innerWidth < 640 ? 10 : 12);
+    };
+
+    // Set initial font size
+    updateFontSize();
+
+    // Add event listener for window resize
+    window.addEventListener('resize', updateFontSize);
+
+    // Cleanup
+    return () => window.removeEventListener('resize', updateFontSize);
+  }, []);
+
   // Time series chart options
   const timeSeriesOptions = {
     responsive: true,
@@ -128,7 +145,7 @@ export default function HappinessChart() {
         labels: {
           boxWidth: 12,
           font: {
-            size: window.innerWidth < 640 ? 10 : 12
+            size: fontSize
           }
         }
       },
@@ -148,7 +165,7 @@ export default function HappinessChart() {
           maxRotation: 45,
           minRotation: 45,
           font: {
-            size: window.innerWidth < 640 ? 8 : 10
+            size: fontSize
           }
         }
       },
@@ -159,12 +176,12 @@ export default function HappinessChart() {
           display: true,
           text: 'Happiness Rating',
           font: {
-            size: window.innerWidth < 640 ? 10 : 12
+            size: fontSize
           }
         },
         ticks: {
           font: {
-            size: window.innerWidth < 640 ? 8 : 10
+            size: fontSize
           }
         }
       }
