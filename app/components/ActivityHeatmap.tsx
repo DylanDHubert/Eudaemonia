@@ -232,7 +232,7 @@ export default function ActivityHeatmap() {
             </div>
           </div>
           {/* Month labels */}
-          <div className="hidden sm:flex text-xs text-gray-600">
+          <div className="hidden sm:flex text-xs text-gray-600 mt-2">
             {monthLabels.map((month, index) => (
               <div key={index} className="flex-1 text-center">
                 {month}

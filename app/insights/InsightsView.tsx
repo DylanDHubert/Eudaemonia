@@ -827,8 +827,8 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
           
           {/* Modal for scatter plot and time series */}
           {isModalOpen && selectedFactor && (
-            <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-[10000] overflow-y-auto" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}>
-              <div className="bg-white/90 p-4 rounded-lg shadow-xl w-[95vw] h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+            <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-[10000]" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}>
+              <div className="bg-white/90 p-4 rounded-lg shadow-xl w-[95vw] h-[90vh]" onClick={e => e.stopPropagation()}>
                 <div className="flex justify-end mb-0">
                   <button
                     onClick={() => {
@@ -877,11 +877,11 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
         <div className="glass-card p-4 sm:p-6 rounded-lg">
           <h3 className="text-lg font-medium mb-2">Your Happiness Over Time</h3>
           {timeSeriesData && timeSeriesData.datasets[0].data.length > 0 ? (
-            <div className="h-96 relative">
+            <div className="h-[50vh] sm:h-96 relative">
               <Line options={timeSeriesOptions} data={timeSeriesData} />
             </div>
           ) : (
-            <div className="h-96 flex items-center justify-center">
+            <div className="h-[50vh] sm:h-96 flex items-center justify-center">
               <p className="text-gray-500">Not enough data to display happiness trends.</p>
             </div>
           )}
