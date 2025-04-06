@@ -71,20 +71,20 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center">
-      <div className="glass-card max-w-md w-full space-y-8 p-8">
+    <div className="min-h-screen flex items-center justify-center px-4">
+      <div className="glass-card w-full max-w-md space-y-6 p-4 sm:p-8">
         <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-800">
+          <h2 className="mt-2 sm:mt-6 text-center text-2xl sm:text-3xl font-extrabold text-gray-800">
             Sign in to your account
           </h2>
         </div>
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+        <form className="mt-6 space-y-4 sm:space-y-6" onSubmit={handleSubmit}>
           <Suspense fallback={null}>
             <RegistrationAlert />
           </Suspense>
           
           {error && (
-            <div className="glass-card p-4 bg-red-50/50 border-red-200">
+            <div className="glass-card p-3 sm:p-4 bg-red-50/50 border-red-200">
               <span className="block sm:inline text-red-700">{error}</span>
             </div>
           )}

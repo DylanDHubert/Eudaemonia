@@ -195,44 +195,48 @@ export default function ActivityHeatmap() {
       <h3 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4 text-center text-gray-800">Happiness & Stress Activity</h3>
       
       <div className="w-full flex justify-center min-w-[300px]">
-        <div className="flex">
-          {/* Day labels */}
-          <div className="hidden sm:flex flex-col mr-3 text-xs text-gray-600">
-            {dayLabels.map((day, index) => (
-              <div key={day} className="flex items-center justify-end w-10 h-[24px] mb-[3.5px] sm:text-xs text-[10px]">
-                {day}
-              </div>
-            ))}
-          </div>
-          
-          {/* Heatmap grid */}
-          <div className="grid-container pr-1">
-            <div className="grid-display">
-              {weeks.map((week, weekIndex) => (
-                <div key={weekIndex} className="week-column">
-                  {week.map((day, dayIndex) => {
-                    const { className, style } = getCellStyle(day);
-                    return (
-                      <div
-                        key={`${weekIndex}-${dayIndex}`}
-                        className={className}
-                        style={style}
-                        title={getTooltipContent(day)}
-                      >
-                        {day && (
-                          <span className={`text-[6px] sm:text-[8px] absolute inset-0 flex items-center justify-center ${getEntryForDate(day) ? 'text-gray-300' : 'text-gray-500'}`}>
-                            {format(day, 'd')}
-                          </span>
-                        )}
-                      </div>
-                    );
-                  })}
+        <div className="flex flex-col">
+          <div className="flex">
+            {/* Day labels */}
+            <div className="hidden sm:flex flex-col mr-3 text-xs text-gray-600">
+              {dayLabels.map((day, index) => (
+                <div key={day} className="flex items-center justify-end w-10 h-[24px] mb-[3.5px] sm:text-xs text-[10px]">
+                  {day}
                 </div>
               ))}
             </div>
+            
+            {/* Heatmap grid */}
+            <div className="grid-container pr-1">
+              <div className="grid-display">
+                {weeks.map((week, weekIndex) => (
+                  <div key={weekIndex} className="week-column">
+                    {week.map((day, dayIndex) => {
+                      const { className, style } = getCellStyle(day);
+                      return (
+                        <div
+                          key={`${weekIndex}-${dayIndex}`}
+                          className={className}
+                          style={style}
+                          title={getTooltipContent(day)}
+                        >
+                          {day && (
+                            <span className={`text-[6px] sm:text-[8px] absolute inset-0 flex items-center justify-center ${getEntryForDate(day) ? 'text-gray-300' : 'text-gray-500'}`}>
+                              {format(day, 'd')}
+                            </span>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
-          {/* Month labels */}
+          
+          {/* Month labels - positioned at the bottom on desktop only */}
           <div className="hidden sm:flex text-xs text-gray-600 mt-2">
+            <div className="w-10 mr-3"></div> {/* Spacer to align with day labels */}
             {monthLabels.map((month, index) => (
               <div key={index} className="flex-1 text-center">
                 {month}

@@ -271,3 +271,20 @@ body {
     cursor: pointer;
   }
 }
+
+/* Month labels alignment */
+.grid-container {
+  display: flex;
+  flex-direction: column;
+}
+
+.grid-display {
+  display: flex;
+  gap: 4px;
+}
+
+/* Ensure month labels align with columns */
+.grid-container + div {
+  display: flex;
+  gap: 4px;
+}
