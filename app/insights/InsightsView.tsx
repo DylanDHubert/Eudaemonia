@@ -749,156 +749,140 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
   }
   
   return (
-    <div>
-      {/* View mode tabs */}
-      <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2 mb-6">
-        <button 
-          onClick={() => setViewMode('correlations')}
-          className={`px-4 py-2 rounded-lg transition-colors ${viewMode === 'correlations' ? 'bg-rose-400 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}>
-          Correlations
-        </button>
-        <button 
-          onClick={() => setViewMode('matrix')}
-          className={`hidden sm:block px-4 py-2 rounded-lg transition-colors ${viewMode === 'matrix' ? 'bg-rose-400 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}>
-          Matrix View
-        </button>
-      </div>
-      
-      {viewMode === 'correlations' ? (
-        <>
-          <div className="mb-8">
-            <h3 className="text-lg font-medium mb-4">Factors Affecting Your Happiness</h3>
-            <div className="glass-card p-4 sm:p-6 rounded-lg overflow-hidden">
-              <div className="overflow-x-auto sm:overflow-x-auto">
-                <table className="w-full divide-y divide-gray-200">
-                  <thead>
-                    <tr>
-                      <th scope="col" className="px-2 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Factor</th>
-                      <th scope="col" className="px-2 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Correlation</th>
-                      <th scope="col" className="hidden sm:table-cell px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Interpretation</th>
-                      <th scope="col" className="hidden sm:table-cell px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-200">
-                    {correlations.length === 0 ? (
-                      <tr>
-                        <td colSpan={4} className="px-4 sm:px-6 py-4 text-center text-gray-500">
-                          No correlation data available
-                        </td>
-                      </tr>
-                    ) : (
-                      correlations.map((correlation, index) => (
-                        <tr 
-                          key={index} 
-                          className={`${selectedFactor === correlation.factor ? 'bg-pink-50/50' : 'hover:bg-gray-50/50'} cursor-pointer`}
-                          onClick={() => setSelectedFactor(correlation.factor)}
-                        >
-                          <td className="px-2 sm:px-6 py-4 text-sm font-medium text-gray-900">
-                            {formatFactorName(correlation.factor)}
-                          </td>
-                          <td className={`px-2 sm:px-6 py-4 text-sm ${getCorrelationColor(correlation.correlation)}`}>
-                            {formatDecimal(correlation.correlation)}
-                          </td>
-                          <td className="hidden sm:table-cell px-6 py-4 text-sm text-gray-500">{correlation.description}</td>
-                          <td className="hidden sm:table-cell px-4 sm:px-6 py-4 whitespace-nowrap text-sm">
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setSelectedFactor(correlation.factor);
-                              }}
-                              className="text-pink-600 hover:text-pink-900 transition-colors"
-                            >
-                              View
-                            </button>
-                          </td>
-                        </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
-              </div>
+    <>
+      {/* Modal for scatter plot and time series - desktop only */}
+      {isModalOpen && selectedFactor && (
+        <div className="fixed inset-0 hidden sm:flex items-center justify-center z-[10000] bg-black/50">
+          <div className="bg-white/90 p-4 rounded-lg shadow-xl w-auto max-w-4xl h-auto max-h-[80vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+            <div className="flex justify-end">
+              <button
+                onClick={() => {
+                  setIsModalOpen(false);
+                  setSelectedFactor(null);
+                }}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
             </div>
-          </div>
-          
-          {/* Modal for scatter plot and time series - desktop only */}
-          {isModalOpen && selectedFactor && (
-            <div className="fixed inset-0 hidden sm:flex items-center justify-center z-[10000] bg-black/50">
-              <div className="bg-white/90 p-4 rounded-lg shadow-xl w-auto max-w-4xl h-auto max-h-[80vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
-                <div className="flex justify-end">
-                  <button
-                    onClick={() => {
-                      setIsModalOpen(false);
-                      setSelectedFactor(null);
-                    }}
-                    className="text-gray-500 hover:text-gray-700"
-                  >
-                    <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
+            <div className="flex flex-col items-center gap-0">
+              {selectedFactor && scatterData.length > 0 ? (
+                <div className="h-[30vh] w-full flex justify-center">
+                  <Scatter 
+                    options={getScatterOptions(selectedFactor)} 
+                    data={getScatterChartData(selectedFactor)} 
+                  />
                 </div>
-                <div className="flex flex-col items-center gap-0">
-                  {selectedFactor && scatterData.length > 0 ? (
-                    <div className="h-[40vh] sm:h-[45vh] w-full flex justify-center">
-                      <Scatter 
-                        options={getScatterOptions(selectedFactor)} 
-                        data={getScatterChartData(selectedFactor)} 
-                      />
-                    </div>
-                  ) : null}
-                  
-                  {factorTimeSeriesData && factorTimeSeriesData.datasets[0].data.length > 0 ? (
-                    <div className="h-[40vh] sm:h-[45vh] w-full flex justify-center">
-                      <Line 
-                        options={getFactorTimeSeriesOptions(selectedFactor)} 
-                        data={factorTimeSeriesData} 
-                      />
-                    </div>
-                  ) : null}
+              ) : null}
+              
+              {factorTimeSeriesData && factorTimeSeriesData.datasets[0].data.length > 0 ? (
+                <div className="h-[30vh] w-full flex justify-center">
+                  <Line 
+                    options={getFactorTimeSeriesOptions(selectedFactor)} 
+                    data={factorTimeSeriesData} 
+                  />
                 </div>
-                <div className="text-center mt-0">
-                  <p className="text-xs sm:text-sm text-gray-500">
-                    {selectedFactor && (correlations.find(c => 
-                      c.factor === selectedFactor || 
-                      c.factor === getInternalName(selectedFactor))?.description || 
-                      'No interpretation available')}
-                  </p>
-                </div>
-              </div>
+              ) : null}
             </div>
-          )}
-        </>
-      ) : viewMode === 'trends' ? (
-        <div className="glass-card p-4 sm:p-6 rounded-lg">
-          <h3 className="text-lg font-medium mb-2">Your Happiness Over Time</h3>
-          {timeSeriesData && timeSeriesData.datasets[0].data.length > 0 ? (
-            <div className="h-[60vh] sm:h-[70vh] relative">
-              <Line options={timeSeriesOptions} data={timeSeriesData} />
+            <div className="text-center mt-0">
+              <p className="text-xs sm:text-sm text-gray-500">
+                {selectedFactor && (correlations.find(c => 
+                  c.factor === selectedFactor || 
+                  c.factor === getInternalName(selectedFactor))?.description || 
+                  'No interpretation available')}
+              </p>
             </div>
-          ) : (
-            <div className="h-[60vh] sm:h-[70vh] flex items-center justify-center">
-              <p className="text-gray-500">Not enough data to display happiness trends.</p>
-            </div>
-          )}
-          <div className="mt-0">
-            <p className="text-sm text-gray-500">
-              This chart shows your happiness ratings over time. Look for patterns to understand how your happiness changes.
-            </p>
-          </div>
-        </div>
-      ) : (
-        <div className="glass-card p-4 sm:p-6 rounded-lg hidden sm:block">
-          <h3 className="text-lg font-medium mb-4">Feature Correlation Matrix</h3>
-          <div className="relative">
-            <CorrelationMatrix />
-          </div>
-          <div className="mt-4">
-            <p className="text-sm text-gray-500">
-              This matrix shows correlations between different factors. Deeper colors indicate stronger relationships.
-            </p>
           </div>
         </div>
       )}
-    </div>
+      
+      <div>
+        {/* View mode tabs - hidden on mobile */}
+        <div className="hidden sm:flex flex-row space-x-2 mb-6">
+          <button 
+            onClick={() => setViewMode('correlations')}
+            className={`px-4 py-2 rounded-lg transition-colors ${viewMode === 'correlations' ? 'bg-rose-400 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}>
+            Correlations
+          </button>
+          <button 
+            onClick={() => setViewMode('matrix')}
+            className={`px-4 py-2 rounded-lg transition-colors ${viewMode === 'matrix' ? 'bg-rose-400 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}>
+            Matrix View
+          </button>
+        </div>
+        
+        {viewMode === 'correlations' ? (
+          <>
+            <div className="mb-4 sm:mb-8">
+              <h3 className="hidden sm:block text-lg font-medium mb-4">Factors Affecting Your Happiness</h3>
+              <div className="glass-card p-2 sm:p-6 rounded-lg overflow-hidden">
+                <div className="overflow-x-auto sm:overflow-x-auto">
+                  <table className="w-full divide-y divide-gray-200">
+                    <thead>
+                      <tr>
+                        <th scope="col" className="px-2 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Factor</th>
+                        <th scope="col" className="px-2 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Correlation</th>
+                        <th scope="col" className="hidden sm:table-cell px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Interpretation</th>
+                        <th scope="col" className="hidden sm:table-cell px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-200">
+                      {correlations.length === 0 ? (
+                        <tr>
+                          <td colSpan={4} className="px-4 sm:px-6 py-4 text-center text-gray-500">
+                            No correlation data available
+                          </td>
+                        </tr>
+                      ) : (
+                        correlations.map((correlation, index) => (
+                          <tr 
+                            key={index} 
+                            className={`${selectedFactor === correlation.factor ? 'bg-pink-50/50' : 'hover:bg-gray-50/50'} cursor-pointer`}
+                            onClick={() => setSelectedFactor(correlation.factor)}
+                          >
+                            <td className="px-2 sm:px-6 py-4 text-sm font-medium text-gray-900">
+                              {formatFactorName(correlation.factor)}
+                            </td>
+                            <td className={`px-2 sm:px-6 py-4 text-sm ${getCorrelationColor(correlation.correlation)}`}>
+                              {formatDecimal(correlation.correlation)}
+                            </td>
+                            <td className="hidden sm:table-cell px-6 py-4 text-sm text-gray-500">{correlation.description}</td>
+                            <td className="hidden sm:table-cell px-4 sm:px-6 py-4 whitespace-nowrap text-sm">
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setSelectedFactor(correlation.factor);
+                                }}
+                                className="text-pink-600 hover:text-pink-900 transition-colors"
+                              >
+                                View
+                              </button>
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </>
+        ) : (
+          <div className="glass-card p-4 sm:p-6 rounded-lg hidden sm:block">
+            <h3 className="text-lg font-medium mb-4">Feature Correlation Matrix</h3>
+            <div className="relative">
+              <CorrelationMatrix />
+            </div>
+            <div className="mt-4">
+              <p className="text-sm text-gray-500">
+                This matrix shows correlations between different factors. Deeper colors indicate stronger relationships.
+              </p>
+            </div>
+          </div>
+        )}
+      </div>
+    </>
   );
 } 
