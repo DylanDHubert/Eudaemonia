@@ -774,12 +774,12 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
           <div className="mb-8">
             <h3 className="text-lg font-medium mb-4">Factors Affecting Your Happiness</h3>
             <div className="glass-card p-4 sm:p-6 rounded-lg overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
+              <div className="overflow-x-auto sm:overflow-x-auto">
+                <table className="w-full divide-y divide-gray-200">
                   <thead>
                     <tr>
-                      <th scope="col" className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Factor</th>
-                      <th scope="col" className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Correlation</th>
+                      <th scope="col" className="px-2 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Factor</th>
+                      <th scope="col" className="px-2 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Correlation</th>
                       <th scope="col" className="hidden sm:table-cell px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Interpretation</th>
                       <th scope="col" className="hidden sm:table-cell px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                     </tr>
@@ -798,10 +798,10 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
                           className={`${selectedFactor === correlation.factor ? 'bg-pink-50/50' : 'hover:bg-gray-50/50'} cursor-pointer`}
                           onClick={() => setSelectedFactor(correlation.factor)}
                         >
-                          <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                          <td className="px-2 sm:px-6 py-4 text-sm font-medium text-gray-900">
                             {formatFactorName(correlation.factor)}
                           </td>
-                          <td className={`px-4 sm:px-6 py-4 whitespace-nowrap text-sm ${getCorrelationColor(correlation.correlation)}`}>
+                          <td className={`px-2 sm:px-6 py-4 text-sm ${getCorrelationColor(correlation.correlation)}`}>
                             {formatDecimal(correlation.correlation)}
                           </td>
                           <td className="hidden sm:table-cell px-6 py-4 text-sm text-gray-500">{correlation.description}</td>
@@ -827,8 +827,8 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
           
           {/* Modal for scatter plot and time series */}
           {isModalOpen && selectedFactor && (
-            <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-[10000]" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0, 0, 0, 0.5)' }}>
-              <div className="bg-white/90 p-2 sm:p-4 rounded-lg shadow-xl w-[95vw] h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+            <div className="fixed inset-0 flex items-center justify-center z-[10000]" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0, 0, 0, 0.5)' }}>
+              <div className="bg-white/90 p-2 sm:p-4 rounded-lg shadow-xl w-[95vw] sm:w-auto sm:max-w-4xl h-[90vh] sm:h-auto sm:max-h-[80vh] overflow-y-auto" style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }} onClick={e => e.stopPropagation()}>
                 <div className="flex justify-end">
                   <button
                     onClick={() => {
@@ -844,7 +844,7 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
                 </div>
                 <div className="flex flex-col items-center gap-0">
                   {selectedFactor && scatterData.length > 0 ? (
-                    <div className="h-[35vh] sm:h-[40vh] w-full flex justify-center">
+                    <div className="h-[40vh] sm:h-[45vh] w-full flex justify-center">
                       <Scatter 
                         options={getScatterOptions(selectedFactor)} 
                         data={getScatterChartData(selectedFactor)} 
@@ -853,7 +853,7 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
                   ) : null}
                   
                   {factorTimeSeriesData && factorTimeSeriesData.datasets[0].data.length > 0 ? (
-                    <div className="h-[35vh] sm:h-[40vh] w-full flex justify-center">
+                    <div className="h-[40vh] sm:h-[45vh] w-full flex justify-center">
                       <Line 
                         options={getFactorTimeSeriesOptions(selectedFactor)} 
                         data={factorTimeSeriesData} 
@@ -861,7 +861,7 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
                     </div>
                   ) : null}
                 </div>
-                <div className="text-center">
+                <div className="text-center mt-0">
                   <p className="text-xs sm:text-sm text-gray-500">
                     {selectedFactor && (correlations.find(c => 
                       c.factor === selectedFactor || 
@@ -877,15 +877,15 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
         <div className="glass-card p-4 sm:p-6 rounded-lg">
           <h3 className="text-lg font-medium mb-2">Your Happiness Over Time</h3>
           {timeSeriesData && timeSeriesData.datasets[0].data.length > 0 ? (
-            <div className="h-[50vh] sm:h-96 relative">
+            <div className="h-[60vh] sm:h-[70vh] relative">
               <Line options={timeSeriesOptions} data={timeSeriesData} />
             </div>
           ) : (
-            <div className="h-[50vh] sm:h-96 flex items-center justify-center">
+            <div className="h-[60vh] sm:h-[70vh] flex items-center justify-center">
               <p className="text-gray-500">Not enough data to display happiness trends.</p>
             </div>
           )}
-          <div className="mt-2">
+          <div className="mt-0">
             <p className="text-sm text-gray-500">
               This chart shows your happiness ratings over time. Look for patterns to understand how your happiness changes.
             </p>
