@@ -103,6 +103,35 @@ export default function EntryForm({ userId }: EntryFormProps) {
     setError('');
     
     try {
+      // Validate required fields
+      const requiredFields = {
+        sleepHours: 'Sleep hours',
+        sleepQuality: 'Sleep quality',
+        stressLevel: 'Stress level',
+        happinessRating: 'Happiness rating'
+      };
+
+      for (const [field, label] of Object.entries(requiredFields)) {
+        if (!formData[field as keyof typeof formData]) {
+          throw new Error(`${label} is required`);
+        }
+      }
+
+      // Validate numeric fields
+      const numericFields = {
+        sleepHours: 'Sleep hours',
+        sleepQuality: 'Sleep quality',
+        stressLevel: 'Stress level',
+        happinessRating: 'Happiness rating'
+      };
+
+      for (const [field, label] of Object.entries(numericFields)) {
+        const value = parseFloat(formData[field as keyof typeof formData] as string);
+        if (isNaN(value)) {
+          throw new Error(`${label} must be a number`);
+        }
+      }
+
       const url = overwrite && existingEntryId 
         ? `/api/entries/${existingEntryId}` 
         : '/api/entries';
