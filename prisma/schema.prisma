@@ -48,6 +48,7 @@ model User {
   sessions      Session[]
   dailyEntries  DailyEntry[]
   customCategories CustomCategory[]
+  gratitudes    Gratitude[]
 }
 
 model VerificationToken {
@@ -116,4 +117,13 @@ model DailyEntry {
   updatedAt    DateTime @updatedAt
 
   @@index([userId, date])
+}
+
+model Gratitude {
+  id        String   @id @default(cuid())
+  content   String   @db.Text
+  userEmail String
+  user      User     @relation(fields: [userEmail], references: [email], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 } 

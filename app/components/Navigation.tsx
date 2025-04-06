@@ -31,6 +31,8 @@ export default function Navigation({ user }: NavigationProps) {
         return 'History';
       case '/how-to-use':
         return 'How to Use';
+      case '/gratitudes':
+        return 'Gratitudes';
       default:
         return 'Eudaemonia';
     }
@@ -117,6 +119,16 @@ export default function Navigation({ user }: NavigationProps) {
             >
               History
             </Link>
+            <Link 
+              href="/gratitudes" 
+              className={`text-sm sm:text-base px-3 py-2 rounded-md transition-colors ${
+                isActive('/gratitudes')
+                  ? 'text-rose-600 bg-white/50' 
+                  : 'text-stone-600 hover:text-rose-600 hover:bg-white/30'
+              }`}
+            >
+              Gratitudes
+            </Link>
             <Link
               href="/categories"
               className={`text-sm sm:text-base px-3 py-2 rounded-md transition-colors ${
@@ -194,6 +206,17 @@ export default function Navigation({ user }: NavigationProps) {
               onClick={closeMenu}
             >
               History
+            </Link>
+            <Link 
+              href="/gratitudes" 
+              className={`block px-3 py-2 rounded-md text-base font-medium ${
+                isActive('/gratitudes')
+                  ? 'text-rose-600 bg-white/50' 
+                  : 'text-stone-600 hover:text-rose-600 hover:bg-white/30'
+              }`}
+              onClick={closeMenu}
+            >
+              Gratitudes
             </Link>
             <Link
               href="/categories"

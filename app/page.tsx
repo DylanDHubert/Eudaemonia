@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth';
 import Link from 'next/link';
 import ActivityHeatmap from './components/ActivityHeatmap';
 import HappinessChart from './components/HappinessChart';
+import RandomGratitude from './components/RandomGratitude';
 
 export default async function Dashboard() {
   const session = await getServerSession(authOptions);
@@ -57,6 +58,11 @@ export default async function Dashboard() {
                   </Link>
                 </div>
               </div>
+            </div>
+            
+            {/* Gratitude Section */}
+            <div className="w-full md:max-w-3xl mb-6">
+              <RandomGratitude />
             </div>
             
             {/* Happiness Chart */}
