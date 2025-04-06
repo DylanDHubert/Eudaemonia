@@ -758,11 +758,6 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
           Correlations
         </button>
         <button 
-          onClick={() => setViewMode('trends')}
-          className={`px-4 py-2 rounded-lg transition-colors ${viewMode === 'trends' ? 'bg-rose-400 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}>
-          Happiness Trend
-        </button>
-        <button 
           onClick={() => setViewMode('matrix')}
           className={`hidden sm:block px-4 py-2 rounded-lg transition-colors ${viewMode === 'matrix' ? 'bg-rose-400 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}>
           Matrix View
@@ -825,10 +820,10 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
             </div>
           </div>
           
-          {/* Modal for scatter plot and time series */}
+          {/* Modal for scatter plot and time series - desktop only */}
           {isModalOpen && selectedFactor && (
-            <div className="fixed inset-0 flex items-center justify-center z-[10000]" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0, 0, 0, 0.5)' }}>
-              <div className="bg-white/90 p-2 sm:p-4 rounded-lg shadow-xl w-[95vw] sm:w-auto sm:max-w-4xl h-[90vh] sm:h-auto sm:max-h-[80vh] overflow-y-auto" style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }} onClick={e => e.stopPropagation()}>
+            <div className="fixed inset-0 hidden sm:flex items-center justify-center z-[10000] bg-black/50">
+              <div className="bg-white/90 p-4 rounded-lg shadow-xl w-auto max-w-4xl h-auto max-h-[80vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
                 <div className="flex justify-end">
                   <button
                     onClick={() => {
