@@ -42,7 +42,7 @@ export default function DatePickerModal({ isOpen, onClose, date, onDateChange }:
   };
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center z-[10000] bg-black/50" onClick={onClose}>
+    <div className="fixed inset-0 flex items-start justify-center z-[10000] bg-black/50 pt-20" onClick={onClose}>
       <div className="bg-white/90 p-4 rounded-lg shadow-xl max-w-md w-auto overflow-y-auto" onClick={handleModalContentClick}>
         <h2 className="text-xl font-semibold mb-2 text-gray-800">Select Date</h2>
         

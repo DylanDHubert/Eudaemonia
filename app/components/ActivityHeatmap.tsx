@@ -200,7 +200,7 @@ export default function ActivityHeatmap() {
             {/* Day labels */}
             <div className="hidden sm:flex flex-col mr-3 text-xs text-gray-600">
               {dayLabels.map((day, index) => (
-                <div key={day} className="flex items-center justify-end w-10 h-[24px] mb-[4px] sm:text-xs text-[10px]">
+                <div key={day} className="flex items-center justify-end w-10 h-[24px] mb-[4px] sm:text-xs text-[10px] mt-[5px]">
                   {day}
                 </div>
               ))}
@@ -216,7 +216,7 @@ export default function ActivityHeatmap() {
                       return (
                         <div
                           key={`${weekIndex}-${dayIndex}`}
-                          className={className}
+                          className={`${className} mt-[10px]`}
                           style={style}
                           title={getTooltipContent(day)}
                         >

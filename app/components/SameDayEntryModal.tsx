@@ -20,7 +20,7 @@ export default function SameDayEntryModal({
   
   return (
     <div 
-      className="fixed inset-0 flex items-center justify-center z-[10000] bg-black/50"
+      className="fixed inset-0 flex items-start justify-center z-[10000] bg-black/50 pt-20"
       onClick={() => onClose()}
     >
       <div 

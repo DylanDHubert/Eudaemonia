@@ -199,7 +199,7 @@ export default function CorrelationMatrix() {
           
           {/* Heatmap grid */}
           <div className="overflow-x-auto">
-            <div className="grid-display">
+            <div className="grid-display pt-[10px]">
               {displayFields.map(fieldX => (
                 <div key={fieldX.id} className="week-column">
                   {displayFields.map(fieldY => {
