@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { format } from 'date-fns';
 import EditEntryModal from '../components/EditEntryModal';
+import { Entry } from '../types/entry';
 
 interface CustomCategory {
   id: string;
@@ -15,29 +16,6 @@ interface CustomCategoryEntry {
   id: string;
   value: number;
   customCategory: CustomCategory;
-}
-
-interface Entry {
-  id: string;
-  date: string;
-  sleepHours: number;
-  sleepQuality: number;
-  exercise: boolean;
-  exerciseTime: number | null;
-  alcohol: boolean;
-  alcoholUnits: number | null;
-  cannabis: boolean;
-  cannabisAmount: number | null;
-  meditation: boolean;
-  meditationTime: number | null;
-  socialTime: number | null;
-  workHours: number | null;
-  meals: number | null;
-  foodQuality: number | null;
-  stressLevel: number;
-  happinessRating: number;
-  notes: string | null;
-  customCategoryEntries: CustomCategoryEntry[];
 }
 
 interface HistoryViewProps {

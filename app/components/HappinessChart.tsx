@@ -13,6 +13,7 @@ import {
 } from 'chart.js';
 import { Line } from 'react-chartjs-2';
 import { format, parseISO } from 'date-fns';
+import { Entry } from '../types/entry';
 
 // Register ChartJS components
 ChartJS.register(
@@ -25,13 +26,11 @@ ChartJS.register(
   Legend
 );
 
-interface Entry {
-  id: string;
-  date: string;
-  happinessRating: number;
+interface HappinessChartProps {
+  entries?: Entry[];
 }
 
-export default function HappinessChart() {
+export default function HappinessChart({ entries }: HappinessChartProps) {
   const [timeSeriesData, setTimeSeriesData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [entryCounts, setEntryCounts] = useState<number[]>([]);
@@ -77,7 +76,7 @@ export default function HappinessChart() {
     const entriesByDate = new Map<string, { date: string; happiness: number; count: number }>();
     
     sortedEntries.forEach(entry => {
-      const date = format(parseISO(entry.date), 'MMM d');
+      const date = format(typeof entry.date === 'string' ? parseISO(entry.date) : entry.date, 'MMM d');
       const existing = entriesByDate.get(date);
       
       if (existing) {

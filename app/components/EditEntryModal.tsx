@@ -3,43 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'react-toastify';
-
-interface CustomCategory {
-  id: string;
-  name: string;
-  type: string;
-  min?: number;
-  max?: number;
-}
-
-interface CustomCategoryEntry {
-  id: string;
-  value: number;
-  customCategory: CustomCategory;
-}
-
-interface Entry {
-  id: string;
-  date: string;
-  sleepHours: number;
-  sleepQuality: number;
-  exercise: boolean;
-  exerciseTime: number | null;
-  alcohol: boolean;
-  alcoholUnits: number | null;
-  cannabis: boolean;
-  cannabisAmount: number | null;
-  meditation: boolean;
-  meditationTime: number | null;
-  socialTime: number | null;
-  workHours: number | null;
-  meals: number | null;
-  foodQuality: number | null;
-  stressLevel: number;
-  happinessRating: number;
-  notes: string | null;
-  customCategoryEntries: CustomCategoryEntry[];
-}
+import { Entry, CustomCategory, CustomCategoryEntry } from '../types/entry';
 
 interface EditEntryModalProps {
   isOpen: boolean;
@@ -246,8 +210,8 @@ export default function EditEntryModal({ isOpen, onClose, entry }: EditEntryModa
                       type="number"
                       value={category.value}
                       onChange={(e) => handleCustomCategoryChange(category.customCategory.id, parseFloat(e.target.value))}
-                      min={category.customCategory.min}
-                      max={category.customCategory.max}
+                      min={category.customCategory.min ?? undefined}
+                      max={category.customCategory.max ?? undefined}
                       step={category.customCategory.type === 'numeric' ? 1 : 0.1}
                       className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
                     />
