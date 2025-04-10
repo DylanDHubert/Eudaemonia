@@ -69,7 +69,7 @@ export default function CustomDropdown({
         </span>
         <ChevronDownIcon
           className={`h-5 w-5 transition-transform duration-200 ${
-            isOpen ? 'transform rotate-180' : ''
+            isOpen ? 'transform rotate-0' : 'transform rotate-180'
           }`}
         />
       </button>

@@ -38,7 +38,7 @@ export default function GratitudeInput() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!content.trim() || !session?.user?.id) return;
+    if (!content.trim() || !session?.user?.email) return;
 
     setIsSubmitting(true);
     try {
@@ -49,14 +49,14 @@ export default function GratitudeInput() {
         },
         body: JSON.stringify({
           content,
-          userId: session.user.id,
         }),
       });
 
       if (!response.ok) throw new Error('Failed to save gratitude');
       
       setContent('');
-      // You could add a success message or trigger a refresh of the GratitudeView
+      // Refresh the page to show the new gratitude
+      window.location.reload();
     } catch (error) {
       console.error('Error saving gratitude:', error);
     } finally {
