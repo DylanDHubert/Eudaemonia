@@ -27,6 +27,7 @@ interface Entry {
 export default function CorrelationMatrix() {
   const [entries, setEntries] = useState<Entry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isDarkMode, setIsDarkMode] = useState(false);
 
   useEffect(() => {
     async function fetchData() {
@@ -47,6 +48,32 @@ export default function CorrelationMatrix() {
     }
 
     fetchData();
+  }, []);
+
+  // Check if dark mode is enabled
+  useEffect(() => {
+    const checkDarkMode = () => {
+      const isDark = document.documentElement.classList.contains('dark');
+      setIsDarkMode(isDark);
+    };
+
+    // Initial check
+    checkDarkMode();
+
+    // Set up a mutation observer to detect changes to the dark mode class
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.attributeName === 'class') {
+          checkDarkMode();
+        }
+      });
+    });
+
+    observer.observe(document.documentElement, { attributes: true });
+
+    return () => {
+      observer.disconnect();
+    };
   }, []);
 
   // Define a subset of fields for smaller matrix with shorter display names for better alignment
@@ -148,6 +175,49 @@ export default function CorrelationMatrix() {
     if (correlation === -1) return '-1';
     // Convert to integer percentage for cleaner display
     return Math.round(correlation * 100) + '%';
+  };
+
+  const options = {
+    responsive: true,
+    plugins: {
+      legend: {
+        display: false,
+      },
+      title: {
+        display: false,
+      },
+      tooltip: {
+        callbacks: {
+          label: function(context: any) {
+            return `${context.dataset.label}: ${formatCorrelation(context.raw)}`;
+          }
+        }
+      }
+    },
+    scales: {
+      x: {
+        ticks: {
+          color: isDarkMode ? 'rgba(209, 213, 219, 0.8)' : 'rgba(75, 85, 99, 0.8)',
+          font: {
+            size: 10
+          }
+        },
+        grid: {
+          color: isDarkMode ? 'rgba(75, 85, 99, 0.2)' : 'rgba(209, 213, 219, 0.5)',
+        }
+      },
+      y: {
+        ticks: {
+          color: isDarkMode ? 'rgba(209, 213, 219, 0.8)' : 'rgba(75, 85, 99, 0.8)',
+          font: {
+            size: 10
+          }
+        },
+        grid: {
+          color: isDarkMode ? 'rgba(75, 85, 99, 0.2)' : 'rgba(209, 213, 219, 0.5)',
+        }
+      }
+    }
   };
 
   if (isLoading) {

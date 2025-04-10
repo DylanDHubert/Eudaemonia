@@ -14,11 +14,12 @@ export default async function Categories() {
     <div className="min-h-screen">
       <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div className="px-4 py-6 sm:px-0">
-          <div className="glass-card p-8">
-            <h2 className="text-2xl font-bold mb-6 text-gray-800">Custom Categories</h2>
-            <p className="mb-6 text-gray-600">
-              Create and manage your custom tracking categories. These will appear in your daily check-in form.
+          <div className="glass-card p-4 sm:p-8">
+            <h1 className="text-header mb-6">Your Categories</h1>
+            <p className="text-description mb-6">
+              Create and manage custom categories to track factors that affect your happiness.
             </p>
+            
             <CustomCategoriesManager userId={session.user.id} />
           </div>
         </div>

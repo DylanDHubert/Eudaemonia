@@ -166,7 +166,7 @@ export default function HappinessChart() {
 
   if (!timeSeriesData) {
     return (
-      <div className="text-center py-4">
+      <div className="text-center py-4 pb-12">
         <p className="text-gray-500 dark:text-gray-400">No data available for the happiness chart.</p>
       </div>
     );
@@ -231,6 +231,24 @@ export default function HappinessChart() {
   };
 
   return (
-    <Line options={options} data={timeSeriesData} />
+    <div className="glass-card p-4">
+      <h2 className="text-subheader mb-4">Happiness Trend</h2>
+      {isLoading ? (
+        <div className="flex justify-center items-center h-64">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-rose-500"></div>
+        </div>
+      ) : timeSeriesData ? (
+        <div className="h-64">
+          <Line
+            data={timeSeriesData}
+            options={options}
+          />
+        </div>
+      ) : (
+        <div className="text-center py-8">
+          <p className="text-description">No data available</p>
+        </div>
+      )}
+    </div>
   );
 } 

@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import DarkModeToggle from '../components/DarkModeToggle';
 
 export default function SignUpPage() {
   const router = useRouter();
@@ -87,20 +88,24 @@ export default function SignUpPage() {
   return (
     <div className="min-h-screen flex items-center justify-center px-4">
       <div className="glass-card w-full max-w-md space-y-6 p-4 sm:p-8">
+        <div className="flex justify-end mb-4">
+          <DarkModeToggle />
+        </div>
+        
         <div>
-          <h2 className="mt-2 sm:mt-6 text-center text-2xl sm:text-3xl font-extrabold text-gray-800">
+          <h2 className="text-header text-center">
             Create your account
           </h2>
         </div>
         <form className="mt-6 space-y-4 sm:space-y-6" onSubmit={handleSubmit}>
           {error && (
-            <div className="glass-card p-3 sm:p-4 bg-red-50/50 border-red-200">
-              <span className="block sm:inline text-red-700">{error}</span>
+            <div className="glass-card p-3 sm:p-4 bg-red-50/50 dark:bg-red-900/20 border-red-200 dark:border-red-800">
+              <span className="block sm:inline text-red-700 dark:text-red-300">{error}</span>
             </div>
           )}
           <div className="rounded-md shadow-sm -space-y-px">
             <div>
-              <label htmlFor="name" className="sr-only">
+              <label htmlFor="name" className="text-subheader block mb-2">
                 Name
               </label>
               <input
@@ -110,12 +115,12 @@ export default function SignUpPage() {
                 required
                 value={formData.name}
                 onChange={handleChange}
-                className="glass-input appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                className="glass-input w-full px-3 py-2 text-input dark:text-white"
                 placeholder="Full name"
               />
             </div>
             <div>
-              <label htmlFor="email" className="sr-only">
+              <label htmlFor="email" className="text-subheader block mb-2">
                 Email address
               </label>
               <input
@@ -125,12 +130,12 @@ export default function SignUpPage() {
                 required
                 value={formData.email}
                 onChange={handleChange}
-                className="glass-input appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                className="glass-input w-full px-3 py-2 text-input dark:text-white"
                 placeholder="Email address"
               />
             </div>
             <div>
-              <label htmlFor="password" className="sr-only">
+              <label htmlFor="password" className="text-subheader block mb-2">
                 Password
               </label>
               <input
@@ -140,7 +145,7 @@ export default function SignUpPage() {
                 required
                 value={formData.password}
                 onChange={handleChange}
-                className="glass-input appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                className="glass-input w-full px-3 py-2 text-input dark:text-white"
                 placeholder="Password (min 6 characters)"
               />
             </div>
@@ -149,8 +154,7 @@ export default function SignUpPage() {
           <div>
             <button
               type="submit"
-              disabled={isLoading}
-              className="glass-button group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-rose-600 hover:bg-rose-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-rose-500 disabled:bg-rose-400"
+              className="glass-button w-full group relative"
             >
               {isLoading ? (
                 <>
@@ -158,10 +162,10 @@ export default function SignUpPage() {
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
-                  Creating account...
+                  <span className="text-input dark:text-white">Creating account...</span>
                 </>
               ) : (
-                'Sign up'
+                <span className="text-input dark:text-white">Sign up</span>
               )}
             </button>
           </div>
@@ -169,7 +173,7 @@ export default function SignUpPage() {
           <div className="text-center">
             <Link
               href="/login"
-              className="font-medium text-indigo-600 hover:text-indigo-500"
+              className="font-medium text-rose-600 hover:text-rose-500 dark:text-indigo-400 dark:hover:text-indigo-300"
             >
               Already have an account? Sign in
             </Link>

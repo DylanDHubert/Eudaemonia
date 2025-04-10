@@ -1,29 +1,54 @@
 'use client';
 
-import { useState } from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/app/components/ui/tabs";
+import { useState, useEffect } from 'react';
 import GratitudeInput from './GratitudeInput';
 import GratitudeView from './GratitudeView';
 
 export default function GratitudesPage() {
-  const [activeTab, setActiveTab] = useState<'input' | 'view'>('input');
+  const [isDarkMode, setIsDarkMode] = useState(false);
+
+  // Check if dark mode is enabled
+  useEffect(() => {
+    const checkDarkMode = () => {
+      const isDark = document.documentElement.classList.contains('dark');
+      setIsDarkMode(isDark);
+    };
+
+    // Initial check
+    checkDarkMode();
+
+    // Set up a mutation observer to detect changes to the dark mode class
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.attributeName === 'class') {
+          checkDarkMode();
+        }
+      });
+    });
+
+    observer.observe(document.documentElement, { attributes: true });
+
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
 
   return (
-    <div className="container mx-auto px-4 py-4 sm:py-8">
-      <div className="glass-card p-4 sm:p-6">
-        <Tabs defaultValue="input" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 mb-4">
-            <TabsTrigger value="input">Input</TabsTrigger>
-            <TabsTrigger value="view">View</TabsTrigger>
-          </TabsList>
-          <TabsContent value="input">
-            <GratitudeInput />
-          </TabsContent>
-          <TabsContent value="view">
-            <GratitudeView />
-          </TabsContent>
-        </Tabs>
-      </div>
+    <div className="min-h-screen">
+      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+        <div className="px-4 pb-6 sm:px-0">
+          <div className="glass-card p-6 sm:p-8">
+            <div className="space-y-6">
+              <div>
+                <GratitudeInput />
+              </div>
+              <div>
+                <GratitudeView />
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
     </div>
   );
 } 

@@ -31,7 +31,7 @@ export default async function RootLayout({
   return (
     <html lang="en" className={`${poppins.variable} h-full`}>
       <body className={`font-sans h-full`}>
-        <div className="min-h-screen bg-gradient-to-br from-pink-300 to-rose-400 bg-[url('/grid.svg')] bg-center">
+        <div className="min-h-screen bg-gradient-to-br from-pink-300 to-rose-400 dark:from-gray-800 dark:to-indigo-500 bg-[url('/grid.svg')] bg-center">
           {/* Only show Navigation if not on auth pages and user is authenticated */}
           {session && <Navigation user={session.user} />}
           

@@ -1,6 +1,8 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
+import { useState, useEffect } from 'react';
+import { useSession } from 'next-auth/react';
+import { format } from 'date-fns';
 
 interface Gratitude {
   id: string;
@@ -9,19 +11,46 @@ interface Gratitude {
 }
 
 export default function GratitudeView() {
+  const { data: session } = useSession();
   const [gratitudes, setGratitudes] = useState<Gratitude[]>([]);
   const [loading, setLoading] = useState(true);
-  const [hasOverflow, setHasOverflow] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
+  const [isDarkMode, setIsDarkMode] = useState(false);
+
+  // Check if dark mode is enabled
+  useEffect(() => {
+    const checkDarkMode = () => {
+      const isDark = document.documentElement.classList.contains('dark');
+      setIsDarkMode(isDark);
+    };
+
+    // Initial check
+    checkDarkMode();
+
+    // Set up a mutation observer to detect changes to the dark mode class
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.attributeName === 'class') {
+          checkDarkMode();
+        }
+      });
+    });
+
+    observer.observe(document.documentElement, { attributes: true });
+
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
 
   useEffect(() => {
     const fetchGratitudes = async () => {
+      if (!session?.user?.id) return;
+
       try {
-        const response = await fetch('/api/gratitudes');
-        if (response.ok) {
-          const data = await response.json();
-          setGratitudes(data);
-        }
+        const response = await fetch(`/api/gratitudes?userId=${session.user.id}`);
+        if (!response.ok) throw new Error('Failed to fetch gratitudes');
+        const data = await response.json();
+        setGratitudes(data);
       } catch (error) {
         console.error('Error fetching gratitudes:', error);
       } finally {
@@ -30,54 +59,37 @@ export default function GratitudeView() {
     };
 
     fetchGratitudes();
-  }, []);
-
-  useEffect(() => {
-    const checkOverflow = () => {
-      if (containerRef.current) {
-        const hasVerticalOverflow = containerRef.current.scrollHeight > containerRef.current.clientHeight;
-        setHasOverflow(hasVerticalOverflow);
-      }
-    };
-
-    checkOverflow();
-    window.addEventListener('resize', checkOverflow);
-    return () => window.removeEventListener('resize', checkOverflow);
-  }, [gratitudes]);
+  }, [session?.user?.id]);
 
   if (loading) {
-    return <div className="text-center py-2">Loading...</div>;
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="text-description">Loading gratitudes...</div>
+      </div>
+    );
+  }
+
+  if (gratitudes.length === 0) {
+    return (
+      <div className="text-center py-8">
+        <p className="text-description">No gratitudes recorded yet.</p>
+      </div>
+    );
   }
 
   return (
-    <div className="space-y-3 w-[95%] mx-auto">
-      <h3 className="text-lg font-semibold text-rose-600 mb-3">Recent Gratitudes</h3>
-      {gratitudes.length === 0 ? (
-        <div className="text-center text-gray-500 text-sm">
-          No gratitudes yet. Add your first one below!
+    <div className="space-y-4 scrollbar-hide">
+      {gratitudes.map((gratitude) => (
+        <div
+          key={gratitude.id}
+          className="glass-card p-4 border border-gray-200 dark:border-gray-700"
+        >
+          <p className="text-sm text-gray-800 dark:text-gray-200 mb-2">{gratitude.content}</p>
+          <p className="text-xs text-gray-600 dark:text-gray-400">
+            {format(new Date(gratitude.createdAt), 'MMMM d, yyyy')}
+          </p>
         </div>
-      ) : (
-        <div className="relative rounded-lg overflow-hidden">
-          <div 
-            ref={containerRef}
-            className="space-y-3 max-h-[365px] overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
-          >
-            {gratitudes.map((gratitude) => (
-              <div 
-                key={gratitude.id} 
-                className="glass-card p-3 first:rounded-t-lg last:rounded-b-lg"
-              >
-                <p className="text-gray-800 text-sm leading-relaxed line-clamp-3 overflow-hidden" title={gratitude.content}>
-                  {gratitude.content}
-                </p>
-                <p className="text-xs text-gray-500 mt-1">
-                  {new Date(gratitude.createdAt).toLocaleDateString()}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+      ))}
     </div>
   );
 } 

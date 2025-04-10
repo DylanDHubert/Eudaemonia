@@ -13,6 +13,28 @@ interface Entry {
 export default function ActivityHeatmap() {
   const [entries, setEntries] = useState<Entry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isDarkMode, setIsDarkMode] = useState(false);
+
+  useEffect(() => {
+    // Check initial dark mode
+    setIsDarkMode(document.documentElement.classList.contains('dark'));
+
+    // Set up observer for dark mode changes
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.attributeName === 'class') {
+          setIsDarkMode(document.documentElement.classList.contains('dark'));
+        }
+      });
+    });
+
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['class']
+    });
+
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
     async function fetchEntries() {
@@ -122,7 +144,8 @@ export default function ActivityHeatmap() {
     }
     
     // Create a true gradient from transparent at top to red at bottom
-    return `linear-gradient(to top, rgba(255, 0, 0, 0.9) 0%, rgba(255, 0, 0, 0) ${percentage}%)`;
+    const stressColor = isDarkMode ? 'rgba(244, 63, 94, 0.9)' : 'rgba(255, 0, 0, 0.9)';
+    return `linear-gradient(to top, ${stressColor} 0%, rgba(255, 0, 0, 0) ${percentage}%)`;
   };
 
   // Get the appropriate class and styles for a cell
@@ -192,13 +215,13 @@ export default function ActivityHeatmap() {
 
   return (
     <div className="glass-card p-4 sm:p-6 w-full max-w-fit overflow-x-auto">
-      <h3 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4 text-center text-gray-800">Happiness & Stress Activity</h3>
+      <h3 className="text-subheader mb-4 text-gray-800 dark:text-white">Activity Monitor</h3>
       
       <div className="w-full flex justify-center min-w-[300px]">
         <div className="flex flex-col">
           <div className="flex">
             {/* Day labels */}
-            <div className="hidden sm:flex flex-col mr-3 text-xs text-gray-600">
+            <div className="hidden sm:flex flex-col mr-3 text-xs text-gray-600 dark:text-gray-300">
               {dayLabels.map((day, index) => (
                 <div key={day} className="flex items-center justify-end w-10 h-[23px] sm:text-xs text-[10px] mt-[5px]">
                   {day}
@@ -235,7 +258,7 @@ export default function ActivityHeatmap() {
           </div>
           
           {/* Month labels - positioned at the bottom on desktop only */}
-          <div className="hidden sm:flex text-xs text-gray-600 mt-2">
+          <div className="hidden sm:flex text-xs text-gray-600 dark:text-gray-300 mt-2">
             <div className="w-10 mr-3"></div> {/* Spacer to align with day labels */}
             {monthLabels.map((month, index) => (
               <div key={index} className="flex-1 text-center">
@@ -248,7 +271,7 @@ export default function ActivityHeatmap() {
       
       {/* Color legend */}
       <div className="mt-4 sm:mt-6 px-2 sm:px-4">
-        <div className="flex justify-between text-xs text-gray-600 mb-1">
+        <div className="flex justify-between text-xs text-gray-600 dark:text-gray-300 mb-1">
           <div>Low</div>
           <div>Happiness Level</div>
           <div>High</div>
@@ -259,22 +282,22 @@ export default function ActivityHeatmap() {
         
         <div className="mt-3 sm:mt-4 flex flex-wrap justify-center items-center gap-2 sm:gap-4">
           <div className="flex items-center">
-            <div className="w-4 h-4 no-data-cell rounded-sm mr-1"></div>
-            <span className="text-xs text-gray-600">No data</span>
+            <div className="w-4 h-4 no-data-cell rounded-sm mr-1 border border-gray-200 dark:border-gray-600"></div>
+            <span className="text-xs text-gray-600 dark:text-gray-300">No data</span>
           </div>
           <div className="flex items-center">
             <div className="w-4 h-4 bg-white today-cell rounded-sm mr-1"></div>
-            <span className="text-xs text-gray-600">Today</span>
+            <span className="text-xs text-gray-600 dark:text-gray-300">Today</span>
           </div>
           <div className="flex items-center">
             <div 
-              className="w-4 h-4 rounded-sm mr-1" 
+              className="w-4 h-4 rounded-sm mr-1 border border-gray-200 dark:border-gray-600" 
               style={{ 
-                backgroundColor: 'white',
+                backgroundColor: 'transparent',
                 backgroundImage: `linear-gradient(to top, rgba(255, 0, 0, 0.9) 0%, rgba(255, 0, 0, 0) 45%)`
               }}
             ></div>
-            <span className="text-xs text-gray-600">Stress level</span>
+            <span className="text-xs text-gray-600 dark:text-gray-300">Stress level</span>
           </div>
         </div>
       </div>

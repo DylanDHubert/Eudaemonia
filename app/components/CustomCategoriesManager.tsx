@@ -4,12 +4,15 @@ import { useState, useEffect } from 'react';
 import { PlusIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { useRouter } from 'next/navigation';
 import { toast } from 'react-toastify';
+import { format } from 'date-fns';
+import CustomDropdown from './CustomDropdown';
 
 interface CustomCategory {
   id: string;
   name: string;
   type: 'numeric' | 'scale' | 'boolean';
   userId: string;
+  createdAt: string;
 }
 
 interface CustomCategoriesManagerProps {
@@ -95,72 +98,107 @@ export default function CustomCategoriesManager({ userId }: CustomCategoriesMana
   if (error) return <div className="text-red-500">{error}</div>;
 
   return (
-    <div className="space-y-6">
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label htmlFor="name" className="block text-sm font-medium text-gray-700">
-            Category Name
-          </label>
-          <input
-            type="text"
-            id="name"
-            value={newCategory.name}
-            onChange={(e) => setNewCategory({ ...newCategory, name: e.target.value })}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm glass-input"
-            required
-          />
-        </div>
-        <div>
-          <label htmlFor="type" className="block text-sm font-medium text-gray-700">
-            Type
-          </label>
-          <select
-            id="type"
-            value={newCategory.type}
-            onChange={(e) => setNewCategory({ ...newCategory, type: e.target.value as 'numeric' | 'scale' | 'boolean' })}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm glass-input"
-          >
-            <option value="numeric">Numeric</option>
-            <option value="scale">Scale (1-10)</option>
-            <option value="boolean">Yes/No</option>
-          </select>
-        </div>
-        <button
-          type="submit"
-          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-rose-600 hover:bg-rose-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-rose-500 glass-button w-full justify-center"
-        >
-          <PlusIcon className="h-5 w-5 mr-2" />
-          Add Category
-        </button>
-      </form>
-
-      <div className="mt-8">
-        <h3 className="text-lg font-medium text-gray-900 mb-4">Your Categories</h3>
-        <div className="space-y-4">
-          {categories.map((category) => (
-            <div
-              key={category.id}
-              className="flex items-center justify-between p-4 bg-white rounded-lg shadow glass-card"
-            >
-              <div>
-                <h4 className="text-sm font-medium text-gray-900">{category.name}</h4>
-                <p className="text-sm text-gray-500">
-                  Type: {category.type === 'scale' ? 'Scale (1-10)' : 
-                        category.type === 'boolean' ? 'Yes/No' : 'Numeric'}
-                </p>
-              </div>
-              <button
-                onClick={() => handleDelete(category.id)}
-                className="text-red-600 hover:text-red-800 p-2"
-              >
-                <TrashIcon className="h-5 w-5" />
-              </button>
+    <div>
+      <div className="mb-6">
+        <h2 className="text-subheader mb-2">Add a New Category</h2>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label htmlFor="name" className="block text-subheader mb-1">
+                Category Name
+              </label>
+              <input
+                type="text"
+                id="name"
+                name="name"
+                value={newCategory.name}
+                onChange={(e) => setNewCategory({ ...newCategory, name: e.target.value })}
+                className="glass-input w-full text-input dark:text-white px-4 py-2.5"
+                placeholder="e.g., Reading Time, Water Intake"
+                required
+              />
             </div>
-          ))}
-          {categories.length === 0 && (
-            <p className="text-gray-500 text-sm">No custom categories yet. Add one above!</p>
-          )}
-        </div>
+
+            <div>
+              <label htmlFor="type" className="block text-subheader mb-1">
+                Category Type
+              </label>
+              <CustomDropdown
+                options={[
+                  { value: 'numeric', label: 'Numeric (e.g., hours, count)' },
+                  { value: 'scale', label: 'Scale (1-10)' },
+                  { value: 'boolean', label: 'Yes/No' }
+                ]}
+                value={newCategory.type}
+                onChange={(value) => setNewCategory({ ...newCategory, type: value as 'numeric' | 'scale' | 'boolean' })}
+                placeholder="Select a type"
+                className="w-full"
+              />
+            </div>
+          </div>
+          
+          <button type="submit" className="glass-button w-full">
+            Add Category
+          </button>
+        </form>
+      </div>
+      
+      <div>
+        <h2 className="text-subheader mb-4">Your Categories</h2>
+        {isLoading ? (
+          <div className="text-center py-4">
+            <p className="text-description">Loading categories...</p>
+          </div>
+        ) : categories.length === 0 ? (
+          <div className="text-center py-4">
+            <p className="text-description">You haven't created any custom categories yet.</p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+              <thead className="bg-gray-50 dark:bg-gray-800">
+                <tr>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                    Name
+                  </th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                    Type
+                  </th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                    Created
+                  </th>
+                  <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
+                {categories.map((category) => (
+                  <tr key={category.id}>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
+                      {category.name}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                      {category.type === 'numeric' ? 'Numeric' : 
+                       category.type === 'scale' ? 'Scale (1-10)' : 'Yes/No'}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
+                      {format(new Date(category.createdAt), 'MMM d, yyyy')}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                      <button
+                        onClick={() => handleDelete(category.id)}
+                        className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
+                      >
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
     </div>
   );

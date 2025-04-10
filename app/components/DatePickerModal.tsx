@@ -42,32 +42,26 @@ export default function DatePickerModal({ isOpen, onClose, date, onDateChange }:
   };
 
   return (
-    <div className="fixed inset-0 flex items-start justify-center z-[10000] bg-black/50 pt-20" onClick={onClose}>
-      <div className="bg-white/90 p-4 rounded-lg shadow-xl max-w-md w-auto overflow-y-auto" onClick={handleModalContentClick}>
-        <h2 className="text-xl font-semibold mb-2 text-gray-800">Select Date</h2>
-        
-        <div className="mx-auto flex justify-center mb-2">
+    <div className="fixed flex inset-0 items-start justify-center z-50 pt-6">
+      <div className="glass-card p-6 max-w-md mx-4">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-header">Select Date</h2>
+          <button
+            onClick={onClose}
+            className="text-gray-500 hover:text-indigo-500 dark:text-gray-400 dark:hover:text-indigo-500"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+        <div className="flex justify-center">
           <DatePicker
             selected={selectedDate}
             onChange={handleDateChange}
             inline
-            calendarClassName="!bg-white/80 glassmorphism"
+            className="w-full"
           />
-        </div>
-        
-        <div className="flex justify-end space-x-2">
-          <button 
-            onClick={handleCancel} 
-            className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
-          >
-            Cancel
-          </button>
-          <button 
-            onClick={handleConfirm} 
-            className="glass-button"
-          >
-            Confirm
-          </button>
         </div>
       </div>
     </div>

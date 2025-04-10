@@ -23,7 +23,7 @@ export default function EntryForm({ userId }: EntryFormProps) {
   const [formData, setFormData] = useState({
     sleepHours: '',
     sleepQuality: '',
-    exercise: false,
+    exercise: '',
     exerciseTime: '',
     alcohol: false,
     alcoholUnits: '',
@@ -83,22 +83,23 @@ export default function EntryForm({ userId }: EntryFormProps) {
     fetchCustomCategories();
   }, [userId]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
     
-    // For number inputs, ensure we're not getting the "minus two" issue
+    // Handle number inputs
     if (type === 'number') {
-      // Only update if the value is a valid number or empty
-      if (value === '' || !isNaN(Number(value))) {
+      // Allow empty value or valid number
+      if (value === '' || (!isNaN(Number(value)) && Number(value) >= 0)) {
         setFormData(prev => ({
           ...prev,
-          [name]: value
+          [name]: value === '' ? '' : Number(value)
         }));
       }
     } else {
+      // Handle other inputs (text, select)
       setFormData(prev => ({
         ...prev,
-        [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value
+        [name]: value
       }));
     }
   };
@@ -108,6 +109,34 @@ export default function EntryForm({ userId }: EntryFormProps) {
       ...prev,
       [categoryId]: value
     }));
+  };
+
+  const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, checked } = e.target;
+    
+    // Update the checkbox state
+    setFormData(prev => ({
+      ...prev,
+      [name]: checked
+    }));
+    
+    // Reset related fields when unchecked
+    if (!checked) {
+      switch (name) {
+        case 'exercise':
+          setFormData(prev => ({ ...prev, exerciseTime: '' }));
+          break;
+        case 'meditation':
+          setFormData(prev => ({ ...prev, meditationTime: '' }));
+          break;
+        case 'alcohol':
+          setFormData(prev => ({ ...prev, alcoholUnits: '' }));
+          break;
+        case 'cannabis':
+          setFormData(prev => ({ ...prev, cannabisAmount: '' }));
+          break;
+      }
+    }
   };
 
   const submitEntry = async (overwrite = false) => {
@@ -134,9 +163,13 @@ export default function EntryForm({ userId }: EntryFormProps) {
         ...formData,
         sleepHours: formData.sleepHours ? parseFloat(formData.sleepHours) : null,
         sleepQuality: formData.sleepQuality ? parseInt(formData.sleepQuality) : null,
+        exercise: formData.exercise ? parseFloat(formData.exercise) : null,
         exerciseTime: formData.exerciseTime ? parseInt(formData.exerciseTime) : null,
+        alcohol: formData.alcohol,
         alcoholUnits: formData.alcoholUnits ? parseFloat(formData.alcoholUnits) : null,
+        cannabis: formData.cannabis,
         cannabisAmount: formData.cannabisAmount ? parseInt(formData.cannabisAmount) : null,
+        meditation: formData.meditation,
         meditationTime: formData.meditationTime ? parseInt(formData.meditationTime) : null,
         socialTime: formData.socialTime ? parseFloat(formData.socialTime) : null,
         workHours: formData.workHours ? parseFloat(formData.workHours) : null,
@@ -187,7 +220,7 @@ export default function EntryForm({ userId }: EntryFormProps) {
         ...prev,
         sleepHours: '',
         sleepQuality: '',
-        exercise: false,
+        exercise: '',
         exerciseTime: '',
         alcohol: false,
         alcoholUnits: '',
@@ -251,6 +284,10 @@ export default function EntryForm({ userId }: EntryFormProps) {
     setDatePickerOpen(true);
   };
 
+  const handleWheel = (e: React.WheelEvent<HTMLInputElement>) => {
+    e.currentTarget.blur();
+  };
+
   return (
     <>
       <DatePickerModal 
@@ -272,16 +309,16 @@ export default function EntryForm({ userId }: EntryFormProps) {
       <form onSubmit={handleSubmit} className="space-y-6">
         {error && (
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative">
-            <span className="block sm:inline">{error}</span>
+            <span className="block sm:inline text-input">{error}</span>
           </div>
         )}
         
         <div className="glass-card p-4 relative">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="text-subheader block mb-2">
             Date
           </label>
           <div 
-            className="glass-input w-full px-3 py-2 cursor-pointer flex items-center"
+            className="glass-input w-full px-3 py-2 cursor-pointer flex items-center text-input"
             onClick={handleDateClick}
           >
             <span>{format(date, 'MMMM d, yyyy')}</span>
@@ -302,315 +339,267 @@ export default function EntryForm({ userId }: EntryFormProps) {
           </div>
         </div>
         
-        <div className="grid grid-cols-1 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="glass-card p-4">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Sleep Hours (0-24)
+            <label className="text-subheader block mb-2">
+              Sleep Hours
             </label>
             <input
               type="number"
               name="sleepHours"
               value={formData.sleepHours}
               onChange={handleChange}
-              className="glass-input w-full px-3 py-2"
+              onWheel={handleWheel}
+              className="glass-input w-full px-3 py-2 text-input"
               required
               min="0"
               max="24"
               step="0.5"
-              placeholder=""
             />
           </div>
           
           <div className="glass-card p-4">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Sleep Quality (1-10)
+            <label className="text-subheader block mb-2">
+              Sleep Quality
             </label>
             <input
               type="number"
               name="sleepQuality"
               value={formData.sleepQuality}
               onChange={handleChange}
-              className="glass-input w-full px-3 py-2"
+              onWheel={handleWheel}
+              className="glass-input w-full px-3 py-2 text-input"
               required
               min="1"
               max="10"
-              placeholder=""
             />
           </div>
           
           <div className="glass-card p-4">
-            <label className="flex items-center space-x-2">
-              <input
-                type="checkbox"
-                name="exercise"
-                checked={formData.exercise}
-                onChange={handleChange}
-                className="glass-input h-4 w-4 text-rose-500 focus:ring-rose-500 border-rose-300 rounded"
-              />
-              <span className="text-sm font-medium text-gray-700">Exercise</span>
+            <label className="text-subheader block mb-2">
+              Exercise
             </label>
-            {formData.exercise && (
-              <>
-                <label className="block text-xs font-medium text-gray-600 mt-2 mb-1">
-                  Exercise Minutes (0-480)
-                </label>
-                <input
-                  type="number"
-                  name="exerciseTime"
-                  value={formData.exerciseTime}
-                  onChange={handleChange}
-                  className="glass-input mt-1 w-full px-3 py-2"
-                  min="0"
-                  max="480"
-                  placeholder=""
-                />
-              </>
-            )}
+            <input
+              type="number"
+              name="exercise"
+              value={formData.exercise}
+              onChange={handleChange}
+              onWheel={handleWheel}
+              className="glass-input w-full px-3 py-2 text-input"
+              min="0"
+              max="24"
+              step="0.5"
+            />
           </div>
           
           <div className="glass-card p-4">
-            <label className="flex items-center space-x-2">
-              <input
-                type="checkbox"
-                name="alcohol"
-                checked={formData.alcohol}
-                onChange={handleChange}
-                className="glass-input h-4 w-4 text-rose-500 focus:ring-rose-500 border-rose-300 rounded"
-              />
-              <span className="text-sm font-medium text-gray-700">Alcohol</span>
-            </label>
-            {formData.alcohol && (
-              <>
-                <label className="block text-xs font-medium text-gray-600 mt-2 mb-1">
-                  Alcohol Units (0-50)
+            <div className="flex items-center justify-between h-10">
+              <div className="flex items-center gap-4">
+                <label className="text-subheader whitespace-nowrap">
+                  Meditation
                 </label>
-                <input
-                  type="number"
-                  name="alcoholUnits"
-                  value={formData.alcoholUnits}
-                  onChange={handleChange}
-                  className="glass-input mt-1 w-full px-3 py-2"
-                  min="0"
-                  max="50"
-                  step="0.5"
-                  placeholder=""
-                />
-              </>
-            )}
-          </div>
-          
-          <div className="glass-card p-4">
-            <label className="flex items-center space-x-2">
-              <input
-                type="checkbox"
-                name="cannabis"
-                checked={formData.cannabis}
-                onChange={handleChange}
-                className="glass-input h-4 w-4 text-rose-500 focus:ring-rose-500 border-rose-300 rounded"
-              />
-              <span className="text-sm font-medium text-gray-700">Cannabis</span>
-            </label>
-            {formData.cannabis && (
-              <>
-                <label className="block text-xs font-medium text-gray-600 mt-2 mb-1">
-                  Cannabis Amount (1-5)
-                </label>
-                <input
-                  type="number"
-                  name="cannabisAmount"
-                  value={formData.cannabisAmount}
-                  onChange={handleChange}
-                  className="glass-input mt-1 w-full px-3 py-2"
-                  min="1"
-                  max="5"
-                  placeholder=""
-                />
-              </>
-            )}
-          </div>
-          
-          <div className="glass-card p-4">
-            <label className="flex items-center space-x-2">
-              <input
-                type="checkbox"
-                name="meditation"
-                checked={formData.meditation}
-                onChange={handleChange}
-                className="glass-input h-4 w-4 text-rose-500 focus:ring-rose-500 border-rose-300 rounded"
-              />
-              <span className="text-sm font-medium text-gray-700">Meditation</span>
-            </label>
-            {formData.meditation && (
-              <>
-                <label className="block text-xs font-medium text-gray-600 mt-2 mb-1">
-                  Meditation Minutes (0-480)
-                </label>
+                <div className="flex items-center whitespace-nowrap">
+                  <input
+                    type="checkbox"
+                    name="meditation"
+                    checked={formData.meditation}
+                    onChange={handleCheckboxChange}
+                    className="mr-2"
+                  />
+                  <span className="text-input">Yes</span>
+                </div>
+              </div>
+              {formData.meditation && (
                 <input
                   type="number"
                   name="meditationTime"
                   value={formData.meditationTime}
                   onChange={handleChange}
-                  className="glass-input mt-1 w-full px-3 py-2"
-                  min="0"
+                  onWheel={handleWheel}
+                  className="glass-input w-24 h-10 px-3 py-0 m-0 text-input"
+                  min="1"
                   max="480"
-                  placeholder=""
                 />
-              </>
-            )}
+              )}
+            </div>
           </div>
           
           <div className="glass-card p-4">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Social Hours (0-24)
+            <div className="flex items-center justify-between h-10">
+              <div className="flex items-center gap-4">
+                <label className="text-subheader whitespace-nowrap">
+                  Alcohol
+                </label>
+                <div className="flex items-center whitespace-nowrap">
+                  <input
+                    type="checkbox"
+                    name="alcohol"
+                    checked={formData.alcohol}
+                    onChange={handleCheckboxChange}
+                    className="mr-2"
+                  />
+                  <span className="text-input">Yes</span>
+                </div>
+              </div>
+              {formData.alcohol && (
+                <input
+                  type="number"
+                  name="alcoholUnits"
+                  value={formData.alcoholUnits}
+                  onChange={handleChange}
+                  onWheel={handleWheel}
+                  className="glass-input w-24 h-10 px-3 py-0 m-0 text-input"
+                  min="0.5"
+                  max="30"
+                  step="0.5"
+                />
+              )}
+            </div>
+          </div>
+          
+          <div className="glass-card p-4">
+            <div className="flex items-center justify-between h-10">
+              <div className="flex items-center gap-4">
+                <label className="text-subheader whitespace-nowrap">
+                  Cannabis
+                </label>
+                <div className="flex items-center whitespace-nowrap">
+                  <input
+                    type="checkbox"
+                    name="cannabis"
+                    checked={formData.cannabis}
+                    onChange={handleCheckboxChange}
+                    className="mr-2"
+                  />
+                  <span className="text-input">Yes</span>
+                </div>
+              </div>
+              {formData.cannabis && (
+                <select
+                  name="cannabisAmount"
+                  value={formData.cannabisAmount}
+                  onChange={handleChange}
+                  className="glass-input w-24 h-10 px-3 py-0 m-0 text-input"
+                >
+                  <option value="">Amount</option>
+                  <option value="1">Light</option>
+                  <option value="2">Moderate</option>
+                  <option value="3">Heavy</option>
+                </select>
+              )}
+            </div>
+          </div>
+          
+          <div className="glass-card p-4">
+            <label className="text-subheader block mb-2">
+              Social Time
             </label>
             <input
               type="number"
               name="socialTime"
               value={formData.socialTime}
               onChange={handleChange}
-              className="glass-input w-full px-3 py-2"
+              onWheel={handleWheel}
+              className="glass-input w-full px-3 py-2 text-input"
               min="0"
               max="24"
               step="0.5"
-              placeholder=""
             />
           </div>
           
           <div className="glass-card p-4">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Work Hours (0-24)
+            <label className="text-subheader block mb-2">
+              Work Hours
             </label>
             <input
               type="number"
               name="workHours"
               value={formData.workHours}
               onChange={handleChange}
-              className="glass-input w-full px-3 py-2"
+              onWheel={handleWheel}
+              className="glass-input w-full px-3 py-2 text-input"
               min="0"
               max="24"
               step="0.5"
-              placeholder=""
             />
           </div>
           
           <div className="glass-card p-4">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Number of Meals (0-10)
+            <label className="text-subheader block mb-2">
+              Meals
             </label>
             <input
               type="number"
               name="meals"
               value={formData.meals}
               onChange={handleChange}
-              className="glass-input w-full px-3 py-2"
+              onWheel={handleWheel}
+              className="glass-input w-full px-3 py-2 text-input"
               min="0"
               max="10"
-              placeholder=""
             />
           </div>
           
           <div className="glass-card p-4">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Food Quality (1-10)
+            <label className="text-subheader block mb-2">
+              Food Quality
             </label>
             <input
               type="number"
               name="foodQuality"
               value={formData.foodQuality}
               onChange={handleChange}
-              className="glass-input w-full px-3 py-2"
+              onWheel={handleWheel}
+              className="glass-input w-full px-3 py-2 text-input"
               min="1"
               max="10"
-              placeholder=""
             />
           </div>
           
-          {/* Custom Categories */}
-          {customCategories.length > 0 && (
-            <div className="col-span-1">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Custom Categories</h3>
-              <div className="grid grid-cols-1 gap-4">
-                {customCategories.map((category) => (
-                  <div key={category.id} className="glass-card p-4">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      {category.name}
-                    </label>
-                    {category.description && (
-                      <p className="text-sm text-gray-500 mb-2">{category.description}</p>
-                    )}
-                    {category.type === 'boolean' ? (
-                      <div className="mt-2">
-                        <label className="inline-flex items-center">
-                          <input
-                            type="checkbox"
-                            checked={customValues[category.id] === '1'}
-                            onChange={(e) => handleCustomValueChange(category.id, e.target.checked ? '1' : '0')}
-                            className="glass-input h-4 w-4 text-rose-500 focus:ring-rose-500 border-rose-300 rounded"
-                          />
-                          <span className="ml-2 text-gray-700">Yes</span>
-                        </label>
-                      </div>
-                    ) : (
-                      <input
-                        type="number"
-                        value={customValues[category.id] || ''}
-                        onChange={(e) => handleCustomValueChange(category.id, e.target.value)}
-                        className="glass-input w-full px-3 py-2"
-                        min={category.type === 'scale' ? 1 : undefined}
-                        max={category.type === 'scale' ? 10 : undefined}
-                        placeholder=""
-                      />
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+          <div className="glass-card p-4">
+            <label className="text-subheader block mb-2">
+              Stress Level
+            </label>
+            <input
+              type="number"
+              name="stressLevel"
+              value={formData.stressLevel}
+              onChange={handleChange}
+              onWheel={handleWheel}
+              className="glass-input w-full px-3 py-2 text-input"
+              required
+              min="1"
+              max="10"
+            />
+          </div>
+          
+          <div className="glass-card p-4">
+            <label className="text-subheader block mb-2">
+              Happiness Rating
+            </label>
+            <input
+              type="number"
+              name="happinessRating"
+              value={formData.happinessRating}
+              onChange={handleChange}
+              onWheel={handleWheel}
+              className="glass-input w-full px-3 py-2 text-input"
+              required
+              min="1"
+              max="10"
+            />
+          </div>
         </div>
         
         <div className="glass-card p-4">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Stress Level (1-10)
-          </label>
-          <input
-            type="number"
-            name="stressLevel"
-            value={formData.stressLevel}
-            onChange={handleChange}
-            className="glass-input w-full px-3 py-2"
-            required
-            min="1"
-            max="10"
-            placeholder=""
-          />
-        </div>
-        
-        <div className="glass-card p-4">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Happiness Rating (1-10)
-          </label>
-          <input
-            type="number"
-            name="happinessRating"
-            value={formData.happinessRating}
-            onChange={handleChange}
-            className="glass-input w-full px-3 py-2"
-            required
-            min="1"
-            max="10"
-            placeholder=""
-          />
-        </div>
-        
-        <div className="glass-card p-4">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="text-subheader block mb-2">
             Notes
           </label>
           <textarea
             name="notes"
             value={formData.notes}
             onChange={handleChange}
-            className="glass-input w-full px-3 py-2"
+            className="glass-input w-full px-3 py-2 text-input"
             rows={4}
           />
         </div>
@@ -618,20 +607,9 @@ export default function EntryForm({ userId }: EntryFormProps) {
         <div>
           <button
             type="submit"
-            disabled={isLoading}
-            className="glass-button w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-rose-600 hover:bg-rose-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-rose-500 disabled:bg-rose-400"
+            className="glass-button w-full"
           >
-            {isLoading ? (
-              <>
-                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                Saving...
-              </>
-            ) : (
-              'Save Entry'
-            )}
+            Save Entry
           </button>
         </div>
       </form>

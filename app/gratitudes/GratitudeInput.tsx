@@ -1,56 +1,88 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSession } from 'next-auth/react';
 import { DocumentCheckIcon } from '@heroicons/react/24/outline';
 
 export default function GratitudeInput() {
-  const [gratitude, setGratitude] = useState('');
+  const { data: session } = useSession();
+  const [content, setContent] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(false);
+
+  // Check if dark mode is enabled
+  useEffect(() => {
+    const checkDarkMode = () => {
+      const isDark = document.documentElement.classList.contains('dark');
+      setIsDarkMode(isDark);
+    };
+
+    // Initial check
+    checkDarkMode();
+
+    // Set up a mutation observer to detect changes to the dark mode class
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.attributeName === 'class') {
+          checkDarkMode();
+        }
+      });
+    });
+
+    observer.observe(document.documentElement, { attributes: true });
+
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!gratitude.trim()) return;
+    if (!content.trim() || !session?.user?.id) return;
 
+    setIsSubmitting(true);
     try {
       const response = await fetch('/api/gratitudes', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ content: gratitude }),
+        body: JSON.stringify({
+          content,
+          userId: session.user.id,
+        }),
       });
 
-      if (response.ok) {
-        setGratitude('');
-        // You could add a success toast here
-      }
+      if (!response.ok) throw new Error('Failed to save gratitude');
+      
+      setContent('');
+      // You could add a success message or trigger a refresh of the GratitudeView
     } catch (error) {
       console.error('Error saving gratitude:', error);
-      // You could add an error toast here
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="glass-card p-4 sm:p-6">
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label htmlFor="gratitude" className="block text-sm font-medium text-gray-700 mb-2">
-            What are you grateful for today?
-          </label>
+    <div className="h-full">
+      <form onSubmit={handleSubmit} className="h-full flex flex-col space-y-6">
+        <div className="glass-card p-4 flex-grow">
           <textarea
-            id="gratitude"
-            value={gratitude}
-            onChange={(e) => setGratitude(e.target.value)}
-            placeholder="Enter your gratitude here..."
-            className="glass-input w-full h-[150px] p-3 text-base resize-none"
-            rows={6}
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+            placeholder="What are you grateful for today?"
+            className="w-full h-full bg-transparent border-0 focus:ring-0 text-gray-800 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500 resize-none"
+            required
           />
         </div>
         <button
           type="submit"
-          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-rose-600 hover:bg-rose-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-rose-500 glass-button w-full justify-center"
+          disabled={isSubmitting || !content.trim()}
+          className="glass-button w-full flex items-center justify-center gap-2"
         >
-          <DocumentCheckIcon className="h-5 w-5 mr-2" />
-          Save Gratitude
+          <DocumentCheckIcon className="h-5 w-5" />
+          <span>{isSubmitting ? 'Saving...' : 'Save Gratitude'}</span>
         </button>
       </form>
     </div>

@@ -84,6 +84,7 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
   const [viewMode, setViewMode] = useState<'correlations' | 'trends' | 'matrix'>('correlations');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [entryCounts, setEntryCounts] = useState<number[]>([]);
+  const [isDarkMode, setIsDarkMode] = useState(false);
   
   // Mapping of internal factor names to display names
   const factorNameMap = useMemo<Record<string, string>>(() => ({
@@ -566,6 +567,7 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
         title: {
           display: true,
           text: `${getDisplayName(factorName)} vs. Happiness`,
+          color: isDarkMode ? 'rgba(209, 213, 219, 0.8)' : 'rgba(75, 85, 99, 0.8)',
         },
         tooltip: {
           callbacks: {
@@ -584,20 +586,34 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
           title: {
             display: true,
             text: xTitle,
+            color: isDarkMode ? 'rgba(209, 213, 219, 0.8)' : 'rgba(75, 85, 99, 0.8)',
           },
-          ticks: isBoolean ? {
-            callback: function(value: any) {
-              return ['No', 'Yes'][value];
-            }
-          } : undefined
+          ticks: {
+            color: isDarkMode ? 'rgba(209, 213, 219, 0.8)' : 'rgba(75, 85, 99, 0.8)',
+            ...(isBoolean ? {
+              callback: function(value: any) {
+                return ['No', 'Yes'][value];
+              }
+            } : {})
+          },
+          grid: {
+            color: isDarkMode ? 'rgba(75, 85, 99, 0.2)' : 'rgba(209, 213, 219, 0.5)',
+          }
         },
         y: {
           title: {
             display: true,
             text: 'Happiness Rating',
+            color: isDarkMode ? 'rgba(209, 213, 219, 0.8)' : 'rgba(75, 85, 99, 0.8)',
           },
           min: 0,
-          max: 10
+          max: 10,
+          ticks: {
+            color: isDarkMode ? 'rgba(209, 213, 219, 0.8)' : 'rgba(75, 85, 99, 0.8)',
+          },
+          grid: {
+            color: isDarkMode ? 'rgba(75, 85, 99, 0.2)' : 'rgba(209, 213, 219, 0.5)',
+          }
         }
       }
     };
@@ -610,7 +626,7 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
         {
           label: `${getDisplayName(factorName)} vs. Happiness`,
           data: scatterData,
-          backgroundColor: 'rgba(79, 70, 229, 0.6)',
+          backgroundColor: isDarkMode ? 'rgba(99, 102, 241, 0.6)' : 'rgba(79, 70, 229, 0.6)',
           pointRadius: isBooleanFactor(factorName) ? 10 : 6,
           pointHoverRadius: isBooleanFactor(factorName) ? 12 : 8,
         },
@@ -624,10 +640,14 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
     plugins: {
       legend: {
         position: 'top' as const,
+        labels: {
+          color: isDarkMode ? 'rgba(209, 213, 219, 0.8)' : 'rgba(75, 85, 99, 0.8)',
+        }
       },
       title: {
         display: true,
         text: 'Your Happiness Over Time',
+        color: isDarkMode ? 'rgba(209, 213, 219, 0.8)' : 'rgba(75, 85, 99, 0.8)',
       },
       tooltip: {
         callbacks: {
@@ -645,7 +665,22 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
         max: 10,
         title: {
           display: true,
-          text: 'Happiness Rating'
+          text: 'Happiness Rating',
+          color: isDarkMode ? 'rgba(209, 213, 219, 0.8)' : 'rgba(75, 85, 99, 0.8)',
+        },
+        ticks: {
+          color: isDarkMode ? 'rgba(209, 213, 219, 0.8)' : 'rgba(75, 85, 99, 0.8)',
+        },
+        grid: {
+          color: isDarkMode ? 'rgba(75, 85, 99, 0.2)' : 'rgba(209, 213, 219, 0.5)',
+        }
+      },
+      x: {
+        ticks: {
+          color: isDarkMode ? 'rgba(209, 213, 219, 0.8)' : 'rgba(75, 85, 99, 0.8)',
+        },
+        grid: {
+          color: isDarkMode ? 'rgba(75, 85, 99, 0.2)' : 'rgba(209, 213, 219, 0.5)',
         }
       }
     }
@@ -738,6 +773,32 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
   // Helper function to format factor names for display
   const formatFactorName = getDisplayName;
   
+  // Check if dark mode is enabled
+  useEffect(() => {
+    const checkDarkMode = () => {
+      const isDark = document.documentElement.classList.contains('dark');
+      setIsDarkMode(isDark);
+    };
+
+    // Initial check
+    checkDarkMode();
+
+    // Set up a mutation observer to detect changes to the dark mode class
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.attributeName === 'class') {
+          checkDarkMode();
+        }
+      });
+    });
+
+    observer.observe(document.documentElement, { attributes: true });
+
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
+  
   if (entries.length < minimumEntries) {
     return (
       <div className="text-center py-6">
@@ -753,14 +814,14 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
       {/* Modal for scatter plot and time series - desktop only */}
       {isModalOpen && selectedFactor && (
         <div className="fixed inset-0 hidden sm:flex items-center justify-center z-[10000] bg-black/50">
-          <div className="bg-white/90 p-4 rounded-lg shadow-xl w-auto max-w-4xl h-auto max-h-[80vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+          <div className="glass-card p-4 w-auto max-w-4xl h-auto max-h-[80vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
             <div className="flex justify-end">
               <button
                 onClick={() => {
                   setIsModalOpen(false);
                   setSelectedFactor(null);
                 }}
-                className="text-gray-500 hover:text-gray-700"
+                className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
               >
                 <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -787,7 +848,7 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
               ) : null}
             </div>
             <div className="text-center mt-0">
-              <p className="text-xs sm:text-sm text-gray-500">
+              <p className="text-xs sm:text-sm text-description">
                 {selectedFactor && (correlations.find(c => 
                   c.factor === selectedFactor || 
                   c.factor === getInternalName(selectedFactor))?.description || 
@@ -803,12 +864,12 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
         <div className="hidden sm:flex flex-row space-x-2 mb-6">
           <button 
             onClick={() => setViewMode('correlations')}
-            className={`px-4 py-2 rounded-lg transition-colors ${viewMode === 'correlations' ? 'bg-rose-400 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}>
+            className={`px-4 py-2 rounded-lg transition-colors ${viewMode === 'correlations' ? 'bg-rose-400 dark:bg-indigo-500 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'}`}>
             Correlations
           </button>
           <button 
             onClick={() => setViewMode('matrix')}
-            className={`px-4 py-2 rounded-lg transition-colors ${viewMode === 'matrix' ? 'bg-rose-400 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}>
+            className={`px-4 py-2 rounded-lg transition-colors ${viewMode === 'matrix' ? 'bg-rose-400 dark:bg-indigo-500 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'}`}>
             Matrix View
           </button>
         </div>
@@ -816,22 +877,22 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
         {viewMode === 'correlations' ? (
           <>
             <div className="mb-4 sm:mb-8">
-              <h3 className="hidden sm:block text-lg font-medium mb-4">Factors Affecting Your Happiness</h3>
+              <h3 className="hidden sm:block text-subheader mb-4">Factors Affecting Your Happiness</h3>
               <div className="glass-card p-2 sm:p-6 rounded-lg overflow-hidden">
                 <div className="overflow-x-auto sm:overflow-x-auto">
-                  <table className="w-full divide-y divide-gray-200">
+                  <table className="w-full divide-y divide-gray-200 dark:divide-gray-700">
                     <thead>
                       <tr>
-                        <th scope="col" className="px-2 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Factor</th>
-                        <th scope="col" className="px-2 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Correlation</th>
-                        <th scope="col" className="hidden sm:table-cell px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Interpretation</th>
-                        <th scope="col" className="hidden sm:table-cell px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                        <th scope="col" className="px-2 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Factor</th>
+                        <th scope="col" className="px-2 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Correlation</th>
+                        <th scope="col" className="hidden sm:table-cell px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Interpretation</th>
+                        <th scope="col" className="hidden sm:table-cell px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-200">
+                    <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                       {correlations.length === 0 ? (
                         <tr>
-                          <td colSpan={4} className="px-4 sm:px-6 py-4 text-center text-gray-500">
+                          <td colSpan={4} className="px-4 sm:px-6 py-4 text-center text-description">
                             No correlation data available
                           </td>
                         </tr>
@@ -839,23 +900,23 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
                         correlations.map((correlation, index) => (
                           <tr 
                             key={index} 
-                            className={`${selectedFactor === correlation.factor ? 'bg-pink-50/50' : 'hover:bg-gray-50/50'} cursor-pointer`}
+                            className={`${selectedFactor === correlation.factor ? 'bg-pink-50/50 dark:bg-indigo-900/20' : 'hover:bg-gray-50/50 dark:hover:bg-gray-800/50'} cursor-pointer`}
                             onClick={() => setSelectedFactor(correlation.factor)}
                           >
-                            <td className="px-2 sm:px-6 py-4 text-sm font-medium text-gray-900">
+                            <td className="px-2 sm:px-6 py-4 text-sm font-medium text-gray-900 dark:text-gray-100">
                               {formatFactorName(correlation.factor)}
                             </td>
                             <td className={`px-2 sm:px-6 py-4 text-sm ${getCorrelationColor(correlation.correlation)}`}>
                               {formatDecimal(correlation.correlation)}
                             </td>
-                            <td className="hidden sm:table-cell px-6 py-4 text-sm text-gray-500">{correlation.description}</td>
+                            <td className="hidden sm:table-cell px-6 py-4 text-sm text-description">{correlation.description}</td>
                             <td className="hidden sm:table-cell px-4 sm:px-6 py-4 whitespace-nowrap text-sm">
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   setSelectedFactor(correlation.factor);
                                 }}
-                                className="text-pink-600 hover:text-pink-900 transition-colors"
+                                className="text-rose-600 hover:text-rose-900 dark:text-indigo-400 dark:hover:text-indigo-300 transition-colors"
                               >
                                 View
                               </button>
@@ -871,12 +932,12 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
           </>
         ) : (
           <div className="glass-card p-4 sm:p-6 rounded-lg hidden sm:block">
-            <h3 className="text-lg font-medium mb-4">Feature Correlation Matrix</h3>
+            <h3 className="text-subheader mb-4">Feature Correlation Matrix</h3>
             <div className="relative">
               <CorrelationMatrix />
             </div>
             <div className="mt-4">
-              <p className="text-sm text-gray-500">
+              <p className="text-description">
                 This matrix shows correlations between different factors. Deeper colors indicate stronger relationships.
               </p>
             </div>

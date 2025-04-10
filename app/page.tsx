@@ -36,8 +36,10 @@ export default async function Dashboard() {
               </div>
               
               {/* Gratitudes Container */}
-              <div className="glass-card p-3 sm:p-8 w-full md:w-60">
-                <GratitudeView />
+              <div className="glass-card p-5 sm:p-8 w-full md:w-60">
+                <div className="overflow-y-auto max-h-[410px] scrollbar-hide">
+                  <GratitudeView />
+                </div>
               </div>
             </div>
             
@@ -47,15 +49,9 @@ export default async function Dashboard() {
             </div>
             
             {/* Happiness Chart */}
-            <div className="glass-card p-5 sm:p-8 w-full md:max-w-3xl">
-              <h3 className="text-lg sm:text-xl font-semibold mb-4 text-center text-gray-800 dark:text-gray-100">Your Happiness Over Time</h3>
-              <div className="h-64 relative">
+            <div className="glass-card p-4 sm:p-8 w-full md:max-w-3xl">
+              <div className="h-70 relative">
                 <HappinessChart />
-              </div>
-              <div className="mt-4">
-                <p className="text-sm text-gray-500 dark:text-gray-400 text-center">
-                  This chart shows your happiness ratings over time. Look for patterns to understand how your happiness changes.
-                </p>
               </div>
             </div>
           </div>
