@@ -79,6 +79,10 @@ export default function GratitudeView() {
 
   return (
     <div className="space-y-4 scrollbar-hide">
+      <div className="mb-4">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Daily Gratitudes</h3>
+        <p className="text-sm text-gray-600 dark:text-gray-400">Record and reflect on what you're grateful for each day.</p>
+      </div>
       {gratitudes.map((gratitude) => (
         <div
           key={gratitude.id}

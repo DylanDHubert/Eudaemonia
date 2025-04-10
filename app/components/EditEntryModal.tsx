@@ -7,8 +7,15 @@ import { toast } from 'react-toastify';
 interface CustomCategory {
   id: string;
   name: string;
-  type: 'numeric' | 'scale' | 'boolean';
+  type: string;
+  min?: number;
+  max?: number;
+}
+
+interface CustomCategoryEntry {
+  id: string;
   value: number;
+  customCategory: CustomCategory;
 }
 
 interface Entry {
@@ -31,7 +38,7 @@ interface Entry {
   stressLevel: number;
   happinessRating: number;
   notes: string | null;
-  customCategories: CustomCategory[];
+  customCategoryEntries: CustomCategoryEntry[];
 }
 
 interface EditEntryModalProps {
@@ -59,8 +66,8 @@ export default function EditEntryModal({ isOpen, onClose, entry }: EditEntryModa
         },
         body: JSON.stringify({
           ...formData,
-          customCategoryEntries: formData.customCategories.map(category => ({
-            customCategoryId: category.id,
+          customCategoryEntries: formData.customCategoryEntries.map(category => ({
+            customCategoryId: category.customCategory.id,
             value: category.value
           }))
         }),
@@ -101,8 +108,8 @@ export default function EditEntryModal({ isOpen, onClose, entry }: EditEntryModa
   const handleCustomCategoryChange = (categoryId: string, value: number) => {
     setFormData(prev => ({
       ...prev,
-      customCategories: prev.customCategories.map(category =>
-        category.id === categoryId ? { ...category, value } : category
+      customCategoryEntries: prev.customCategoryEntries.map(category =>
+        category.customCategory.id === categoryId ? { ...category, value } : category
       )
     }));
   };
@@ -226,22 +233,22 @@ export default function EditEntryModal({ isOpen, onClose, entry }: EditEntryModa
             </div>
           </div>
 
-          {formData.customCategories.length > 0 && (
+          {formData.customCategoryEntries.length > 0 && (
             <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
               <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Custom Categories</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {formData.customCategories.map((category) => (
-                  <div key={category.id}>
+                {formData.customCategoryEntries.map((category) => (
+                  <div key={category.customCategory.id}>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                      {category.name}
+                      {category.customCategory.name}
                     </label>
                     <input
                       type="number"
                       value={category.value}
-                      onChange={(e) => handleCustomCategoryChange(category.id, parseFloat(e.target.value))}
-                      min={category.type === 'scale' ? 1 : 0}
-                      max={category.type === 'scale' ? 10 : undefined}
-                      step={category.type === 'numeric' ? 1 : 0.1}
+                      onChange={(e) => handleCustomCategoryChange(category.customCategory.id, parseFloat(e.target.value))}
+                      min={category.customCategory.min}
+                      max={category.customCategory.max}
+                      step={category.customCategory.type === 'numeric' ? 1 : 0.1}
                       className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
                     />
                   </div>
