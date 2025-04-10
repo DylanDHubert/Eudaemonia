@@ -12,7 +12,7 @@ interface Gratitude {
 
 export default function RandomGratitude() {
   const [showInput, setShowInput] = useState(Math.random() < 0.5);
-  const [gratitude, setGratitude] = useState('');
+  const [gratitude, setGratitude] = useState<Gratitude | null>(null);
   const [gratitudes, setGratitudes] = useState<Gratitude[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -34,9 +34,16 @@ export default function RandomGratitude() {
     fetchGratitudes();
   }, []);
 
+  const fetchRandomGratitude = () => {
+    if (gratitudes.length > 0) {
+      const randomIndex = Math.floor(Math.random() * gratitudes.length);
+      setGratitude(gratitudes[randomIndex]);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!gratitude.trim()) return;
+    if (!gratitude?.content.trim()) return;
 
     try {
       const response = await fetch('/api/gratitudes', {
@@ -44,11 +51,11 @@ export default function RandomGratitude() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ content: gratitude }),
+        body: JSON.stringify({ content: gratitude.content }),
       });
 
       if (response.ok) {
-        setGratitude('');
+        setGratitude(null);
         const newGratitude = await response.json();
         setGratitudes([newGratitude, ...gratitudes]);
       }
