@@ -18,31 +18,37 @@
   --background-end-rgb: 255, 255, 255;
 }
 
+.dark {
+  --foreground-rgb: 255, 255, 255;
+  --background-start-rgb: 0, 0, 0;
+  --background-end-rgb: 0, 0, 0;
+}
+
 @layer components {
   .glass-nav {
-    @apply bg-white/50 backdrop-blur-lg border-b border-white/30 shadow-md;
+    @apply bg-white/50 backdrop-blur-lg border-b border-white/30 shadow-md dark:bg-gray-900/50 dark:border-gray-800/30;
   }
 
   .glass-card {
-    @apply bg-white bg-opacity-80 backdrop-blur-sm rounded-xl shadow-md;
+    @apply bg-white bg-opacity-80 backdrop-blur-sm rounded-xl shadow-md dark:bg-gray-900/80 dark:text-white;
   }
 
   .glass-input {
-    @apply bg-white/30 backdrop-blur-md border border-white/40 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-rose-500/50 focus:border-rose-500/50;
+    @apply bg-white/30 backdrop-blur-md border border-white/40 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-rose-500/50 focus:border-rose-500/50 dark:bg-gray-800/30 dark:border-gray-700/40 dark:text-white;
   }
 
   .glass-button {
-    @apply bg-rose-500/70 backdrop-blur-md text-white rounded-md hover:bg-rose-600/80 focus:outline-none focus:ring-1 focus:ring-offset-2 focus:ring-rose-500/50 transition-all duration-200 px-4 py-2;
+    @apply bg-rose-500/70 backdrop-blur-md text-white rounded-md hover:bg-rose-600/80 focus:outline-none focus:ring-1 focus:ring-offset-2 focus:ring-rose-500/50 transition-all duration-200 px-4 py-2 dark:bg-rose-600/70 dark:hover:bg-rose-700/80;
   }
   
   /* Custom checkbox styling to match the glassmorphism theme */
   input[type="checkbox"] {
-    @apply h-4 w-4 text-rose-500 focus:ring-rose-500 border-rose-300 rounded bg-white/50;
+    @apply h-4 w-4 text-rose-500 focus:ring-rose-500 border-rose-300 rounded bg-white/50 dark:bg-gray-800/50 dark:border-gray-700;
   }
   
   /* Generic glassmorphism class that can be applied anywhere */
   .glassmorphism {
-    @apply bg-white/30 backdrop-blur-lg border border-white/30 shadow-lg;
+    @apply bg-white/30 backdrop-blur-lg border border-white/30 shadow-lg dark:bg-gray-800/30 dark:border-gray-700/30;
   }
 }
 
@@ -57,30 +63,39 @@ body {
   min-height: 100vh;
 }
 
+.dark body {
+  background: linear-gradient(
+    to bottom right,
+    #111827,
+    #111827,
+    #111827
+  );
+}
+
 /* Custom DatePicker styling to match glassmorphism theme */
 .react-datepicker {
-  @apply bg-white/40 backdrop-blur-lg border border-white/30 shadow-lg rounded-lg !important;
+  @apply bg-white/40 backdrop-blur-lg border border-white/30 shadow-lg rounded-lg dark:bg-gray-800/40 dark:border-gray-700/30 !important;
   font-family: inherit !important;
 }
 
 .react-datepicker__header {
-  @apply bg-white/50 backdrop-blur-md border-b border-white/30 !important;
+  @apply bg-white/50 backdrop-blur-md border-b border-white/30 dark:bg-gray-800/50 dark:border-gray-700/30 !important;
 }
 
 .react-datepicker__day {
-  @apply hover:bg-rose-100/80 hover:text-rose-700 rounded-full transition-colors !important;
+  @apply hover:bg-rose-100/80 hover:text-rose-700 rounded-full transition-colors dark:hover:bg-rose-900/80 dark:hover:text-rose-300 !important;
 }
 
 .react-datepicker__day--selected {
-  @apply bg-rose-500/70 text-white hover:bg-rose-600/70 hover:text-white !important;
+  @apply bg-rose-500/70 text-white hover:bg-rose-600/70 hover:text-white dark:bg-rose-600/70 dark:hover:bg-rose-700/70 !important;
 }
 
 .react-datepicker__day--keyboard-selected {
-  @apply bg-rose-400/50 text-rose-500 hover:bg-rose-500/50 hover:text-white !important;
+  @apply bg-rose-400/50 text-rose-500 hover:bg-rose-500/50 hover:text-white dark:bg-rose-500/50 dark:text-rose-300 dark:hover:bg-rose-600/50 !important;
 }
 
 .react-datepicker__day--outside-month {
-  @apply text-gray-400/70 !important;
+  @apply text-gray-400/70 dark:text-gray-500/70 !important;
 }
 
 .react-datepicker__triangle {
@@ -89,7 +104,7 @@ body {
 
 .react-datepicker__current-month, 
 .react-datepicker__day-name {
-  @apply text-gray-700 !important;
+  @apply text-gray-700 dark:text-gray-300 !important;
 }
 
 .react-datepicker__navigation {
@@ -146,14 +161,32 @@ body {
   );
 }
 
+.dark .no-data-cell {
+  background: repeating-linear-gradient(
+    -45deg,
+    rgba(100, 100, 100, 0.2),
+    rgba(100, 100, 100, 0.2) 3px,
+    rgba(50, 50, 50, 0.4) 3px,
+    rgba(50, 50, 50, 0.4) 6px
+  );
+}
+
 .last-day-of-month {
   border-bottom: 2px solid rgba(0, 0, 0, 0.2);
   margin-bottom: 2px;
 }
 
+.dark .last-day-of-month {
+  border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+}
+
 .first-day-of-month {
   border-top: 2px solid rgba(0, 0, 0, 0.2);
   margin-top: 2px;
+}
+
+.dark .first-day-of-month {
+  border-top: 2px solid rgba(255, 255, 255, 0.2);
 }
 
 /* Correlation Matrix styles */
@@ -198,69 +231,27 @@ body {
 
 @media (max-width: 640px) {
   .day-cell {
-    width: 16px;
-    height: 16px;
-    margin: 1px;
+    width: 20px;
+    height: 20px;
   }
-
-  .week-column {
-    gap: 2px;
-  }
-
-  .grid-display {
-    gap: 2px;
-  }
-
-  .grid-display .week-column {
-    width: 16px;
-    gap: 2px;
-  }
-
+  
   .grid-display .day-cell {
-    width: 16px;
-    height: 16px;
+    width: 20px;
+    height: 20px;
   }
-
-  .correlation-table th, 
+  
+  .grid-display .week-column {
+    width: 20px;
+    gap: 2.5px;
+  }
+  
   .correlation-table td {
-    font-size: 8px !important;
-  }
-
-  .correlation-table th {
-    height: 100px !important;
-  }
-
-  input[type="number"] {
-    /* Disable the increment/decrement buttons for better mobile UX */
-    -moz-appearance: textfield;
-  }
-  
-  input[type="number"]::-webkit-inner-spin-button,
-  input[type="number"]::-webkit-outer-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
-  }
-  
-  .glass-input {
-    @apply text-base py-3; /* Larger touch target and font for mobile */
-  }
-  
-  /* Improve tap targets on mobile */
-  button, 
-  [type="button"], 
-  [type="reset"], 
-  [type="submit"] {
-    @apply py-3;
-  }
-  
-  /* Ensure labels are visible enough on mobile */
-  label {
-    @apply text-base font-medium;
-  }
-  
-  /* Reduce padding on glass-card for mobile */
-  .glass-card {
-    @apply p-4;
+    width: 20px;
+    height: 20px;
+    min-width: 20px;
+    min-height: 20px;
+    max-width: 20px;
+    max-height: 20px;
   }
 }
 

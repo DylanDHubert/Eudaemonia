@@ -57,21 +57,15 @@ export default function GratitudeView() {
           No gratitudes yet. Add your first one below!
         </div>
       ) : (
-        <div className="relative rounded-lg">
-          {hasOverflow && (
-            <>
-              <div className="absolute inset-x-0 top-0 h-8 bg-gradient-to-b from-white to-transparent z-10 pointer-events-none rounded-lg" />
-              <div className="absolute inset-x-0 bottom-0 h-8 bg-gradient-to-t from-white to-transparent z-10 pointer-events-none rounded-lg" />
-            </>
-          )}
+        <div className="relative rounded-lg overflow-hidden">
           <div 
             ref={containerRef}
-            className="space-y-3 max-h-[365px] overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] rounded-lg"
+            className="space-y-3 max-h-[365px] overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
           >
             {gratitudes.map((gratitude) => (
               <div 
                 key={gratitude.id} 
-                className="glass-card p-3"
+                className="glass-card p-3 first:rounded-t-lg last:rounded-b-lg"
               >
                 <p className="text-gray-800 text-sm leading-relaxed line-clamp-3 overflow-hidden" title={gratitude.content}>
                   {gratitude.content}

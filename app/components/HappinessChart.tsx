@@ -36,6 +36,33 @@ export default function HappinessChart() {
   const [isLoading, setIsLoading] = useState(true);
   const [entryCounts, setEntryCounts] = useState<number[]>([]);
   const [fontSize, setFontSize] = useState(12);
+  const [isDarkMode, setIsDarkMode] = useState(false);
+
+  // Check if dark mode is enabled
+  useEffect(() => {
+    const checkDarkMode = () => {
+      const isDark = document.documentElement.classList.contains('dark');
+      setIsDarkMode(isDark);
+    };
+
+    // Initial check
+    checkDarkMode();
+
+    // Set up a mutation observer to detect changes to the dark mode class
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.attributeName === 'class') {
+          checkDarkMode();
+        }
+      });
+    });
+
+    observer.observe(document.documentElement, { attributes: true });
+
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
 
   // Prepare time series data for the happiness trend chart
   const prepareTimeSeriesData = useCallback((entries: Entry[]) => {
@@ -102,15 +129,10 @@ export default function HappinessChart() {
         const response = await fetch(`/api/entries?limit=90`);
         const data = await response.json();
         if (data.entries) {
-          const formattedEntries = data.entries.map((entry: any) => ({
-            id: entry.id,
-            date: entry.date,
-            happinessRating: entry.happinessRating
-          }));
-          prepareTimeSeriesData(formattedEntries);
+          prepareTimeSeriesData(data.entries);
         }
       } catch (error) {
-        console.error('Error fetching entries for happiness chart:', error);
+        console.error('Error fetching entries:', error);
       } finally {
         setIsLoading(false);
       }
@@ -119,94 +141,96 @@ export default function HappinessChart() {
     fetchEntries();
   }, [prepareTimeSeriesData]);
 
+  // Update font size based on screen size
   useEffect(() => {
-    // Update font size based on window width
     const updateFontSize = () => {
-      setFontSize(window.innerWidth < 640 ? 10 : 12);
+      if (window.innerWidth < 640) {
+        setFontSize(10);
+      } else {
+        setFontSize(12);
+      }
     };
 
-    // Set initial font size
     updateFontSize();
-
-    // Add event listener for window resize
     window.addEventListener('resize', updateFontSize);
-
-    // Cleanup
     return () => window.removeEventListener('resize', updateFontSize);
   }, []);
 
-  // Time series chart options
-  const timeSeriesOptions = {
+  if (isLoading) {
+    return (
+      <div className="animate-pulse">
+        <div className="h-64 bg-gray-200 dark:bg-gray-700 rounded"></div>
+      </div>
+    );
+  }
+
+  if (!timeSeriesData) {
+    return (
+      <div className="text-center py-4">
+        <p className="text-gray-500 dark:text-gray-400">No data available for the happiness chart.</p>
+      </div>
+    );
+  }
+
+  // Chart options
+  const options = {
     responsive: true,
     maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        position: 'top' as const,
-        labels: {
-          boxWidth: 12,
-          font: {
-            size: fontSize
-          }
-        }
-      },
-      tooltip: {
-        callbacks: {
-          label: function(context: any) {
-            const index = context.dataIndex;
-            const count = entryCounts[index];
-            return `${context.dataset.label}: ${context.parsed.y.toFixed(1)} (${count}x)`;
-          }
-        }
-      }
-    },
     scales: {
+      y: {
+        beginAtZero: true,
+        max: 10,
+        ticks: {
+          stepSize: 2,
+          font: {
+            size: fontSize,
+            color: isDarkMode ? 'rgba(209, 213, 219, 0.8)' : 'rgba(75, 85, 99, 0.8)',
+          },
+          callback: function(tickValue: number | string) {
+            return tickValue.toString();
+          },
+        },
+        grid: {
+          color: isDarkMode ? 'rgba(75, 85, 99, 0.2)' : 'rgba(209, 213, 219, 0.5)',
+        },
+      },
       x: {
         ticks: {
           maxRotation: 45,
           minRotation: 45,
           font: {
-            size: fontSize
-          }
-        }
-      },
-      y: {
-        min: 0,
-        max: 10,
-        title: {
-          display: true,
-          text: 'Happiness Rating',
-          font: {
-            size: fontSize
-          }
+            size: fontSize,
+            color: isDarkMode ? 'rgba(209, 213, 219, 0.8)' : 'rgba(75, 85, 99, 0.8)',
+          },
         },
-        ticks: {
-          font: {
-            size: fontSize
-          }
-        }
-      }
-    }
+        grid: {
+          display: false,
+        },
+      },
+    },
+    plugins: {
+      legend: {
+        display: false,
+      },
+      tooltip: {
+        callbacks: {
+          label: (context: any) => {
+            const index = context.dataIndex;
+            const count = entryCounts[index];
+            return `Happiness: ${context.parsed.y.toFixed(1)}/10 (${count} ${count === 1 ? 'entry' : 'entries'})`;
+          },
+        },
+        titleFont: {
+          size: fontSize + 2,
+        },
+        bodyFont: {
+          size: fontSize,
+        },
+      },
+    },
   };
 
-  if (isLoading) {
-    return (
-      <div className="w-full h-full animate-pulse">
-        <div className="h-full bg-gray-200 rounded"></div>
-      </div>
-    );
-  }
-
-  if (!timeSeriesData || !timeSeriesData.labels || timeSeriesData.labels.length < 2) {
-    return (
-      <div className="w-full h-full flex items-center justify-center">
-        <p className="text-gray-500">Not enough data to display happiness trends.</p>
-      </div>
-    );
-  }
-
   return (
-    <div className="w-full h-full">
-      <Line options={timeSeriesOptions} data={timeSeriesData} />
-    </div>
+    <Line options={options} data={timeSeriesData} />
   );
 } 
