@@ -127,7 +127,7 @@ export default function CustomCategoriesManager({ userId }: CustomCategoriesMana
         </div>
         <button
           type="submit"
-          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 glass-button w-full justify-center"
+          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-rose-600 hover:bg-rose-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-rose-500 glass-button w-full justify-center"
         >
           <PlusIcon className="h-5 w-5 mr-2" />
           Add Category

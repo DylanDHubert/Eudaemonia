@@ -16,11 +16,29 @@ export async function POST(request: Request) {
     
     // Validate required fields
     const requiredFields = ['sleepHours', 'sleepQuality', 'exercise', 'alcohol', 
-                           'weed', 'meditation', 'stressLevel', 'happinessRating'];
+                           'cannabis', 'meditation', 'stressLevel', 'happinessRating'];
     
     for (const field of requiredFields) {
       if (body[field] === undefined) {
         return NextResponse.json({ error: `Missing required field: ${field}` }, { status: 400 });
+      }
+    }
+
+    // Validate numeric fields
+    const numericFields = {
+      sleepHours: { min: 0, max: 24 },
+      sleepQuality: { min: 1, max: 10 },
+      stressLevel: { min: 1, max: 10 },
+      happinessRating: { min: 1, max: 10 }
+    };
+
+    for (const [field, range] of Object.entries(numericFields)) {
+      const value = parseFloat(body[field]);
+      if (isNaN(value)) {
+        return NextResponse.json({ error: `${field} must be a number` }, { status: 400 });
+      }
+      if (value < range.min || value > range.max) {
+        return NextResponse.json({ error: `${field} must be between ${range.min} and ${range.max}` }, { status: 400 });
       }
     }
     
@@ -34,8 +52,8 @@ export async function POST(request: Request) {
         exerciseTime: body.exerciseTime ? parseInt(body.exerciseTime) : null,
         alcohol: Boolean(body.alcohol),
         alcoholUnits: body.alcoholUnits ? parseFloat(body.alcoholUnits) : null,
-        weed: Boolean(body.weed),
-        weedAmount: body.weedAmount ? parseInt(body.weedAmount) : null,
+        cannabis: Boolean(body.cannabis),
+        cannabisAmount: body.cannabisAmount ? parseInt(body.cannabisAmount) : null,
         meditation: Boolean(body.meditation),
         meditationTime: body.meditationTime ? parseInt(body.meditationTime) : null,
         socialTime: body.socialTime ? parseFloat(body.socialTime) : null,
@@ -59,9 +77,16 @@ export async function POST(request: Request) {
     });
     
     return NextResponse.json({ message: 'Entry created successfully', entry });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Entry creation error:', error);
-    return NextResponse.json({ error: 'Error creating entry' }, { status: 500 });
+    // Provide more specific error messages based on the error type
+    if (error.code === 'P2002') {
+      return NextResponse.json({ error: 'An entry already exists for this date' }, { status: 400 });
+    }
+    if (error.code === 'P2003') {
+      return NextResponse.json({ error: 'Invalid custom category reference' }, { status: 400 });
+    }
+    return NextResponse.json({ error: error.message || 'Error creating entry' }, { status: 500 });
   }
 }
 

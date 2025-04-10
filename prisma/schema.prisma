@@ -96,8 +96,8 @@ model DailyEntry {
   exerciseTime Int? // minutes
   alcohol      Boolean
   alcoholUnits Float? // standard drinks
-  weed         Boolean
-  weedAmount   Int? // scale 1-5
+  cannabis     Boolean
+  cannabisAmount Int? // scale 1-5
   meditation   Boolean
   meditationTime Int? // minutes
   socialTime   Float? // hours spent socializing

@@ -19,25 +19,6 @@ export default function Navigation({ user }: NavigationProps) {
   const pathname = usePathname();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  const getPageTitle = () => {
-    switch (pathname) {
-      case '/':
-        return 'Dashboard';
-      case '/entry':
-        return 'Daily Entry';
-      case '/insights':
-        return 'Insights';
-      case '/history':
-        return 'History';
-      case '/how-to-use':
-        return 'How to Use';
-      case '/gratitudes':
-        return 'Gratitudes';
-      default:
-        return 'Eudaemonia';
-    }
-  };
-
   const getUserName = () => {
     return user?.name || user?.email?.split('@')[0] || 'User';
   };
@@ -57,9 +38,9 @@ export default function Navigation({ user }: NavigationProps) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           <div className="flex items-center">
-            <h1 className="text-xl font-semibold text-stone-800">
-              {pathname === '/' ? `Hello, ${getUserName()}` : getPageTitle()}
-            </h1>
+            <Link href="/" className="flex items-center">
+              <span className="text-xl font-bold text-rose-600">Eudaemonia</span>
+            </Link>
           </div>
           
           {/* Mobile menu button */}

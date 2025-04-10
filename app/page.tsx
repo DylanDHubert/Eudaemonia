@@ -4,7 +4,8 @@ import { authOptions } from '@/lib/auth';
 import Link from 'next/link';
 import ActivityHeatmap from './components/ActivityHeatmap';
 import HappinessChart from './components/HappinessChart';
-import RandomGratitude from './components/RandomGratitude';
+import GratitudeView from './gratitudes/GratitudeView';
+import GratitudeInput from './gratitudes/GratitudeInput';
 
 export default async function Dashboard() {
   const session = await getServerSession(authOptions);
@@ -27,42 +28,22 @@ export default async function Dashboard() {
               </p>
             </div>
           
-            {/* Activity Heatmap and Navigation side by side */}
+            {/* Activity Heatmap and Gratitudes side by side */}
             <div className="flex flex-col md:flex-row gap-6 w-full justify-center mb-6 md:max-w-3xl">
               {/* Activity Heatmap Container */}
               <div className="glass-card p-5 sm:p-8 w-full md:flex-1">
                 <ActivityHeatmap />
               </div>
               
-              {/* Navigation links Container */}
-              <div className="glass-card p-5 sm:p-8 w-full md:w-64">
-                <div className="grid grid-cols-2 md:grid-cols-1 gap-3">
-                  <Link href="/entry" className="glass-card p-4 hover:shadow-lg hover:bg-rose-50 hover:border-rose-200 border border-transparent transition-all text-center">
-                    <h3 className="text-lg font-semibold text-rose-600">Entry</h3>
-                  </Link>
-                  
-                  <Link href="/insights" className="glass-card p-4 hover:shadow-lg hover:bg-rose-50 hover:border-rose-200 border border-transparent transition-all text-center">
-                    <h3 className="text-lg font-semibold text-rose-600">Insights</h3>
-                  </Link>
-                  
-                  <Link href="/history" className="glass-card p-4 hover:shadow-lg hover:bg-rose-50 hover:border-rose-200 border border-transparent transition-all text-center">
-                    <h3 className="text-lg font-semibold text-rose-600">History</h3>
-                  </Link>
-
-                  <Link href="/categories" className="glass-card p-4 hover:shadow-lg hover:bg-rose-50 hover:border-rose-200 border border-transparent transition-all text-center">
-                    <h3 className="text-lg font-semibold text-rose-600">Categories</h3>
-                  </Link>
-                  
-                  <Link href="/how-to-use" className="glass-card p-4 hover:shadow-lg hover:bg-rose-50 hover:border-rose-200 border border-transparent transition-all text-center col-span-2 md:col-span-1">
-                    <h3 className="text-lg font-semibold text-rose-600">Help</h3>
-                  </Link>
-                </div>
+              {/* Gratitudes Container */}
+              <div className="glass-card p-3 sm:p-8 w-full md:w-60">
+                <GratitudeView />
               </div>
             </div>
             
-            {/* Gratitude Section */}
+            {/* Gratitude Input Section */}
             <div className="w-full md:max-w-3xl mb-6">
-              <RandomGratitude />
+              <GratitudeInput />
             </div>
             
             {/* Happiness Chart */}

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { DocumentCheckIcon } from '@heroicons/react/24/outline';
 
 export default function GratitudeInput() {
   const [gratitude, setGratitude] = useState('');
@@ -40,10 +41,15 @@ export default function GratitudeInput() {
             value={gratitude}
             onChange={(e) => setGratitude(e.target.value)}
             placeholder="Enter your gratitude here..."
-            className="glass-input w-full min-h-[120px] sm:min-h-[150px] p-3 text-sm sm:text-base"
+            className="glass-input w-full h-[150px] p-3 text-base resize-none"
+            rows={6}
           />
         </div>
-        <button type="submit" className="glass-button w-full text-sm sm:text-base py-2 sm:py-3">
+        <button
+          type="submit"
+          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-rose-600 hover:bg-rose-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-rose-500 glass-button w-full justify-center"
+        >
+          <DocumentCheckIcon className="h-5 w-5 mr-2" />
           Save Gratitude
         </button>
       </form>

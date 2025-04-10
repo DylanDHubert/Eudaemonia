@@ -47,8 +47,8 @@ type DailyEntry = {
   exerciseTime: number | null;
   alcohol: boolean;
   alcoholUnits: number | null;
-  weed: boolean;
-  weedAmount: number | null;
+  cannabis: boolean;
+  cannabisAmount: number | null;
   meditation: boolean;
   meditationTime: number | null;
   socialTime: number | null;
@@ -95,8 +95,8 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
     meditationTime: 'Meditation Time',
     alcohol: 'Alcohol Consumption',
     alcoholUnits: 'Alcohol Units',
-    weed: 'Cannabis',
-    weedAmount: 'Cannabis Amount',
+    cannabis: 'Cannabis',
+    cannabisAmount: 'Cannabis Amount',
     socialTime: 'Social Time',
     workHours: 'Work Hours',
     meals: 'Number of Meals',
@@ -112,7 +112,7 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
   );
   
   // List of boolean factors (all others are numeric)
-  const booleanFactors = useMemo(() => ['exercise', 'meditation', 'alcohol', 'weed'], []);
+  const booleanFactors = useMemo(() => ['exercise', 'meditation', 'alcohol', 'cannabis'], []);
   
   // List of numeric factors
   const numericFactors = [
@@ -121,7 +121,7 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
     'exerciseTime',
     'meditationTime',
     'alcoholUnits',
-    'weedAmount',
+    'cannabisAmount',
     'socialTime',
     'workHours',
     'meals',
@@ -238,8 +238,8 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
               return entry.meditation ? entry.meditationTime || 0 : 0;
             case 'alcoholUnits':
               return entry.alcohol ? entry.alcoholUnits || 0 : 0;
-            case 'weedAmount':
-              return entry.weed ? entry.weedAmount || 0 : 0;
+            case 'cannabisAmount':
+              return entry.cannabis ? entry.cannabisAmount || 0 : 0;
             case 'socialTime':
               return entry.socialTime || 0;
             case 'workHours':
@@ -268,8 +268,8 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
               return entry.meditation;
             case 'alcohol':
               return entry.alcohol;
-            case 'weed':
-              return entry.weed;
+            case 'cannabis':
+              return entry.cannabis;
             default:
               return false;
           }
@@ -414,7 +414,7 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
       setFactorTimeSeriesData(factorTimeSeriesData);
       setFactorCounts(newFactorCounts);
       
-      // Step 4: Handle boolean factors (exercise, meditation, alcohol, weed)
+      // Step 4: Handle boolean factors (exercise, meditation, alcohol, cannabis)
       if (booleanFactors.includes(internalName)) {
         // For boolean factors, create a bar chart showing happiness averages for true/false values
         const validEntriesWithKey = entries.filter(e => internalName in e && e[internalName as keyof DailyEntry] !== undefined);
@@ -709,8 +709,8 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
       meditationTime: 'Meditation Time',
       alcohol: 'Alcohol Consumption',
       alcoholUnits: 'Alcohol Units',
-      weed: 'Cannabis',
-      weedAmount: 'Cannabis Amount',
+      cannabis: 'Cannabis',
+      cannabisAmount: 'Cannabis Amount',
       socialTime: 'Social Time',
       workHours: 'Work Hours',
       meals: 'Number of Meals',

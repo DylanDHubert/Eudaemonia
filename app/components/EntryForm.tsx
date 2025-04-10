@@ -27,8 +27,8 @@ export default function EntryForm({ userId }: EntryFormProps) {
     exerciseTime: '',
     alcohol: false,
     alcoholUnits: '',
-    weed: false,
-    weedAmount: '',
+    cannabis: false,
+    cannabisAmount: '',
     meditation: false,
     meditationTime: '',
     socialTime: '',
@@ -85,10 +85,22 @@ export default function EntryForm({ userId }: EntryFormProps) {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value
-    }));
+    
+    // For number inputs, ensure we're not getting the "minus two" issue
+    if (type === 'number') {
+      // Only update if the value is a valid number or empty
+      if (value === '' || !isNaN(Number(value))) {
+        setFormData(prev => ({
+          ...prev,
+          [name]: value
+        }));
+      }
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value
+      }));
+    }
   };
 
   const handleCustomValueChange = (categoryId: string, value: string) => {
@@ -117,20 +129,22 @@ export default function EntryForm({ userId }: EntryFormProps) {
         }
       }
 
-      // Validate numeric fields
-      const numericFields = {
-        sleepHours: 'Sleep hours',
-        sleepQuality: 'Sleep quality',
-        stressLevel: 'Stress level',
-        happinessRating: 'Happiness rating'
+      // Prepare the data with proper type conversions
+      const processedFormData = {
+        ...formData,
+        sleepHours: formData.sleepHours ? parseFloat(formData.sleepHours) : null,
+        sleepQuality: formData.sleepQuality ? parseInt(formData.sleepQuality) : null,
+        exerciseTime: formData.exerciseTime ? parseInt(formData.exerciseTime) : null,
+        alcoholUnits: formData.alcoholUnits ? parseFloat(formData.alcoholUnits) : null,
+        cannabisAmount: formData.cannabisAmount ? parseInt(formData.cannabisAmount) : null,
+        meditationTime: formData.meditationTime ? parseInt(formData.meditationTime) : null,
+        socialTime: formData.socialTime ? parseFloat(formData.socialTime) : null,
+        workHours: formData.workHours ? parseFloat(formData.workHours) : null,
+        stressLevel: formData.stressLevel ? parseInt(formData.stressLevel) : null,
+        happinessRating: formData.happinessRating ? parseInt(formData.happinessRating) : null,
+        meals: formData.meals ? parseInt(formData.meals) : null,
+        foodQuality: formData.foodQuality ? parseInt(formData.foodQuality) : null,
       };
-
-      for (const [field, label] of Object.entries(numericFields)) {
-        const value = parseFloat(formData[field as keyof typeof formData] as string);
-        if (isNaN(value)) {
-          throw new Error(`${label} must be a number`);
-        }
-      }
 
       const url = overwrite && existingEntryId 
         ? `/api/entries/${existingEntryId}` 
@@ -149,7 +163,7 @@ export default function EntryForm({ userId }: EntryFormProps) {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          ...formData,
+          ...processedFormData,
           date: date.toISOString(),
           customCategoryEntries
         })
@@ -157,7 +171,7 @@ export default function EntryForm({ userId }: EntryFormProps) {
       
       if (!response.ok) {
         const data = await response.json();
-        throw new Error(data.error || 'Something went wrong');
+        throw new Error(data.error || 'Failed to submit entry. Please check your input values.');
       }
       
       // Show success toast
@@ -177,8 +191,8 @@ export default function EntryForm({ userId }: EntryFormProps) {
         exerciseTime: '',
         alcohol: false,
         alcoholUnits: '',
-        weed: false,
-        weedAmount: '',
+        cannabis: false,
+        cannabisAmount: '',
         meditation: false,
         meditationTime: '',
         socialTime: '',
@@ -197,10 +211,11 @@ export default function EntryForm({ userId }: EntryFormProps) {
       router.refresh();
       
     } catch (err: any) {
-      setError(err.message || 'Failed to submit entry');
-      toast.error(err.message || 'Failed to submit entry', {
+      const errorMessage = err.message || 'Failed to submit entry';
+      setError(errorMessage);
+      toast.error(errorMessage, {
         position: "bottom-right",
-        autoClose: 3000
+        autoClose: 5000
       });
       console.error('Entry submission error:', err);
     } finally {
@@ -302,6 +317,7 @@ export default function EntryForm({ userId }: EntryFormProps) {
               min="0"
               max="24"
               step="0.5"
+              placeholder=""
             />
           </div>
           
@@ -318,6 +334,7 @@ export default function EntryForm({ userId }: EntryFormProps) {
               required
               min="1"
               max="10"
+              placeholder=""
             />
           </div>
           
@@ -345,6 +362,7 @@ export default function EntryForm({ userId }: EntryFormProps) {
                   className="glass-input mt-1 w-full px-3 py-2"
                   min="0"
                   max="480"
+                  placeholder=""
                 />
               </>
             )}
@@ -375,6 +393,7 @@ export default function EntryForm({ userId }: EntryFormProps) {
                   min="0"
                   max="50"
                   step="0.5"
+                  placeholder=""
                 />
               </>
             )}
@@ -384,26 +403,27 @@ export default function EntryForm({ userId }: EntryFormProps) {
             <label className="flex items-center space-x-2">
               <input
                 type="checkbox"
-                name="weed"
-                checked={formData.weed}
+                name="cannabis"
+                checked={formData.cannabis}
                 onChange={handleChange}
                 className="glass-input h-4 w-4 text-rose-500 focus:ring-rose-500 border-rose-300 rounded"
               />
               <span className="text-sm font-medium text-gray-700">Cannabis</span>
             </label>
-            {formData.weed && (
+            {formData.cannabis && (
               <>
                 <label className="block text-xs font-medium text-gray-600 mt-2 mb-1">
                   Cannabis Amount (1-5)
                 </label>
                 <input
                   type="number"
-                  name="weedAmount"
-                  value={formData.weedAmount}
+                  name="cannabisAmount"
+                  value={formData.cannabisAmount}
                   onChange={handleChange}
                   className="glass-input mt-1 w-full px-3 py-2"
                   min="1"
                   max="5"
+                  placeholder=""
                 />
               </>
             )}
@@ -433,6 +453,7 @@ export default function EntryForm({ userId }: EntryFormProps) {
                   className="glass-input mt-1 w-full px-3 py-2"
                   min="0"
                   max="480"
+                  placeholder=""
                 />
               </>
             )}
@@ -451,6 +472,7 @@ export default function EntryForm({ userId }: EntryFormProps) {
               min="0"
               max="24"
               step="0.5"
+              placeholder=""
             />
           </div>
           
@@ -467,6 +489,7 @@ export default function EntryForm({ userId }: EntryFormProps) {
               min="0"
               max="24"
               step="0.5"
+              placeholder=""
             />
           </div>
           
@@ -482,6 +505,7 @@ export default function EntryForm({ userId }: EntryFormProps) {
               className="glass-input w-full px-3 py-2"
               min="0"
               max="10"
+              placeholder=""
             />
           </div>
           
@@ -497,6 +521,7 @@ export default function EntryForm({ userId }: EntryFormProps) {
               className="glass-input w-full px-3 py-2"
               min="1"
               max="10"
+              placeholder=""
             />
           </div>
           
@@ -533,6 +558,7 @@ export default function EntryForm({ userId }: EntryFormProps) {
                         className="glass-input w-full px-3 py-2"
                         min={category.type === 'scale' ? 1 : undefined}
                         max={category.type === 'scale' ? 10 : undefined}
+                        placeholder=""
                       />
                     )}
                   </div>
@@ -555,6 +581,7 @@ export default function EntryForm({ userId }: EntryFormProps) {
             required
             min="1"
             max="10"
+            placeholder=""
           />
         </div>
         
@@ -571,6 +598,7 @@ export default function EntryForm({ userId }: EntryFormProps) {
             required
             min="1"
             max="10"
+            placeholder=""
           />
         </div>
         
@@ -591,7 +619,7 @@ export default function EntryForm({ userId }: EntryFormProps) {
           <button
             type="submit"
             disabled={isLoading}
-            className="glass-button w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:bg-indigo-400"
+            className="glass-button w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-rose-600 hover:bg-rose-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-rose-500 disabled:bg-rose-400"
           >
             {isLoading ? (
               <>
