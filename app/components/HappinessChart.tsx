@@ -110,8 +110,8 @@ export default function HappinessChart() {
         {
           label: 'Happiness Rating',
           data: happinessValues,
-          borderColor: 'rgb(79, 70, 229)',
-          backgroundColor: 'rgba(79, 70, 229, 0.5)',
+          borderColor: isDarkMode ? 'rgb(79, 70, 229)' : 'rgb(244, 63, 94)',
+          backgroundColor: isDarkMode ? 'rgba(79, 70, 229, 0.5)' : 'rgba(244, 63, 94, 0.5)',
           tension: 0.3,
           fill: false,
         }
@@ -158,8 +158,11 @@ export default function HappinessChart() {
 
   if (isLoading) {
     return (
-      <div className="animate-pulse">
-        <div className="h-64 bg-gray-200 dark:bg-gray-700 rounded"></div>
+      <div className="glass-card p-4">
+        <h2 className="text-subheader mb-4">Happiness Trend</h2>
+        <div className="h-64 flex items-center justify-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-rose-500 dark:border-indigo-500"></div>
+        </div>
       </div>
     );
   }

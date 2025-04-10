@@ -202,8 +202,8 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
         {
           label: 'Happiness Rating',
           data: happinessValues,
-          borderColor: 'rgb(79, 70, 229)',
-          backgroundColor: 'rgba(79, 70, 229, 0.5)',
+          borderColor: isDarkMode ? 'rgb(79, 70, 229)' : 'rgb(244, 63, 94)',
+          backgroundColor: isDarkMode ? 'rgba(79, 70, 229, 0.5)' : 'rgba(244, 63, 94, 0.5)',
           tension: 0.3,
           fill: false,
         }
@@ -212,7 +212,7 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
     
     setTimeSeriesData(data);
     setEntryCounts(counts);
-  }, [entries]);
+  }, [entries, isDarkMode]);
   
   useEffect(() => {
     if (entries.length < minimumEntries) {
@@ -404,8 +404,8 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
           {
             label: getDisplayName(selectedFactor),
             data: factorValues,
-            borderColor: 'rgb(79, 70, 229)',
-            backgroundColor: 'rgba(79, 70, 229, 0.5)',
+            borderColor: isDarkMode ? 'rgb(79, 70, 229)' : 'rgb(244, 63, 94)',
+            backgroundColor: isDarkMode ? 'rgba(79, 70, 229, 0.5)' : 'rgba(244, 63, 94, 0.5)',
             tension: 0.3,
             fill: false,
           }
@@ -494,7 +494,7 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
     } catch (error) {
       console.error("Error processing factor:", selectedFactor, error);
     }
-  }, [selectedFactor, entries, minimumEntries, getInternalName, booleanFactors, isBooleanFactor, getDisplayName]);
+  }, [selectedFactor, entries, minimumEntries, getInternalName, booleanFactors, isBooleanFactor, getDisplayName, isDarkMode]);
   
   // Function to calculate Pearson correlation
   const calculatePearsonCorrelation = (x: number[], y: number[]): number => {
@@ -619,18 +619,43 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
     };
   };
   
-  // Generate scatter chart data
+  // Update scatter chart data to use the correct colors
   const getScatterChartData = (factorName: string): any => {
+    if (!selectedFactor || entries.length < 2) return null;
+    
+    const factor = getInternalName(selectedFactor);
+    const isBoolean = isBooleanFactor(factor);
+    
+    // Get values for the selected factor and happiness
+    const data = entries.map(entry => {
+      let xValue: number;
+      
+      if (isBoolean) {
+        // For boolean factors, convert to 0 or 1
+        xValue = entry[factor as keyof DailyEntry] ? 1 : 0;
+      } else {
+        // For numeric factors, get the value directly
+        xValue = entry[factor as keyof DailyEntry] as number || 0;
+      }
+      
+      return {
+        x: xValue,
+        y: entry.happinessRating
+      };
+    });
+    
     return {
       datasets: [
         {
-          label: `${getDisplayName(factorName)} vs. Happiness`,
-          data: scatterData,
-          backgroundColor: isDarkMode ? 'rgba(99, 102, 241, 0.6)' : 'rgba(79, 70, 229, 0.6)',
-          pointRadius: isBooleanFactor(factorName) ? 10 : 6,
-          pointHoverRadius: isBooleanFactor(factorName) ? 12 : 8,
-        },
-      ],
+          label: selectedFactor,
+          data: data,
+          backgroundColor: isDarkMode ? 'rgba(79, 70, 229, 0.7)' : 'rgba(244, 63, 94, 0.7)',
+          borderColor: isDarkMode ? 'rgb(79, 70, 229)' : 'rgb(244, 63, 94)',
+          borderWidth: 1,
+          pointRadius: 5,
+          pointHoverRadius: 7,
+        }
+      ]
     };
   };
   

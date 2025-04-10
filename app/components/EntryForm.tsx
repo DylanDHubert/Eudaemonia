@@ -591,6 +591,60 @@ export default function EntryForm({ userId }: EntryFormProps) {
           </div>
         </div>
         
+        {/* Custom Categories Section */}
+        {customCategories.length > 0 && (
+          <div className="glass-card p-4">
+            <h3 className="text-subheader mb-4">Custom Categories</h3>
+            <div className={`grid grid-cols-1 gap-6 ${
+              customCategories.length % 3 === 0 ? 'md:grid-cols-3' : 
+              customCategories.length % 3 === 1 ? 'md:grid-cols-2' : 
+              'md:grid-cols-1'
+            }`}>
+              {customCategories.map((category) => (
+                <div key={category.id} className="glass-card p-4">
+                  <label className="text-subheader block mb-2">
+                    {category.name}
+                  </label>
+                  {category.type === 'numeric' && (
+                    <input
+                      type="number"
+                      value={customValues[category.id] || ''}
+                      onChange={(e) => handleCustomValueChange(category.id, e.target.value)}
+                      onWheel={handleWheel}
+                      className="glass-input w-full px-3 py-2 text-input"
+                      min={category.min || 0}
+                      max={category.max || 100}
+                      step="0.1"
+                    />
+                  )}
+                  {category.type === 'scale' && (
+                    <input
+                      type="number"
+                      value={customValues[category.id] || ''}
+                      onChange={(e) => handleCustomValueChange(category.id, e.target.value)}
+                      onWheel={handleWheel}
+                      className="glass-input w-full px-3 py-2 text-input"
+                      min="1"
+                      max="10"
+                    />
+                  )}
+                  {category.type === 'boolean' && (
+                    <div className="flex items-center">
+                      <input
+                        type="checkbox"
+                        checked={customValues[category.id] === 'true'}
+                        onChange={(e) => handleCustomValueChange(category.id, e.target.checked.toString())}
+                        className="mr-2"
+                      />
+                      <span className="text-input">Yes</span>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+        
         <div className="glass-card p-4">
           <label className="text-subheader block mb-2">
             Notes

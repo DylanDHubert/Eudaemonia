@@ -150,7 +150,7 @@ export default function Navigation({ user }: NavigationProps) {
       
       {/* Mobile menu */}
       {isMenuOpen && (
-        <div className="sm:hidden">
+        <div className="sm:hidden absolute top-16 left-0 right-0 glass-nav border-t border-stone-200/20 dark:border-gray-700/20">
           <div className="px-2 pt-2 pb-3 space-y-1">
             <Link 
               href="/" 

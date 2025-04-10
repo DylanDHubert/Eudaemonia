@@ -214,7 +214,7 @@ export default function ActivityHeatmap() {
   };
 
   return (
-    <div className="glass-card p-4 sm:p-6 w-full max-w-fit overflow-x-auto">
+    <div className="w-full">
       <h3 className="text-subheader mb-4 text-gray-800 dark:text-white text-center">Activity Monitor</h3>
       
       <div className="w-full flex justify-center min-w-[300px]">

@@ -38,7 +38,7 @@ export default async function RootLayout({
           {/* Only show Navigation if not on auth pages and user is authenticated */}
           {session && <div className="h-16"><Navigation user={session.user} /></div>}
           
-          <main className={`${session ? "pt-16" : ""} overflow-x-hidden`}>
+          <main className={`${session ? "pt-6" : ""} overflow-x-hidden`}>
             <Providers>{children}</Providers>
           </main>
         </div>
