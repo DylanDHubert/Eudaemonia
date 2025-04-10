@@ -220,7 +220,7 @@ export default function ActivityHeatmap() {
       <div className="w-full flex justify-center min-w-[300px]">
         <div className="flex flex-col">
           <div className="flex">
-            {/* Day labels */}
+            {/* Day labels - hidden on mobile */}
             <div className="hidden sm:flex flex-col mr-3 text-xs text-gray-600 dark:text-gray-300">
               {dayLabels.map((day, index) => (
                 <div key={day} className="flex items-center justify-end w-10 h-[23px] sm:text-xs text-[10px] mt-[5px]">
@@ -230,7 +230,7 @@ export default function ActivityHeatmap() {
             </div>
             
             {/* Heatmap grid */}
-            <div className="grid-container pr-1">
+            <div className="grid-container sm:pr-1">
               <div className="grid-display">
                 {weeks.map((week, weekIndex) => (
                   <div key={weekIndex} className="week-column">

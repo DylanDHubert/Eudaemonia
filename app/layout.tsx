@@ -31,12 +31,12 @@ export default async function RootLayout({
   return (
     <html lang="en" className={`${poppins.variable} h-full`}>
       <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover, shrink-to-fit=no" />
       </head>
       <body className={`font-sans h-full overflow-x-hidden`}>
         <div className="min-h-screen bg-gradient-to-br from-pink-300 to-rose-400 dark:from-gray-800 dark:to-indigo-500 bg-[url('/grid.svg')] bg-center">
           {/* Only show Navigation if not on auth pages and user is authenticated */}
-          {session && <Navigation user={session.user} />}
+          {session && <div className="h-16"><Navigation user={session.user} /></div>}
           
           <main className={`${session ? "pt-16" : ""} overflow-x-hidden`}>
             <Providers>{children}</Providers>
