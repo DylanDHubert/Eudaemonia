@@ -5,7 +5,7 @@ import prisma from '@/lib/prisma';
 
 export async function POST(request: Request) {
   const session = await getServerSession(authOptions);
-  if (!session?.user?.email) {
+  if (!session?.user?.id) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
@@ -31,7 +31,6 @@ export async function POST(request: Request) {
       foodQuality,
       notes,
       customCategoryEntries,
-      userId
     } = body;
 
     // Create the daily entry with custom category entries
@@ -55,7 +54,7 @@ export async function POST(request: Request) {
         meals: meals ? parseInt(meals) : null,
         foodQuality: foodQuality ? parseInt(foodQuality) : null,
         notes,
-        userId,
+        userId: session.user.id,
         customCategoryEntries: {
           create: customCategoryEntries?.map((entry: any) => ({
             customCategoryId: entry.customCategoryId,
@@ -77,23 +76,18 @@ export async function POST(request: Request) {
 
 export async function GET(request: Request) {
   const session = await getServerSession(authOptions);
-  if (!session?.user?.email) {
+  if (!session?.user?.id) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
   const { searchParams } = new URL(request.url);
-  const userId = searchParams.get('userId');
   const startDate = searchParams.get('startDate');
   const endDate = searchParams.get('endDate');
-
-  if (!userId) {
-    return NextResponse.json({ error: 'User ID is required' }, { status: 400 });
-  }
 
   try {
     const entries = await prisma.dailyEntry.findMany({
       where: {
-        userId,
+        userId: session.user.id,
         ...(startDate && endDate ? {
           date: {
             gte: new Date(startDate),

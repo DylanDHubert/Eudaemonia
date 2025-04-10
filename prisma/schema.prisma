@@ -122,8 +122,8 @@ model DailyEntry {
 model Gratitude {
   id        String   @id @default(cuid())
   content   String   @db.Text
-  userEmail String
-  user      User     @relation(fields: [userEmail], references: [email], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 } 

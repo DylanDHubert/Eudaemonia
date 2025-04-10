@@ -5,7 +5,7 @@ import { db } from '@/lib/db';
 
 export async function GET(request: Request) {
   const session = await getServerSession(authOptions);
-  if (!session?.user?.email) {
+  if (!session?.user?.id) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
@@ -28,35 +28,41 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   const session = await getServerSession(authOptions);
-  if (!session?.user?.email) {
+  if (!session?.user?.id) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
   try {
     const body = await request.json();
-    const { name, type, min, max, userId } = body;
+    const { name, type, min, max } = body;
 
-    if (!name || !type || !userId) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
-    }
-    
-    if (!['numeric', 'scale', 'boolean'].includes(type)) {
-      return NextResponse.json({ error: 'Type must be either "numeric", "scale", or "boolean"' }, { status: 400 });
+    if (!name || !type) {
+      return NextResponse.json({ error: 'Name and type are required' }, { status: 400 });
     }
 
+    // Validate type
+    const validTypes = ['numeric', 'scale', 'boolean'];
+    if (!validTypes.includes(type)) {
+      return NextResponse.json({ error: 'Invalid type' }, { status: 400 });
+    }
+
+    // Create category
     const category = await db.customCategory.create({
       data: {
         name,
         type,
-        min,
-        max,
-        userId
+        min: min ? parseFloat(min) : null,
+        max: max ? parseFloat(max) : null,
+        userId: session.user.id
       }
     });
 
-    return NextResponse.json(category);
-  } catch (error) {
-    console.error('Error creating custom category:', error);
+    return NextResponse.json({ message: 'Category created successfully', category });
+  } catch (error: any) {
+    console.error('Error creating category:', error);
+    if (error.code === 'P2002') {
+      return NextResponse.json({ error: 'A category with this name already exists' }, { status: 400 });
+    }
     return NextResponse.json({ error: 'Failed to create category' }, { status: 500 });
   }
 } 

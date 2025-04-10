@@ -6,13 +6,13 @@ import prisma from '@/lib/prisma';
 export async function GET() {
   try {
     const session = await getServerSession(authOptions);
-    if (!session?.user?.email) {
+    if (!session?.user?.id) {
       return new NextResponse('Unauthorized', { status: 401 });
     }
 
     const gratitudes = await prisma.gratitude.findMany({
       where: {
-        userEmail: session.user.email,
+        userId: session.user.id,
       },
       orderBy: {
         createdAt: 'desc',
@@ -29,7 +29,7 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session?.user?.email) {
+    if (!session?.user?.id) {
       return new NextResponse('Unauthorized', { status: 401 });
     }
 
@@ -41,7 +41,7 @@ export async function POST(request: Request) {
     const gratitude = await prisma.gratitude.create({
       data: {
         content,
-        userEmail: session.user.email,
+        userId: session.user.id,
       },
     });
 

@@ -77,16 +77,9 @@ export async function POST(request: Request) {
     });
     
     return NextResponse.json({ message: 'Entry created successfully', entry });
-  } catch (error: any) {
+  } catch (error) {
     console.error('Entry creation error:', error);
-    // Provide more specific error messages based on the error type
-    if (error.code === 'P2002') {
-      return NextResponse.json({ error: 'An entry already exists for this date' }, { status: 400 });
-    }
-    if (error.code === 'P2003') {
-      return NextResponse.json({ error: 'Invalid custom category reference' }, { status: 400 });
-    }
-    return NextResponse.json({ error: error.message || 'Error creating entry' }, { status: 500 });
+    return NextResponse.json({ error: 'Error creating entry' }, { status: 500 });
   }
 }
 

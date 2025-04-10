@@ -150,13 +150,13 @@ export default function Navigation({ user }: NavigationProps) {
       
       {/* Mobile menu */}
       {isMenuOpen && (
-        <div className="sm:hidden absolute top-16 left-0 right-0 glass-nav border-t border-stone-200/20 dark:border-gray-700/20">
+        <div className="sm:hidden absolute top-16 left-0 right-0 glass-card border-t border-gray-200/50 dark:border-gray-700/50">
           <div className="px-2 pt-2 pb-3 space-y-1">
             <Link 
               href="/" 
               className={`block px-3 py-2 rounded-md text-base font-medium ${
                 isActive('/')
-                  ? 'text-rose-600 dark:text-indigo-600 bg-white/50 dark:bg-gray-800/50' 
+                  ? 'text-rose-600 dark:text-indigo-600 bg-rose-100/80 dark:bg-indigo-400/20' 
                   : 'text-stone-600 hover:text-indigo-500 hover:bg-indigo-500/10 dark:text-gray-300 dark:hover:text-indigo-500 dark:hover:bg-indigo-500/10'
               }`}
               onClick={closeMenu}
@@ -167,7 +167,7 @@ export default function Navigation({ user }: NavigationProps) {
               href="/entry" 
               className={`block px-3 py-2 rounded-md text-base font-medium ${
                 isActive('/entry')
-                  ? 'text-rose-600 dark:text-indigo-600 bg-white/50 dark:bg-gray-800/50' 
+                  ? 'text-rose-600 dark:text-indigo-600 bg-rose-100/80 dark:bg-indigo-400/20' 
                   : 'text-stone-600 hover:text-indigo-500 hover:bg-indigo-500/10 dark:text-gray-300 dark:hover:text-indigo-500 dark:hover:bg-indigo-500/10'
               }`}
               onClick={closeMenu}
@@ -178,7 +178,7 @@ export default function Navigation({ user }: NavigationProps) {
               href="/insights" 
               className={`block px-3 py-2 rounded-md text-base font-medium ${
                 isActive('/insights')
-                  ? 'text-rose-600 dark:text-indigo-600 bg-white/50 dark:bg-gray-800/50' 
+                  ? 'text-rose-600 dark:text-indigo-600 bg-rose-100/80 dark:bg-indigo-400/20' 
                   : 'text-stone-600 hover:text-indigo-500 hover:bg-indigo-500/10 dark:text-gray-300 dark:hover:text-indigo-500 dark:hover:bg-indigo-500/10'
               }`}
               onClick={closeMenu}
@@ -189,7 +189,7 @@ export default function Navigation({ user }: NavigationProps) {
               href="/history" 
               className={`block px-3 py-2 rounded-md text-base font-medium ${
                 isActive('/history')
-                  ? 'text-rose-600 dark:text-indigo-600 bg-white/50 dark:bg-gray-800/50' 
+                  ? 'text-rose-600 dark:text-indigo-600 bg-rose-100/80 dark:bg-indigo-400/20' 
                   : 'text-stone-600 hover:text-indigo-500 hover:bg-indigo-500/10 dark:text-gray-300 dark:hover:text-indigo-500 dark:hover:bg-indigo-500/10'
               }`}
               onClick={closeMenu}
@@ -200,7 +200,7 @@ export default function Navigation({ user }: NavigationProps) {
               href="/gratitudes" 
               className={`block px-3 py-2 rounded-md text-base font-medium ${
                 isActive('/gratitudes')
-                  ? 'text-rose-600 dark:text-indigo-600 bg-white/50 dark:bg-gray-800/50' 
+                  ? 'text-rose-600 dark:text-indigo-600 bg-rose-100/80 dark:bg-indigo-400/20' 
                   : 'text-stone-600 hover:text-indigo-500 hover:bg-indigo-500/10 dark:text-gray-300 dark:hover:text-indigo-500 dark:hover:bg-indigo-500/10'
               }`}
               onClick={closeMenu}
@@ -211,7 +211,7 @@ export default function Navigation({ user }: NavigationProps) {
               href="/categories"
               className={`block px-3 py-2 rounded-md text-base font-medium ${
                 isActive('/categories')
-                  ? 'text-rose-600 dark:text-indigo-600 bg-white/50 dark:bg-gray-800/50' 
+                  ? 'text-rose-600 dark:text-indigo-600 bg-rose-100/80 dark:bg-indigo-400/20' 
                   : 'text-stone-600 hover:text-indigo-500 hover:bg-indigo-500/10 dark:text-gray-300 dark:hover:text-indigo-500 dark:hover:bg-indigo-500/10'
               }`}
               onClick={closeMenu}
@@ -222,7 +222,7 @@ export default function Navigation({ user }: NavigationProps) {
               href="/how-to-use"
               className={`block px-3 py-2 rounded-md text-base font-medium ${
                 isActive('/how-to-use')
-                  ? 'text-rose-600 dark:text-indigo-600 bg-white/50 dark:bg-gray-800/50' 
+                  ? 'text-rose-600 dark:text-indigo-600 bg-rose-100/80 dark:bg-indigo-400/20' 
                   : 'text-stone-600 hover:text-indigo-500 hover:bg-indigo-500/10 dark:text-gray-300 dark:hover:text-indigo-500 dark:hover:bg-indigo-500/10'
               }`}
               onClick={closeMenu}
@@ -231,7 +231,7 @@ export default function Navigation({ user }: NavigationProps) {
             </Link>
             <button
               onClick={() => signOut({ callbackUrl: '/login' })}
-              className="w-full text-left px-3 py-2 rounded-md text-base font-medium text-white bg-rose-500/70 hover:bg-rose-600/80 dark:bg-rose-600/70 dark:hover:bg-rose-700/80"
+              className="w-full text-left px-3 py-2 rounded-md text-base font-medium text-white bg-rose-500/70 hover:bg-rose-600/80 dark:bg-indigo-600/70 dark:hover:bg-indigo-700/80"
             >
               Sign Out
             </button>

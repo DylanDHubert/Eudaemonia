@@ -116,19 +116,32 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
   const booleanFactors = useMemo(() => ['exercise', 'meditation', 'alcohol', 'cannabis'], []);
   
   // List of numeric factors
-  const numericFactors = [
-    'sleepHours',
-    'sleepQuality',
-    'exerciseTime',
-    'meditationTime',
-    'alcoholUnits',
-    'cannabisAmount',
-    'socialTime',
-    'workHours',
-    'meals',
-    'foodQuality',
-    'stressLevel'
-  ];
+  const numericFactors = useMemo(() => {
+    const baseFactors = [
+      'sleepHours',
+      'sleepQuality',
+      'exerciseTime',
+      'meditationTime',
+      'alcoholUnits',
+      'cannabisAmount',
+      'socialTime',
+      'workHours',
+      'meals',
+      'foodQuality',
+      'stressLevel'
+    ];
+
+    // Add custom numeric and scale categories
+    if (entries.length > 0) {
+      const firstEntry = entries[0];
+      const customNumericCategories = firstEntry.customCategories
+        .filter(cat => cat.type === 'numeric' || cat.type === 'scale')
+        .map(cat => cat.name);
+      return [...baseFactors, ...customNumericCategories];
+    }
+
+    return baseFactors;
+  }, [entries]);
   
   // Helper function to get display name from internal name
   const getDisplayName = useCallback((internalName: string): string => {
@@ -228,6 +241,13 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
       // Helper function to get numeric values for a factor
       const getNumericValues = (factor: string) => {
         return entries.map(entry => {
+          // Check if it's a custom category first
+          const customCategory = entry.customCategories.find(cat => cat.name === factor);
+          if (customCategory) {
+            return customCategory.value;
+          }
+
+          // Then check built-in factors
           switch (factor) {
             case 'sleepHours':
               return entry.sleepHours;
@@ -252,9 +272,7 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
             case 'stressLevel':
               return entry.stressLevel;
             default:
-              // Check if it's a custom category
-              const customCategory = entry.customCategories.find(cat => cat.name === factor);
-              return customCategory ? customCategory.value : 0;
+              return 0;
           }
         });
       };
@@ -262,6 +280,13 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
       // Helper function to get boolean values for a factor
       const getBooleanValues = (factor: string) => {
         return entries.map(entry => {
+          // Check if it's a custom boolean category first
+          const customCategory = entry.customCategories.find(cat => cat.name === factor && cat.type === 'boolean');
+          if (customCategory) {
+            return customCategory.value === 1;
+          }
+
+          // Then check built-in boolean factors
           switch (factor) {
             case 'exercise':
               return entry.exercise;
@@ -660,56 +685,61 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
   };
   
   // Time series chart options
-  const timeSeriesOptions = {
+  const getTimeSeriesChartOptions = useCallback(() => ({
     responsive: true,
+    maintainAspectRatio: false,
     plugins: {
       legend: {
-        position: 'top' as const,
-        labels: {
-          color: isDarkMode ? 'rgba(209, 213, 219, 0.8)' : 'rgba(75, 85, 99, 0.8)',
-        }
-      },
-      title: {
-        display: true,
-        text: 'Your Happiness Over Time',
-        color: isDarkMode ? 'rgba(209, 213, 219, 0.8)' : 'rgba(75, 85, 99, 0.8)',
+        display: false
       },
       tooltip: {
+        mode: 'index',
+        intersect: false,
+        backgroundColor: isDarkMode ? 'rgba(17, 24, 39, 0.8)' : 'rgba(255, 255, 255, 0.8)',
+        titleColor: isDarkMode ? 'rgb(229, 231, 235)' : 'rgb(17, 24, 39)',
+        bodyColor: isDarkMode ? 'rgb(229, 231, 235)' : 'rgb(17, 24, 39)',
+        borderColor: isDarkMode ? 'rgb(75, 85, 99)' : 'rgb(229, 231, 235)',
+        borderWidth: 1,
+        padding: 12,
+        boxPadding: 6,
+        usePointStyle: true,
         callbacks: {
-          label: function(context: any) {
-            const index = context.dataIndex;
-            const count = entryCounts[index];
-            return `${context.dataset.label}: ${context.parsed.y.toFixed(1)} (${count}x)`;
+          label: (context: any) => {
+            const value = context.parsed.y;
+            const count = entryCounts[context.dataIndex];
+            return [
+              `Happiness: ${value.toFixed(1)}`,
+              `Entries: ${count}`
+            ];
           }
         }
       }
     },
     scales: {
-      y: {
-        min: 0,
-        max: 10,
-        title: {
-          display: true,
-          text: 'Happiness Rating',
-          color: isDarkMode ? 'rgba(209, 213, 219, 0.8)' : 'rgba(75, 85, 99, 0.8)',
+      x: {
+        grid: {
+          display: false,
+          color: isDarkMode ? 'rgba(75, 85, 99, 0.2)' : 'rgba(229, 231, 235, 0.2)'
         },
         ticks: {
-          color: isDarkMode ? 'rgba(209, 213, 219, 0.8)' : 'rgba(75, 85, 99, 0.8)',
-        },
-        grid: {
-          color: isDarkMode ? 'rgba(75, 85, 99, 0.2)' : 'rgba(209, 213, 219, 0.5)',
+          color: isDarkMode ? 'rgb(156, 163, 175)' : 'rgb(107, 114, 128)',
+          maxRotation: 45,
+          minRotation: 45
         }
       },
-      x: {
-        ticks: {
-          color: isDarkMode ? 'rgba(209, 213, 219, 0.8)' : 'rgba(75, 85, 99, 0.8)',
-        },
+      y: {
+        beginAtZero: true,
+        max: 10,
         grid: {
-          color: isDarkMode ? 'rgba(75, 85, 99, 0.2)' : 'rgba(209, 213, 219, 0.5)',
+          color: isDarkMode ? 'rgba(75, 85, 99, 0.2)' : 'rgba(229, 231, 235, 0.2)'
+        },
+        ticks: {
+          color: isDarkMode ? 'rgb(156, 163, 175)' : 'rgb(107, 114, 128)',
+          stepSize: 2
         }
       }
     }
-  };
+  }), [isDarkMode, entryCounts]);
   
   // Generate options for time series chart
   const getFactorTimeSeriesOptions = (factorName: string): any => {

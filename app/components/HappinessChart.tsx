@@ -120,7 +120,7 @@ export default function HappinessChart() {
     
     setTimeSeriesData(data);
     setEntryCounts(counts);
-  }, []);
+  }, [isDarkMode]);
 
   useEffect(() => {
     async function fetchEntries() {

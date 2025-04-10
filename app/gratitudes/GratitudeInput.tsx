@@ -38,7 +38,7 @@ export default function GratitudeInput() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!content.trim() || !session?.user?.email) return;
+    if (!content.trim() || !session?.user?.id) return;
 
     setIsSubmitting(true);
     try {
