@@ -4,9 +4,11 @@ import { useState, useEffect } from 'react';
 import { getServerSession } from 'next-auth';
 import { redirect } from 'next/navigation';
 import { authOptions } from '@/lib/auth';
+import DeleteAccountModal from '../components/DeleteAccountModal';
 
 export default function HowToUsePage() {
   const [isDarkMode, setIsDarkMode] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   // Check if dark mode is enabled
   useEffect(() => {
@@ -74,10 +76,28 @@ export default function HowToUsePage() {
                   Customize your activity categories to better reflect your lifestyle and interests.
                 </p>
               </div>
+
+              <div className="pt-6 border-t border-gray-200 dark:border-gray-700">
+                <h3 className="text-subheader mb-2 text-gray-800 dark:text-gray-200">Account Management</h3>
+                <p className="text-description text-gray-600 dark:text-gray-300 mb-4">
+                  Manage your account settings and data.
+                </p>
+                <button
+                  onClick={() => setIsDeleteModalOpen(true)}
+                  className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-md transition-colors"
+                >
+                  Delete Account
+                </button>
+              </div>
             </div>
           </div>
         </div>
       </main>
+
+      <DeleteAccountModal 
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+      />
     </div>
   );
 } 

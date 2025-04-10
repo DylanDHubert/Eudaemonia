@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { format } from 'date-fns';
+import EditEntryModal from '../components/EditEntryModal';
 
 interface CustomCategory {
   id: string;
@@ -10,7 +11,7 @@ interface CustomCategory {
   value: number;
 }
 
-interface FormattedEntry {
+interface Entry {
   id: string;
   date: string;
   sleepHours: number;
@@ -31,146 +32,152 @@ interface FormattedEntry {
   happinessRating: number;
   notes: string | null;
   customCategories: CustomCategory[];
-  createdAt: string;
-  updatedAt: string;
 }
 
-interface HistoryViewProps {
-  initialEntries: FormattedEntry[];
-}
-
-export default function HistoryView({ initialEntries }: HistoryViewProps) {
-  const [entries] = useState(initialEntries);
+export default function HistoryView() {
+  const [entries, setEntries] = useState<Entry[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [isDarkMode, setIsDarkMode] = useState(false);
+  const [selectedEntry, setSelectedEntry] = useState<Entry | null>(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
-  // Check if dark mode is enabled
   useEffect(() => {
     const checkDarkMode = () => {
-      const isDark = document.documentElement.classList.contains('dark');
-      setIsDarkMode(isDark);
+      setIsDarkMode(document.documentElement.classList.contains('dark'));
     };
 
-    // Initial check
     checkDarkMode();
+    const observer = new MutationObserver(checkDarkMode);
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
 
-    // Set up a mutation observer to detect changes to the dark mode class
-    const observer = new MutationObserver((mutations) => {
-      mutations.forEach((mutation) => {
-        if (mutation.attributeName === 'class') {
-          checkDarkMode();
-        }
-      });
-    });
-
-    observer.observe(document.documentElement, { attributes: true });
-
-    return () => {
-      observer.disconnect();
-    };
+    return () => observer.disconnect();
   }, []);
+
+  useEffect(() => {
+    const fetchEntries = async () => {
+      try {
+        const response = await fetch('/api/entries');
+        if (!response.ok) throw new Error('Failed to fetch entries');
+        const data = await response.json();
+        setEntries(data);
+      } catch (error) {
+        console.error('Error fetching entries:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchEntries();
+  }, []);
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const isMobile = window.innerWidth < 768;
+    return isMobile
+      ? format(date, 'MM.dd.yyyy')
+      : format(date, 'MMMM d, yyyy');
+  };
+
+  const handleEditClick = (entry: Entry) => {
+    setSelectedEntry(entry);
+    setIsEditModalOpen(true);
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center min-h-[200px]">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-rose-600"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
       {entries.map((entry) => (
-        <div key={entry.id} className="glass-card p-6">
+        <div
+          key={entry.id}
+          className="glass-card p-4 hover:shadow-lg transition-shadow duration-200"
+        >
           <div className="flex justify-between items-start mb-4">
-            <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200">
-              {format(new Date(entry.date), 'MMMM d, yyyy')}
-            </h2>
-            <div className="text-right">
-              <div className="text-lg font-medium text-rose-600 dark:text-indigo-400">
-                Happiness: {entry.happinessRating}/10
-              </div>
-              <div className="text-sm text-gray-600 dark:text-gray-400">
-                Stress: {entry.stressLevel}/10
-              </div>
-            </div>
+            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">
+              {formatDate(entry.date)}
+            </h3>
+            <button
+              onClick={() => handleEditClick(entry)}
+              className="text-rose-600 hover:text-rose-700 dark:text-rose-400 dark:hover:text-rose-300 transition-colors"
+            >
+              Edit
+            </button>
           </div>
 
-          <div className="grid grid-cols-1 gap-4">
-            <div className="space-y-2">
-              <div className="flex justify-between">
-                <span className="text-gray-600 dark:text-gray-400">Sleep</span>
-                <span className="font-medium text-gray-800 dark:text-gray-200">{entry.sleepHours} hours</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600 dark:text-gray-400">Sleep Quality</span>
-                <span className="font-medium text-gray-800 dark:text-gray-200">{entry.sleepQuality}/10</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600 dark:text-gray-400">Exercise</span>
-                <span className="font-medium text-gray-800 dark:text-gray-200">
-                  {entry.exercise ? `${entry.exerciseTime} minutes` : 'No'}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600 dark:text-gray-400">Meditation</span>
-                <span className="font-medium text-gray-800 dark:text-gray-200">
-                  {entry.meditation ? `${entry.meditationTime} minutes` : 'No'}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600 dark:text-gray-400">Meals</span>
-                <span className="font-medium text-gray-800 dark:text-gray-200">{entry.meals || 'Not recorded'}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600 dark:text-gray-400">Food Quality</span>
-                <span className="font-medium text-gray-800 dark:text-gray-200">
-                  {entry.foodQuality ? `${entry.foodQuality}/10` : 'Not recorded'}
-                </span>
-              </div>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            <div>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Sleep</p>
+              <p className="text-gray-900 dark:text-gray-100">
+                {entry.sleepHours}h ({entry.sleepQuality}/10)
+              </p>
             </div>
 
-            <div className="space-y-2">
-              <div className="flex justify-between">
-                <span className="text-gray-600 dark:text-gray-400">Alcohol</span>
-                <span className="font-medium text-gray-800 dark:text-gray-200">
-                  {entry.alcohol ? `${entry.alcoholUnits} units` : 'No'}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600 dark:text-gray-400">Cannabis</span>
-                <span className="font-medium text-gray-800 dark:text-gray-200">
-                  {entry.cannabis ? `${entry.cannabisAmount} grams` : 'No'}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600 dark:text-gray-400">Social Time</span>
-                <span className="font-medium text-gray-800 dark:text-gray-200">{entry.socialTime} hours</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600 dark:text-gray-400">Work Hours</span>
-                <span className="font-medium text-gray-800 dark:text-gray-200">{entry.workHours} hours</span>
-              </div>
+            <div>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Exercise</p>
+              <p className="text-gray-900 dark:text-gray-100">
+                {entry.exercise ? `${entry.exerciseTime}min` : 'No'}
+              </p>
             </div>
+
+            <div>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Social Time</p>
+              <p className="text-gray-900 dark:text-gray-100">
+                {entry.socialTime ? `${entry.socialTime}h` : 'N/A'}
+              </p>
+            </div>
+
+            <div>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Work Hours</p>
+              <p className="text-gray-900 dark:text-gray-100">
+                {entry.workHours ? `${entry.workHours}h` : 'N/A'}
+              </p>
+            </div>
+
+            <div>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Stress Level</p>
+              <p className="text-gray-900 dark:text-gray-100">{entry.stressLevel}/10</p>
+            </div>
+
+            <div>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Happiness</p>
+              <p className="text-gray-900 dark:text-gray-100">{entry.happinessRating}/10</p>
+            </div>
+
+            {entry.customCategories.map((category) => (
+              <div key={category.id}>
+                <p className="text-sm text-gray-500 dark:text-gray-400">{category.name}</p>
+                <p className="text-gray-900 dark:text-gray-100">
+                  {category.type === 'scale' ? `${category.value}/10` : category.value}
+                </p>
+              </div>
+            ))}
           </div>
-
-          {entry.customCategories.length > 0 && (
-            <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-              <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">Custom Categories</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {entry.customCategories.map((category) => (
-                  <div key={category.id} className="flex justify-between">
-                    <span className="text-gray-600 dark:text-gray-400">{category.name}</span>
-                    <span className="font-medium text-gray-800 dark:text-gray-200">
-                      {category.type === 'scale' ? `${category.value}/10` : 
-                       category.type === 'boolean' ? (category.value === 1 ? 'Yes' : 'No') : 
-                       category.value}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
 
           {entry.notes && (
             <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-              <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">Notes</h3>
-              <p className="text-gray-600 dark:text-gray-400">{entry.notes}</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Notes</p>
+              <p className="text-gray-900 dark:text-gray-100 whitespace-pre-wrap">{entry.notes}</p>
             </div>
           )}
         </div>
       ))}
+
+      {selectedEntry && (
+        <EditEntryModal
+          isOpen={isEditModalOpen}
+          onClose={() => {
+            setIsEditModalOpen(false);
+            setSelectedEntry(null);
+          }}
+          entry={selectedEntry}
+        />
+      )}
     </div>
   );
 } 
