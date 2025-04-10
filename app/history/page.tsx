@@ -29,37 +29,6 @@ export default async function History() {
     }
   });
 
-  // Convert Date objects to strings for client components
-  const formattedEntries = entries.map(entry => ({
-    id: entry.id,
-    date: entry.date.toISOString(),
-    sleepHours: entry.sleepHours,
-    sleepQuality: entry.sleepQuality,
-    exercise: entry.exercise,
-    exerciseTime: entry.exerciseTime,
-    alcohol: entry.alcohol,
-    alcoholUnits: entry.alcoholUnits,
-    cannabis: entry.cannabis,
-    cannabisAmount: entry.cannabisAmount,
-    meditation: entry.meditation,
-    meditationTime: entry.meditationTime,
-    socialTime: entry.socialTime,
-    workHours: entry.workHours,
-    meals: entry.meals,
-    foodQuality: entry.foodQuality,
-    stressLevel: entry.stressLevel,
-    happinessRating: entry.happinessRating,
-    notes: entry.notes,
-    customCategories: entry.customCategoryEntries.map(cce => ({
-      id: cce.customCategory.id,
-      name: cce.customCategory.name,
-      type: cce.customCategory.type as 'numeric' | 'scale' | 'boolean',
-      value: cce.value
-    })),
-    createdAt: entry.createdAt.toISOString(),
-    updatedAt: entry.updatedAt.toISOString()
-  }));
-
   return (
     <div className="min-h-screen">
       <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
@@ -78,7 +47,7 @@ export default async function History() {
                 </Link>
               </div>
             ) : (
-              <HistoryView initialEntries={formattedEntries} />
+              <HistoryView />
             )}
           </div>
         </div>

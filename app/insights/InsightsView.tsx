@@ -361,7 +361,7 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
     // Prepare time series data for happiness
     prepareTimeSeriesData();
     
-  }, [entries, minimumEntries, prepareTimeSeriesData]);
+  }, [entries, minimumEntries, prepareTimeSeriesData, booleanFactors, numericFactors]);
   
   // Update scatter data and time series data when selectedFactor changes
   useEffect(() => {
