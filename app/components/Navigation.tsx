@@ -154,7 +154,7 @@ export default function Navigation({ user }: NavigationProps) {
           <div className="px-2 pt-2 pb-3 space-y-1">
             <Link 
               href="/" 
-              className={`block px-3 py-2 rounded-md text-base font-medium ${
+              className={`block px-3 py-2.5 rounded-md text-base font-medium ${
                 isActive('/')
                   ? 'text-rose-600 dark:text-indigo-600 bg-rose-100/80 dark:bg-indigo-400/20' 
                   : 'text-stone-600 hover:text-rose-500 hover:bg-rose-500/10 dark:text-gray-300 dark:hover:text-indigo-500 dark:hover:bg-indigo-500/10'
@@ -165,7 +165,7 @@ export default function Navigation({ user }: NavigationProps) {
             </Link>
             <Link 
               href="/entry" 
-              className={`block px-3 py-2 rounded-md text-base font-medium ${
+              className={`block px-3 py-2.5 rounded-md text-base font-medium ${
                 isActive('/entry')
                   ? 'text-rose-600 dark:text-indigo-600 bg-rose-100/80 dark:bg-indigo-400/20' 
                   : 'text-stone-600 hover:text-rose-500 hover:bg-rose-500/10 dark:text-gray-300 dark:hover:text-indigo-500 dark:hover:bg-indigo-500/10'
@@ -176,7 +176,7 @@ export default function Navigation({ user }: NavigationProps) {
             </Link>
             <Link 
               href="/insights" 
-              className={`block px-3 py-2 rounded-md text-base font-medium ${
+              className={`block px-3 py-2.5 rounded-md text-base font-medium ${
                 isActive('/insights')
                   ? 'text-rose-600 dark:text-indigo-600 bg-rose-100/80 dark:bg-indigo-400/20' 
                   : 'text-stone-600 hover:text-rose-500 hover:bg-rose-500/10 dark:text-gray-300 dark:hover:text-indigo-500 dark:hover:bg-indigo-500/10'
@@ -187,7 +187,7 @@ export default function Navigation({ user }: NavigationProps) {
             </Link>
             <Link 
               href="/history" 
-              className={`block px-3 py-2 rounded-md text-base font-medium ${
+              className={`block px-3 py-2.5 rounded-md text-base font-medium ${
                 isActive('/history')
                   ? 'text-rose-600 dark:text-indigo-600 bg-rose-100/80 dark:bg-indigo-400/20' 
                   : 'text-stone-600 hover:text-rose-500 hover:bg-rose-500/10 dark:text-gray-300 dark:hover:text-indigo-500 dark:hover:bg-indigo-500/10'
@@ -198,7 +198,7 @@ export default function Navigation({ user }: NavigationProps) {
             </Link>
             <Link 
               href="/gratitudes" 
-              className={`block px-3 py-2 rounded-md text-base font-medium ${
+              className={`block px-3 py-2.5 rounded-md text-base font-medium ${
                 isActive('/gratitudes')
                   ? 'text-rose-600 dark:text-indigo-600 bg-rose-100/80 dark:bg-indigo-400/20' 
                   : 'text-stone-600 hover:text-rose-500 hover:bg-rose-500/10 dark:text-gray-300 dark:hover:text-indigo-500 dark:hover:bg-indigo-500/10'
@@ -209,7 +209,7 @@ export default function Navigation({ user }: NavigationProps) {
             </Link>
             <Link
               href="/categories"
-              className={`block px-3 py-2 rounded-md text-base font-medium ${
+              className={`block px-3 py-2.5 rounded-md text-base font-medium ${
                 isActive('/categories')
                   ? 'text-rose-600 dark:text-indigo-600 bg-rose-100/80 dark:bg-indigo-400/20' 
                   : 'text-stone-600 hover:text-rose-500 hover:bg-rose-500/10 dark:text-gray-300 dark:hover:text-indigo-500 dark:hover:bg-indigo-500/10'
@@ -220,7 +220,7 @@ export default function Navigation({ user }: NavigationProps) {
             </Link>
             <Link
               href="/how-to-use"
-              className={`block px-3 py-2 rounded-md text-base font-medium ${
+              className={`block px-3 py-2.5 rounded-md text-base font-medium ${
                 isActive('/how-to-use')
                   ? 'text-rose-600 dark:text-indigo-600 bg-rose-100/80 dark:bg-indigo-400/20' 
                   : 'text-stone-600 hover:text-rose-500 hover:bg-rose-500/10 dark:text-gray-300 dark:hover:text-indigo-500 dark:hover:bg-indigo-500/10'
@@ -231,7 +231,7 @@ export default function Navigation({ user }: NavigationProps) {
             </Link>
             <button
               onClick={() => signOut({ callbackUrl: '/login' })}
-              className="w-full text-left px-3 py-2 rounded-md text-base font-medium text-white bg-rose-500/70 hover:bg-rose-600/80 dark:bg-indigo-600/70 dark:hover:bg-indigo-700/80"
+              className="w-full text-left px-3 py-2.5 rounded-md text-base font-medium text-white bg-rose-500/70 hover:bg-rose-600/80 dark:bg-indigo-600/70 dark:hover:bg-indigo-700/80"
             >
               Sign Out
             </button>

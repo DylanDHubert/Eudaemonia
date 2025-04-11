@@ -463,29 +463,40 @@ export default function EntryForm({ userId }: EntryFormProps) {
                 <label className="text-subheader whitespace-nowrap">
                   Cannabis
                 </label>
-                <div className="flex items-center whitespace-nowrap">
+                <div className="flex items-center space-x-2">
                   <input
                     type="checkbox"
-                    name="cannabis"
+                    id="cannabis"
                     checked={formData.cannabis}
-                    onChange={handleCheckboxChange}
-                    className="mr-2"
+                    onChange={(e) => setFormData({ ...formData, cannabis: e.target.checked })}
+                    className="h-4 w-4 text-rose-600 focus:ring-rose-500 border-gray-300 rounded"
                   />
-                  <span className="text-input">Yes</span>
+                  <label htmlFor="cannabis" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Cannabis
+                  </label>
                 </div>
               </div>
               {formData.cannabis && (
-                <select
-                  name="cannabisAmount"
-                  value={formData.cannabisAmount}
-                  onChange={handleChange}
-                  className="glass-input w-24 h-10 px-3 py-0 m-0 text-input"
-                >
-                  <option value="">Amount</option>
-                  <option value="1">Light</option>
-                  <option value="2">Moderate</option>
-                  <option value="3">Heavy</option>
-                </select>
+                <div className="mt-2">
+                  <label htmlFor="cannabisAmount" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Amount
+                  </label>
+                  <select
+                    id="cannabisAmount"
+                    value={formData.cannabisAmount}
+                    onChange={(e) => setFormData({ ...formData, cannabisAmount: e.target.value })}
+                    className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-rose-500 focus:border-rose-500 sm:text-sm rounded-md dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300"
+                  >
+                    <option value="0.25">0.25g</option>
+                    <option value="0.5">0.5g</option>
+                    <option value="0.75">0.75g</option>
+                    <option value="1">1g</option>
+                    <option value="1.25">1.25g</option>
+                    <option value="1.5">1.5g</option>
+                    <option value="1.75">1.75g</option>
+                    <option value="2">2g</option>
+                  </select>
+                </div>
               )}
             </div>
           </div>
