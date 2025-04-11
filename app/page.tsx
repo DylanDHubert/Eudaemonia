@@ -37,7 +37,7 @@ export default async function Dashboard() {
               
               {/* Gratitudes Container */}
               <div className="glass-card p-6 sm:p-6 w-full md:w-60">
-                <div className="overflow-y-auto overflow-x-hidden max-h-[410px] scrollbar-hide">
+                <div className="overflow-y-auto overflow-x-hidden max-h-[370px] scrollbar-hide">
                   <GratitudeView />
                 </div>
               </div>

@@ -868,7 +868,7 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
     <>
       {/* Modal for scatter plot and time series - desktop only */}
       {isModalOpen && selectedFactor && (
-        <div className="fixed inset-0 hidden sm:flex items-center justify-center z-[10000] bg-black/50">
+        <div className="fixed inset-0 hidden sm:flex items-center justify-center z-[10000] rounded-lg bg-rose-100/50 dark:bg-indigo-900/50 backdrop-blur-sm">
           <div className="glass-card p-4 w-auto max-w-4xl h-auto max-h-[80vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
             <div className="flex justify-end">
               <button
