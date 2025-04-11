@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { format } from 'date-fns';
+import { ChevronUpIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
 
 interface Gratitude {
   id: string;
@@ -15,6 +16,7 @@ export default function GratitudeView() {
   const [gratitudes, setGratitudes] = useState<Gratitude[]>([]);
   const [loading, setLoading] = useState(true);
   const [isDarkMode, setIsDarkMode] = useState(false);
+  const [currentIndex, setCurrentIndex] = useState(0);
 
   // Check if dark mode is enabled
   useEffect(() => {
@@ -23,10 +25,8 @@ export default function GratitudeView() {
       setIsDarkMode(isDark);
     };
 
-    // Initial check
     checkDarkMode();
 
-    // Set up a mutation observer to detect changes to the dark mode class
     const observer = new MutationObserver((mutations) => {
       mutations.forEach((mutation) => {
         if (mutation.attributeName === 'class') {
@@ -61,6 +61,22 @@ export default function GratitudeView() {
     fetchGratitudes();
   }, [session?.user?.id]);
 
+  const handleUpClick = () => {
+    if (currentIndex > 0) {
+      setCurrentIndex(prev => prev - 1);
+    }
+  };
+
+  const handleDownClick = () => {
+    if (currentIndex < gratitudes.length - 1) {
+      setCurrentIndex(prev => prev + 1);
+    }
+  };
+
+  const formatCount = (count: number) => {
+    return count > 999 ? '1K+' : count.toString();
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -77,23 +93,45 @@ export default function GratitudeView() {
     );
   }
 
+  const currentGratitude = gratitudes[currentIndex];
+
   return (
-    <div className="space-y-4 scrollbar-hide">
-      <div className="mb-4">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Daily Gratitudes</h3>
-        <p className="text-sm text-gray-600 dark:text-gray-400">Record and reflect on what you're grateful for each day.</p>
+    <div className="max-h-[370px] min-h-0 flex flex-col gap-4">
+      <div className="glass-card p-4 border border-gray-200 dark:border-gray-700 w-full max-w-md">
+        <p className="text-sm text-gray-800 dark:text-gray-200 mb-2">{currentGratitude.content}</p>
+        <p className="text-xs text-gray-600 dark:text-gray-400">
+          {format(new Date(currentGratitude.createdAt), 'MMMM d, yyyy')}
+        </p>
       </div>
-      {gratitudes.map((gratitude) => (
-        <div
-          key={gratitude.id}
-          className="glass-card p-4 border border-gray-200 dark:border-gray-700"
+      
+      {/* Navigation Arrows */}
+      <div className="flex items-center gap-2 bg-white dark:bg-gray-800 rounded-full px-4 py-1 shadow-sm min-w-[120px] justify-center">
+        <button
+          onClick={handleUpClick}
+          disabled={currentIndex === 0}
+          className={`p-1 rounded-full ${
+            currentIndex === 0 
+              ? 'text-gray-400 dark:text-gray-600 cursor-not-allowed' 
+              : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+          }`}
         >
-          <p className="text-sm text-gray-800 dark:text-gray-200 mb-2">{gratitude.content}</p>
-          <p className="text-xs text-gray-600 dark:text-gray-400">
-            {format(new Date(gratitude.createdAt), 'MMMM d, yyyy')}
-          </p>
-        </div>
-      ))}
+          <ChevronUpIcon className="w-4 h-4" />
+        </button>
+        <span className="text-xs text-gray-600 dark:text-gray-400 min-w-[60px] text-center">
+          {currentIndex + 1} / {formatCount(gratitudes.length)}
+        </span>
+        <button
+          onClick={handleDownClick}
+          disabled={currentIndex === gratitudes.length - 1}
+          className={`p-1 rounded-full ${
+            currentIndex === gratitudes.length - 1 
+              ? 'text-gray-400 dark:text-gray-600 cursor-not-allowed' 
+              : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+          }`}
+        >
+          <ChevronDownIcon className="w-4 h-4" />
+        </button>
+      </div>
     </div>
   );
 } 

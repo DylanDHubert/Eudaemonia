@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import GratitudeInput from './GratitudeInput';
-import GratitudeView from './GratitudeView';
+import GratitudeList from './GratitudeList';
 
 export default function GratitudesPage() {
   const [isDarkMode, setIsDarkMode] = useState(false);
@@ -43,7 +43,7 @@ export default function GratitudesPage() {
                 <GratitudeInput />
               </div>
               <div>
-                <GratitudeView />
+                <GratitudeList />
               </div>
             </div>
           </div>

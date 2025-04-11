@@ -9,6 +9,7 @@ export default function GratitudeInput() {
   const [content, setContent] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
+  const MAX_CHARS = 199;
 
   // Check if dark mode is enabled
   useEffect(() => {
@@ -64,17 +65,27 @@ export default function GratitudeInput() {
     }
   };
 
+  const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const newContent = e.target.value;
+    if (newContent.length <= MAX_CHARS) {
+      setContent(newContent);
+    }
+  };
+
   return (
     <div className="h-full">
       <form onSubmit={handleSubmit} className="h-full flex flex-col space-y-6">
-        <div className="glass-card p-4 flex-grow">
+        <div className="glass-card p-4 flex-grow relative">
           <textarea
             value={content}
-            onChange={(e) => setContent(e.target.value)}
+            onChange={handleContentChange}
             placeholder="What are you grateful for today?"
-            className="w-full h-full bg-transparent border-0 focus:ring-0 text-gray-800 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500 resize-none"
+            className="w-full h-full bg-transparent border-0 focus:ring-0 text-gray-800 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500 resize-none pr-16"
             required
           />
+          <div className="absolute bottom-2 right-2 text-xs text-gray-500 dark:text-gray-400">
+            {content.length}/{MAX_CHARS}
+          </div>
         </div>
         <button
           type="submit"
