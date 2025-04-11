@@ -243,9 +243,9 @@ export default function CorrelationMatrix() {
       
       <div className="flex">
         {/* Row labels */}
-        <div className="flex flex-col mr-2 text-[8px] sm:text-xs text-gray-600">
+        <div className="flex flex-col mr-2 text-[8px] sm:text-xs text-gray-600 pt-12">
           {displayFields.map((field, index) => (
-            <div key={field.id} className="flex items-center justify-end w-[100px] h-[24px] mb-[2.1px]">
+            <div key={field.id} className="flex items-center justify-end w-[100px] h-[24px] mb-[4px]">
               {field.name}
             </div>
           ))}

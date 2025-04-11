@@ -595,10 +595,10 @@ export default function EntryForm({ userId }: EntryFormProps) {
         {customCategories.length > 0 && (
           <div className="glass-card p-4">
             <h3 className="text-subheader mb-4">Custom Categories</h3>
-            <div className={`grid grid-cols-1 gap-6 ${
-              customCategories.length % 3 === 0 ? 'md:grid-cols-3' : 
-              customCategories.length % 3 === 1 ? 'md:grid-cols-2' : 
-              'md:grid-cols-1'
+            <div className={`grid gap-6 ${
+              customCategories.length % 3 === 0 ? 'grid-cols-1 md:grid-cols-3' : 
+              customCategories.length % 2 === 0 ? 'grid-cols-1 md:grid-cols-2' : 
+              'grid-cols-1'
             }`}>
               {customCategories.map((category) => (
                 <div key={category.id} className="glass-card p-4">

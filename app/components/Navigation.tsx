@@ -67,7 +67,7 @@ export default function Navigation({ user }: NavigationProps) {
               className={`text-sm sm:text-base px-3 py-2 rounded-md transition-colors ${
                 isActive('/')
                   ? 'text-rose-600 dark:text-indigo-600 bg-white/50 dark:bg-gray-800/50' 
-                  : 'text-stone-600 hover:text-indigo-500 hover:bg-indigo-500/10 dark:text-gray-300 dark:hover:text-indigo-500 dark:hover:bg-indigo-500/10'
+                  : 'text-stone-600 hover:text-rose-500 hover:bg-rose-500/10 dark:text-gray-300 dark:hover:text-indigo-500 dark:hover:bg-indigo-500/10'
               }`}
             >
               Dashboard
@@ -77,7 +77,7 @@ export default function Navigation({ user }: NavigationProps) {
               className={`text-sm sm:text-base px-3 py-2 rounded-md transition-colors ${
                 isActive('/entry')
                   ? 'text-rose-600 dark:text-indigo-600 bg-white/50 dark:bg-gray-800/50' 
-                  : 'text-stone-600 hover:text-indigo-500 hover:bg-indigo-500/10 dark:text-gray-300 dark:hover:text-indigo-500 dark:hover:bg-indigo-500/10'
+                  : 'text-stone-600 hover:text-rose-500 hover:bg-rose-500/10 dark:text-gray-300 dark:hover:text-indigo-500 dark:hover:bg-indigo-500/10'
               }`}
             >
               Entry
@@ -87,7 +87,7 @@ export default function Navigation({ user }: NavigationProps) {
               className={`text-sm sm:text-base px-3 py-2 rounded-md transition-colors ${
                 isActive('/insights')
                   ? 'text-rose-600 dark:text-indigo-600 bg-white/50 dark:bg-gray-800/50' 
-                  : 'text-stone-600 hover:text-indigo-500 hover:bg-indigo-500/10 dark:text-gray-300 dark:hover:text-indigo-500 dark:hover:bg-indigo-500/10'
+                  : 'text-stone-600 hover:text-rose-500 hover:bg-rose-500/10 dark:text-gray-300 dark:hover:text-indigo-500 dark:hover:bg-indigo-500/10'
               }`}
             >
               Insights
@@ -97,7 +97,7 @@ export default function Navigation({ user }: NavigationProps) {
               className={`text-sm sm:text-base px-3 py-2 rounded-md transition-colors ${
                 isActive('/history')
                   ? 'text-rose-600 dark:text-indigo-600 bg-white/50 dark:bg-gray-800/50' 
-                  : 'text-stone-600 hover:text-indigo-500 hover:bg-indigo-500/10 dark:text-gray-300 dark:hover:text-indigo-500 dark:hover:bg-indigo-500/10'
+                  : 'text-stone-600 hover:text-rose-500 hover:bg-rose-500/10 dark:text-gray-300 dark:hover:text-indigo-500 dark:hover:bg-indigo-500/10'
               }`}
             >
               History
@@ -107,7 +107,7 @@ export default function Navigation({ user }: NavigationProps) {
               className={`text-sm sm:text-base px-3 py-2 rounded-md transition-colors ${
                 isActive('/gratitudes')
                   ? 'text-rose-600 dark:text-indigo-600 bg-white/50 dark:bg-gray-800/50' 
-                  : 'text-stone-600 hover:text-indigo-500 hover:bg-indigo-500/10 dark:text-gray-300 dark:hover:text-indigo-500 dark:hover:bg-indigo-500/10'
+                  : 'text-stone-600 hover:text-rose-500 hover:bg-rose-500/10 dark:text-gray-300 dark:hover:text-indigo-500 dark:hover:bg-indigo-500/10'
               }`}
             >
               Gratitudes
@@ -117,7 +117,7 @@ export default function Navigation({ user }: NavigationProps) {
               className={`text-sm sm:text-base px-3 py-2 rounded-md transition-colors ${
                 isActive('/categories')
                   ? 'text-rose-600 dark:text-indigo-600 bg-white/50 dark:bg-gray-800/50' 
-                  : 'text-stone-600 hover:text-indigo-500 hover:bg-indigo-500/10 dark:text-gray-300 dark:hover:text-indigo-500 dark:hover:bg-indigo-500/10'
+                  : 'text-stone-600 hover:text-rose-500 hover:bg-rose-500/10 dark:text-gray-300 dark:hover:text-indigo-500 dark:hover:bg-indigo-500/10'
               }`}
             >
               Categories
@@ -127,7 +127,7 @@ export default function Navigation({ user }: NavigationProps) {
               className={`text-sm sm:text-base px-3 py-2 rounded-md transition-colors ${
                 isActive('/how-to-use')
                   ? 'text-rose-600 dark:text-indigo-600 bg-white/50 dark:bg-gray-800/50' 
-                  : 'text-stone-600 hover:text-indigo-500 hover:bg-indigo-500/10 dark:text-gray-300 dark:hover:text-indigo-500 dark:hover:bg-indigo-500/10'
+                  : 'text-stone-600 hover:text-rose-500 hover:bg-rose-500/10 dark:text-gray-300 dark:hover:text-indigo-500 dark:hover:bg-indigo-500/10'
               }`}
             >
               Help
@@ -157,7 +157,7 @@ export default function Navigation({ user }: NavigationProps) {
               className={`block px-3 py-2 rounded-md text-base font-medium ${
                 isActive('/')
                   ? 'text-rose-600 dark:text-indigo-600 bg-rose-100/80 dark:bg-indigo-400/20' 
-                  : 'text-stone-600 hover:text-indigo-500 hover:bg-indigo-500/10 dark:text-gray-300 dark:hover:text-indigo-500 dark:hover:bg-indigo-500/10'
+                  : 'text-stone-600 hover:text-rose-500 hover:bg-rose-500/10 dark:text-gray-300 dark:hover:text-indigo-500 dark:hover:bg-indigo-500/10'
               }`}
               onClick={closeMenu}
             >
@@ -168,7 +168,7 @@ export default function Navigation({ user }: NavigationProps) {
               className={`block px-3 py-2 rounded-md text-base font-medium ${
                 isActive('/entry')
                   ? 'text-rose-600 dark:text-indigo-600 bg-rose-100/80 dark:bg-indigo-400/20' 
-                  : 'text-stone-600 hover:text-indigo-500 hover:bg-indigo-500/10 dark:text-gray-300 dark:hover:text-indigo-500 dark:hover:bg-indigo-500/10'
+                  : 'text-stone-600 hover:text-rose-500 hover:bg-rose-500/10 dark:text-gray-300 dark:hover:text-indigo-500 dark:hover:bg-indigo-500/10'
               }`}
               onClick={closeMenu}
             >
@@ -179,7 +179,7 @@ export default function Navigation({ user }: NavigationProps) {
               className={`block px-3 py-2 rounded-md text-base font-medium ${
                 isActive('/insights')
                   ? 'text-rose-600 dark:text-indigo-600 bg-rose-100/80 dark:bg-indigo-400/20' 
-                  : 'text-stone-600 hover:text-indigo-500 hover:bg-indigo-500/10 dark:text-gray-300 dark:hover:text-indigo-500 dark:hover:bg-indigo-500/10'
+                  : 'text-stone-600 hover:text-rose-500 hover:bg-rose-500/10 dark:text-gray-300 dark:hover:text-indigo-500 dark:hover:bg-indigo-500/10'
               }`}
               onClick={closeMenu}
             >
@@ -190,7 +190,7 @@ export default function Navigation({ user }: NavigationProps) {
               className={`block px-3 py-2 rounded-md text-base font-medium ${
                 isActive('/history')
                   ? 'text-rose-600 dark:text-indigo-600 bg-rose-100/80 dark:bg-indigo-400/20' 
-                  : 'text-stone-600 hover:text-indigo-500 hover:bg-indigo-500/10 dark:text-gray-300 dark:hover:text-indigo-500 dark:hover:bg-indigo-500/10'
+                  : 'text-stone-600 hover:text-rose-500 hover:bg-rose-500/10 dark:text-gray-300 dark:hover:text-indigo-500 dark:hover:bg-indigo-500/10'
               }`}
               onClick={closeMenu}
             >
@@ -201,7 +201,7 @@ export default function Navigation({ user }: NavigationProps) {
               className={`block px-3 py-2 rounded-md text-base font-medium ${
                 isActive('/gratitudes')
                   ? 'text-rose-600 dark:text-indigo-600 bg-rose-100/80 dark:bg-indigo-400/20' 
-                  : 'text-stone-600 hover:text-indigo-500 hover:bg-indigo-500/10 dark:text-gray-300 dark:hover:text-indigo-500 dark:hover:bg-indigo-500/10'
+                  : 'text-stone-600 hover:text-rose-500 hover:bg-rose-500/10 dark:text-gray-300 dark:hover:text-indigo-500 dark:hover:bg-indigo-500/10'
               }`}
               onClick={closeMenu}
             >
@@ -212,7 +212,7 @@ export default function Navigation({ user }: NavigationProps) {
               className={`block px-3 py-2 rounded-md text-base font-medium ${
                 isActive('/categories')
                   ? 'text-rose-600 dark:text-indigo-600 bg-rose-100/80 dark:bg-indigo-400/20' 
-                  : 'text-stone-600 hover:text-indigo-500 hover:bg-indigo-500/10 dark:text-gray-300 dark:hover:text-indigo-500 dark:hover:bg-indigo-500/10'
+                  : 'text-stone-600 hover:text-rose-500 hover:bg-rose-500/10 dark:text-gray-300 dark:hover:text-indigo-500 dark:hover:bg-indigo-500/10'
               }`}
               onClick={closeMenu}
             >
@@ -223,7 +223,7 @@ export default function Navigation({ user }: NavigationProps) {
               className={`block px-3 py-2 rounded-md text-base font-medium ${
                 isActive('/how-to-use')
                   ? 'text-rose-600 dark:text-indigo-600 bg-rose-100/80 dark:bg-indigo-400/20' 
-                  : 'text-stone-600 hover:text-indigo-500 hover:bg-indigo-500/10 dark:text-gray-300 dark:hover:text-indigo-500 dark:hover:bg-indigo-500/10'
+                  : 'text-stone-600 hover:text-rose-500 hover:bg-rose-500/10 dark:text-gray-300 dark:hover:text-indigo-500 dark:hover:bg-indigo-500/10'
               }`}
               onClick={closeMenu}
             >
