@@ -11,7 +11,11 @@ interface Gratitude {
   createdAt: string;
 }
 
-export default function GratitudeView() {
+interface GratitudeViewProps {
+  homePage?: boolean;
+}
+
+export default function GratitudeView({ homePage = false }: GratitudeViewProps) {
   const { data: session } = useSession();
   const [gratitudes, setGratitudes] = useState<Gratitude[]>([]);
   const [loading, setLoading] = useState(true);
@@ -79,13 +83,35 @@ export default function GratitudeView() {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-64">
+      <div className="flex justify-center items-center h-full">
         <div className="text-description">Loading gratitudes...</div>
       </div>
     );
   }
 
   if (gratitudes.length === 0) {
+    // For home page, show three empty placeholders
+    if (homePage) {
+      return (
+        <div className="flex flex-col h-full justify-between">
+          <div className="flex-1 mb-2">
+            <div className="glass-card p-2 border border-gray-200 dark:border-gray-700 h-8 mb-2">
+              <p className="text-xs text-gray-500 dark:text-gray-400">No gratitudes yet</p>
+            </div>
+            <div className="glass-card p-2 border border-gray-200 dark:border-gray-700 h-8 mb-2">
+              <p className="text-xs text-gray-500 dark:text-gray-400">Record what you're grateful for</p>
+            </div>
+            <div className="glass-card p-2 border border-gray-200 dark:border-gray-700 h-8">
+              <p className="text-xs text-gray-500 dark:text-gray-400">Start building your gratitude habit</p>
+            </div>
+          </div>
+          <div className="text-center">
+            <p className="text-xs text-gray-600 dark:text-gray-400">No gratitudes recorded yet</p>
+          </div>
+        </div>
+      );
+    }
+    
     return (
       <div className="text-center py-8">
         <p className="text-description">No gratitudes recorded yet.</p>
@@ -95,6 +121,51 @@ export default function GratitudeView() {
 
   const currentGratitude = gratitudes[currentIndex];
 
+  // For the home page, show a simplified view with three entries or placeholder entries
+  if (homePage) {
+    const displayGratitudes = [...gratitudes];
+    
+    // If we have less than 3 gratitudes, fill with placeholder entries
+    while (displayGratitudes.length < 3) {
+      displayGratitudes.push({
+        id: `placeholder-${displayGratitudes.length}`,
+        content: 'Record what you\'re grateful for',
+        createdAt: new Date().toISOString()
+      });
+    }
+    
+    // Only show the first 3 gratitudes
+    const firstThreeGratitudes = displayGratitudes.slice(0, 3);
+    
+    return (
+      <div className="flex flex-col h-full">
+        <div className="flex-1">
+          {firstThreeGratitudes.map((gratitude, index) => (
+            <div 
+              key={gratitude.id} 
+              className="glass-card p-2 border border-gray-200 dark:border-gray-700 mb-2 last:mb-0 h-8 overflow-hidden"
+            >
+              <p className="text-xs text-gray-800 dark:text-gray-200 truncate">
+                {gratitude.id.startsWith('placeholder') 
+                  ? <span className="text-gray-500 dark:text-gray-400">{gratitude.content}</span>
+                  : gratitude.content
+                }
+              </p>
+            </div>
+          ))}
+        </div>
+        <div className="flex justify-center mt-2">
+          <div className="flex items-center gap-2 bg-white dark:bg-gray-800 rounded-full px-3 py-1 shadow-sm min-w-[100px] justify-center">
+            <span className="text-xs text-gray-600 dark:text-gray-400 text-center">
+              {gratitudes.length} gratitudes
+            </span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Regular view for the gratitudes page
   return (
     <div className="max-h-[370px] min-h-0 flex flex-col gap-4">
       <div className="glass-card p-4 border border-gray-200 dark:border-gray-700 w-full max-w-md">

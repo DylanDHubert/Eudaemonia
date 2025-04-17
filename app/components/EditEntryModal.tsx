@@ -246,7 +246,7 @@ export default function EditEntryModal({ isOpen, onClose, entry }: EditEntryModa
             <button
               type="submit"
               disabled={isLoading}
-              className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="bg-rose-500/80 dark:bg-indigo-500/80 backdrop-blur-sm border border-rose-600/50 dark:border-indigo-600/50 rounded-lg px-4 py-2 text-sm font-medium text-white dark:text-gray-200 hover:bg-rose-600/90 dark:hover:bg-indigo-600/90 focus:outline-none focus:ring-2 focus:ring-rose-500/50 dark:focus:ring-indigo-500/50 transition-all duration-200 flex items-center justify-center gap-2 shadow-sm hover:shadow-md dark:hover:shadow-indigo-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isLoading ? 'Saving...' : 'Save Changes'}
             </button>

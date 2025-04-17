@@ -475,22 +475,17 @@ export default function EntryForm({ userId }: EntryFormProps) {
                 </div>
               </div>
               {formData.cannabis && (
-                <select
+                <input
+                  type="number"
                   name="cannabisAmount"
                   value={formData.cannabisAmount}
                   onChange={handleChange}
+                  onWheel={handleWheel}
                   className="glass-input w-24 h-10 px-3 py-0 m-0 text-input"
-                >
-                  <option value="">Amount</option>
-                  <option value="0.25">0.25g</option>
-                  <option value="0.5">0.5g</option>
-                  <option value="0.75">0.75g</option>
-                  <option value="1">1g</option>
-                  <option value="1.25">1.25g</option>
-                  <option value="1.5">1.5g</option>
-                  <option value="1.75">1.75g</option>
-                  <option value="2">2g</option>
-                </select>
+                  min="0.01"
+                  max="10"
+                  step="0.01"
+                />
               )}
             </div>
           </div>

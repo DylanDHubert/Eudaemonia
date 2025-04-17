@@ -14,6 +14,21 @@ export default function ActivityHeatmap() {
   const [entries, setEntries] = useState<Entry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isDarkMode, setIsDarkMode] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Check if view is mobile
+  useEffect(() => {
+    const checkIfMobile = () => {
+      setIsMobile(window.innerWidth < 768); // 768px is the standard md breakpoint
+    };
+    
+    checkIfMobile();
+    window.addEventListener('resize', checkIfMobile);
+    
+    return () => {
+      window.removeEventListener('resize', checkIfMobile);
+    };
+  }, []);
 
   useEffect(() => {
     // Check initial dark mode
@@ -40,7 +55,8 @@ export default function ActivityHeatmap() {
     async function fetchEntries() {
       try {
         setIsLoading(true);
-        const response = await fetch(`/api/entries?limit=90`);
+        // Fetch more entries for the expanded view
+        const response = await fetch(`/api/entries?limit=180`);
         const data = await response.json();
         if (data.entries) {
           setEntries(data.entries.map((entry: any) => ({
@@ -66,15 +82,17 @@ export default function ActivityHeatmap() {
   // If we're past Sunday, get next Sunday, otherwise get this week's Sunday
   const daysUntilNextSunday = currentDayOfWeek === 0 ? 0 : 7 - currentDayOfWeek;
   const weekEndDate = addDays(endDate, daysUntilNextSunday);
-  const startDate = subDays(weekEndDate, 83); // 84 days including the end date
+  // Use 12 weeks for mobile, 18 weeks for desktop
+  const numWeeks = isMobile ? 12 : 18;
+  const startDate = subDays(weekEndDate, (numWeeks * 7) - 1); // (numWeeks*7) days including the end date
   const dateRange = eachDayOfInterval({ start: startDate, end: weekEndDate });
 
   // Day labels for the left side
   const dayLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
   
-  // Create a 7x12 grid (12 weeks, 7 days each)
-  const weeks: Date[][] = Array(12).fill(null).map(() => Array(7).fill(null));
-  const monthLabels: string[] = Array(12).fill('');
+  // Create a 7xN grid (N weeks, 7 days each)
+  const weeks: Date[][] = Array(numWeeks).fill(null).map(() => Array(7).fill(null));
+  const monthLabels: string[] = Array(numWeeks).fill('');
   
   // First, get all dates in chronological order
   const orderedDates = [...dateRange].sort((a, b) => a.getTime() - b.getTime());
@@ -87,7 +105,7 @@ export default function ActivityHeatmap() {
     const dayOfWeek = getDay(date);
     const dayIndex = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
     
-    if (weekIndex < 12) {
+    if (weekIndex < numWeeks) {
       weeks[weekIndex][dayIndex] = date;
       
       // Track month changes - only set label if it's the first day of a new month
@@ -217,7 +235,7 @@ export default function ActivityHeatmap() {
     <div className="w-full">
       <h3 className="text-subheader mb-4 text-gray-800 dark:text-white text-center">Activity Monitor</h3>
       
-      <div className="w-full flex justify-center min-w-[300px]">
+      <div className="w-full flex justify-center min-w-[300px] overflow-x-auto">
         <div className="flex flex-col">
           <div className="flex">
             {/* Day labels - hidden on mobile */}
@@ -260,11 +278,13 @@ export default function ActivityHeatmap() {
           {/* Month labels - positioned at the bottom on desktop only */}
           <div className="hidden sm:flex text-xs text-gray-600 dark:text-gray-300 mt-2">
             <div className="w-10 mr-3"></div> {/* Spacer to align with day labels */}
-            {monthLabels.map((month, index) => (
-              <div key={index} className="flex-1 text-center">
-                {month}
-              </div>
-            ))}
+            <div className="flex w-full">
+              {monthLabels.map((month, index) => (
+                <div key={index} className="flex-1 text-center whitespace-nowrap">
+                  {month}
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>

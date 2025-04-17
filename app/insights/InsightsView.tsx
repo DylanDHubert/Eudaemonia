@@ -931,7 +931,7 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
         
         {viewMode === 'correlations' ? (
           <>
-            <div className="mb-4 sm:mb-8">
+            <div className="">
               <h3 className="hidden sm:block text-subheader mb-4">Factors Affecting Your Happiness</h3>
               <div className="glass-card p-2 sm:p-6 rounded-lg overflow-hidden">
                 <div className="overflow-x-auto sm:overflow-x-auto">

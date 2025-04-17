@@ -47,7 +47,7 @@ export default async function InsightsPage() {
   return (
     <div className="min-h-screen">
       <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        <div className="px-4 py-6 sm:px-0">
+        <div className="px-4 sm:px-0">
           <div className="glass-card p-4 sm:p-8">
             <h1 className="text-header mb-6">Your Insights</h1>
             <p className="text-description mb-6">

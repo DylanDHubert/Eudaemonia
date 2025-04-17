@@ -4,7 +4,11 @@ import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { DocumentCheckIcon } from '@heroicons/react/24/outline';
 
-export default function GratitudeInput() {
+interface GratitudeInputProps {
+  homePage?: boolean;
+}
+
+export default function GratitudeInput({ homePage = false }: GratitudeInputProps) {
   const { data: session } = useSession();
   const [content, setContent] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -72,6 +76,38 @@ export default function GratitudeInput() {
     }
   };
 
+  // Render a simplified version for the home page with fixed height
+  if (homePage) {
+    return (
+      <div className="h-full">
+        <form onSubmit={handleSubmit} className="h-full flex flex-col space-y-3">
+          <div className="flex-1 relative">
+            <textarea
+              value={content}
+              onChange={handleContentChange}
+              placeholder="What are you grateful for today?"
+              className="w-full h-full min-h-[80px] bg-transparent border-0 focus:ring-0 glass-card p-2 text-sm text-gray-800 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500 resize-none"
+              required
+              rows={3}
+            />
+            <div className="absolute bottom-1 right-2 text-xs text-gray-500 dark:text-gray-400">
+              {content.length}/{MAX_CHARS}
+            </div>
+          </div>
+          <button
+            type="submit"
+            disabled={isSubmitting || !content.trim()}
+            className="bg-rose-500/80 dark:bg-indigo-500/80 backdrop-blur-sm border border-rose-600/50 dark:border-indigo-600/50 rounded-lg px-4 py-1 text-xs font-medium text-white dark:text-gray-200 hover:bg-rose-600/90 dark:hover:bg-indigo-600/90 transition-all duration-200 flex items-center justify-center gap-2 shadow-sm"
+          >
+            <DocumentCheckIcon className="h-3 w-3" />
+            <span>{isSubmitting ? 'Saving...' : 'Save Gratitude'}</span>
+          </button>
+        </form>
+      </div>
+    );
+  }
+
+  // Original full version for the dedicated gratitude page
   return (
     <div className="h-full">
       <form onSubmit={handleSubmit} className="h-full flex flex-col space-y-6">
