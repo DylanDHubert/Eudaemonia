@@ -1,25 +1,27 @@
 import { NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
-import prisma from '@/lib/prisma';
+import { getServerSession } from '@/lib/supabase/auth';
+import { createClient } from '@/lib/supabase/server';
 
 export async function GET() {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await getServerSession();
     if (!session?.user?.id) {
       return new NextResponse('Unauthorized', { status: 401 });
     }
 
-    const gratitudes = await prisma.gratitude.findMany({
-      where: {
-        userId: session.user.id,
-      },
-      orderBy: {
-        createdAt: 'desc',
-      },
-    });
+    const supabase = await createClient();
+    const { data: gratitudes, error } = await supabase
+      .from('gratitudes')
+      .select('*')
+      .eq('user_id', session.user.id)
+      .order('created_at', { ascending: false });
 
-    return NextResponse.json(gratitudes);
+    if (error) {
+      console.error('Error fetching gratitudes:', error);
+      return new NextResponse('Internal Server Error', { status: 500 });
+    }
+
+    return NextResponse.json(gratitudes || []);
   } catch (error) {
     console.error('Error fetching gratitudes:', error);
     return new NextResponse('Internal Server Error', { status: 500 });
@@ -28,7 +30,7 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await getServerSession();
     if (!session?.user?.id) {
       return new NextResponse('Unauthorized', { status: 401 });
     }
@@ -38,12 +40,20 @@ export async function POST(request: Request) {
       return new NextResponse('Content is required', { status: 400 });
     }
 
-    const gratitude = await prisma.gratitude.create({
-      data: {
+    const supabase = await createClient();
+    const { data: gratitude, error } = await supabase
+      .from('gratitudes')
+      .insert({
         content,
-        userId: session.user.id,
-      },
-    });
+        user_id: session.user.id,
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error creating gratitude:', error);
+      return new NextResponse('Internal Server Error', { status: 500 });
+    }
 
     return NextResponse.json(gratitude);
   } catch (error) {

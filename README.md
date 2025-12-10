@@ -50,9 +50,8 @@ Eudaemonia helps you understand the factors that influence your happiness and we
 - Next.js 14 with App Router
 - TypeScript
 - Tailwind CSS
-- Prisma ORM
-- PostgreSQL
-- NextAuth.js
+- Supabase (Database & Authentication)
+- PostgreSQL (via Supabase)
 - Chart.js
 - React Query
 

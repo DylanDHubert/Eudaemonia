@@ -1,25 +1,30 @@
 import { NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
-import prisma from '@/lib/prisma';
+import { getServerSession } from '@/lib/supabase/auth';
+import { createClient } from '@/lib/supabase/server';
 
 export async function GET() {
-  const session = await getServerSession(authOptions);
+  const session = await getServerSession();
   if (!session?.user?.id) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
   try {
-    const categories = await prisma.customCategory.findMany({
-      where: {
-        userId: session.user.id,
-      },
-      orderBy: {
-        createdAt: 'desc',
-      },
-    });
+    const supabase = await createClient();
+    const { data: categories, error } = await supabase
+      .from('custom_categories')
+      .select('*')
+      .eq('user_id', session.user.id)
+      .order('created_at', { ascending: false });
 
-    return NextResponse.json(categories);
+    if (error) {
+      console.error('Error fetching categories:', error);
+      return NextResponse.json(
+        { error: 'Failed to fetch categories' },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json(categories || []);
   } catch (error) {
     console.error('Error fetching categories:', error);
     return NextResponse.json(
@@ -30,7 +35,7 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const session = await getServerSession(authOptions);
+  const session = await getServerSession();
   if (!session?.user?.id) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
@@ -53,13 +58,30 @@ export async function POST(request: Request) {
       );
     }
 
-    const category = await prisma.customCategory.create({
-      data: {
+    const supabase = await createClient();
+    const { data: category, error } = await supabase
+      .from('custom_categories')
+      .insert({
         name,
         type,
-        userId: session.user.id,
-      },
-    });
+        user_id: session.user.id,
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error creating category:', error);
+      if (error.code === '23505') { // UNIQUE VIOLATION
+        return NextResponse.json(
+          { error: 'A category with this name already exists' },
+          { status: 400 }
+        );
+      }
+      return NextResponse.json(
+        { error: 'Failed to create category' },
+        { status: 500 }
+      );
+    }
 
     return NextResponse.json(category);
   } catch (error) {

@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useSession } from 'next-auth/react';
 import { DocumentCheckIcon } from '@heroicons/react/24/outline';
 
 interface GratitudeInputProps {
@@ -9,7 +8,6 @@ interface GratitudeInputProps {
 }
 
 export default function GratitudeInput({ homePage = false }: GratitudeInputProps) {
-  const { data: session } = useSession();
   const [content, setContent] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
@@ -43,7 +41,7 @@ export default function GratitudeInput({ homePage = false }: GratitudeInputProps
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!content.trim() || !session?.user?.id) return;
+    if (!content.trim()) return;
 
     setIsSubmitting(true);
     try {

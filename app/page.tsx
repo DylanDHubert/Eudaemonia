@@ -1,6 +1,5 @@
-import { getServerSession } from 'next-auth';
+import { getServerSession } from '@/lib/supabase/auth';
 import { redirect } from 'next/navigation';
-import { authOptions } from '@/lib/auth';
 import Link from 'next/link';
 import ActivityHeatmap from './components/ActivityHeatmap';
 import HappinessChart from './components/HappinessChart';
@@ -8,7 +7,7 @@ import GratitudeView from './gratitudes/GratitudeView';
 import GratitudeInput from './gratitudes/GratitudeInput';
 
 export default async function Dashboard() {
-  const session = await getServerSession(authOptions);
+  const session = await getServerSession();
 
   if (!session) {
     redirect('/login');

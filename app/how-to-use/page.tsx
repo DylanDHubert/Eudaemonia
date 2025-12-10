@@ -1,9 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { getServerSession } from 'next-auth';
-import { redirect } from 'next/navigation';
-import { authOptions } from '@/lib/auth';
 import DeleteAccountModal from '../components/DeleteAccountModal';
 
 export default function HowToUsePage() {

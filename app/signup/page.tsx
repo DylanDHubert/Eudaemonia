@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import DarkModeToggle from '../components/DarkModeToggle';
+import { createClient } from '@/lib/supabase/client';
 
 export default function SignUpPage() {
   const router = useRouter();
@@ -58,25 +59,45 @@ export default function SignUpPage() {
     setIsLoading(true);
 
     try {
-      const res = await fetch('/api/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+      const supabase = createClient();
+      
+      // SIGN UP USER
+      const { data: authData, error: signUpError } = await supabase.auth.signUp({
+        email: formData.email,
+        password: formData.password,
+        options: {
+          data: {
+            name: formData.name,
+          },
         },
-        body: JSON.stringify({
-          name: formData.name,
-          email: formData.email,
-          password: formData.password,
-        }),
       });
 
-      const data = await res.json();
-      
-      if (res.ok) {
-        router.push('/login?registered=true');
-      } else {
-        setError(data.error || 'Something went wrong');
+      if (signUpError) {
+        setError(signUpError.message || 'Something went wrong');
+        return;
       }
+
+      if (!authData.user) {
+        setError('Failed to create user');
+        return;
+      }
+
+      // CREATE PROFILE
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .insert({
+          id: authData.user.id,
+          email: authData.user.email,
+          name: formData.name,
+        });
+
+      if (profileError) {
+        console.error('Profile creation error:', profileError);
+        // USER IS CREATED BUT PROFILE FAILED - STILL REDIRECT TO LOGIN
+        // THEY CAN LOGIN AND WE CAN FIX PROFILE LATER
+      }
+
+      router.push('/login?registered=true');
     } catch (error) {
       console.error('Registration error:', error);
       setError('An unexpected error occurred during registration');

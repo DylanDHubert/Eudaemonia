@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useSession } from 'next-auth/react';
+import { createClient } from '@/lib/supabase/client';
 import { format } from 'date-fns';
 import { ChevronUpIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
 
@@ -16,11 +16,11 @@ interface GratitudeViewProps {
 }
 
 export default function GratitudeView({ homePage = false }: GratitudeViewProps) {
-  const { data: session } = useSession();
   const [gratitudes, setGratitudes] = useState<Gratitude[]>([]);
   const [loading, setLoading] = useState(true);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [userId, setUserId] = useState<string | null>(null);
 
   // Check if dark mode is enabled
   useEffect(() => {
@@ -46,12 +46,24 @@ export default function GratitudeView({ homePage = false }: GratitudeViewProps) 
     };
   }, []);
 
+  // GET USER ID ON MOUNT
+  useEffect(() => {
+    const getUserId = async () => {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        setUserId(user.id);
+      }
+    };
+    getUserId();
+  }, []);
+
   useEffect(() => {
     const fetchGratitudes = async () => {
-      if (!session?.user?.id) return;
+      if (!userId) return;
 
       try {
-        const response = await fetch(`/api/gratitudes?userId=${session.user.id}`);
+        const response = await fetch(`/api/gratitudes`);
         if (!response.ok) throw new Error('Failed to fetch gratitudes');
         const data = await response.json();
         setGratitudes(data);
@@ -63,7 +75,7 @@ export default function GratitudeView({ homePage = false }: GratitudeViewProps) 
     };
 
     fetchGratitudes();
-  }, [session?.user?.id]);
+  }, [userId]);
 
   const handleUpClick = () => {
     if (currentIndex > 0) {

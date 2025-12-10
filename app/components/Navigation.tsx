@@ -1,8 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { signOut } from 'next-auth/react';
+import { usePathname, useRouter } from 'next/navigation';
+import { createClient } from '@/lib/supabase/client';
 import { useState } from 'react';
 import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
 import DarkModeToggle from './DarkModeToggle';
@@ -18,6 +18,7 @@ type NavigationProps = {
 
 export default function Navigation({ user }: NavigationProps) {
   const pathname = usePathname();
+  const router = useRouter();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const getUserName = () => {
@@ -137,7 +138,12 @@ export default function Navigation({ user }: NavigationProps) {
               <div className="flex items-center">
                 <span className="text-sm text-stone-600 dark:text-gray-300 mr-2">{getUserName()}</span>
                 <button
-                  onClick={() => signOut({ callbackUrl: '/login' })}
+                  onClick={async () => {
+                    const supabase = createClient();
+                    await supabase.auth.signOut();
+                    router.push('/login');
+                    router.refresh();
+                  }}
                   className="text-sm text-stone-600 hover:text-indigo-500 dark:text-gray-300 dark:hover:text-indigo-500"
                 >
                   Sign Out
@@ -230,7 +236,12 @@ export default function Navigation({ user }: NavigationProps) {
               Help
             </Link>
             <button
-              onClick={() => signOut({ callbackUrl: '/login' })}
+              onClick={async () => {
+                const supabase = createClient();
+                await supabase.auth.signOut();
+                router.push('/login');
+                router.refresh();
+              }}
               className="w-full text-left px-3 py-2.5 rounded-md text-base font-medium text-white bg-rose-500/70 hover:bg-rose-600/80 dark:bg-indigo-600/70 dark:hover:bg-indigo-700/80"
             >
               Sign Out

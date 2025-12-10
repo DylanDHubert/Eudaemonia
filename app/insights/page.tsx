@@ -1,47 +1,66 @@
-import { getServerSession } from 'next-auth';
+import { getServerSession } from '@/lib/supabase/auth';
 import { redirect } from 'next/navigation';
-import { authOptions } from '@/lib/auth';
-import { db } from '@/lib/db';
+import { createClient } from '@/lib/supabase/server';
 import InsightsView from './InsightsView';
 import { format } from 'date-fns';
 import Link from 'next/link';
 
 export default async function InsightsPage() {
-  const session = await getServerSession(authOptions);
+  const session = await getServerSession();
   
   if (!session || !session.user) {
     redirect('/login');
   }
   
-  // Get all entries for the current user with custom categories
-  const entries = await db.dailyEntry.findMany({
-    where: {
-      userId: session.user.id,
-    },
-    include: {
-      customCategoryEntries: {
-        include: {
-          customCategory: true
-        }
-      }
-    },
-    orderBy: {
-      date: 'desc',
-    },
-  });
+  const supabase = await createClient();
   
-  // Format date field for each entry
-  const formattedEntries = entries.map((entry: any) => ({
-    ...entry,
+  // GET ALL ENTRIES FOR THE CURRENT USER WITH CUSTOM CATEGORIES
+  const { data: entries, error } = await supabase
+    .from('daily_entries')
+    .select(`
+      *,
+      custom_category_entries (
+        *,
+        custom_categories (*)
+      )
+    `)
+    .eq('user_id', session.user.id)
+    .order('date', { ascending: false });
+
+  if (error) {
+    console.error('Error fetching entries:', error);
+  }
+  
+  // FORMAT DATE FIELD FOR EACH ENTRY
+  const formattedEntries = (entries || []).map((entry: any) => ({
+    id: entry.id,
     date: format(new Date(entry.date), 'yyyy-MM-dd'),
-    customCategories: entry.customCategoryEntries.map((cce: any) => ({
-      id: cce.customCategory.id,
-      name: cce.customCategory.name,
-      type: cce.customCategory.type,
+    sleepHours: entry.sleep_hours,
+    sleepQuality: entry.sleep_quality,
+    exercise: entry.exercise,
+    exerciseTime: entry.exercise_time,
+    alcohol: entry.alcohol,
+    alcoholUnits: entry.alcohol_units,
+    cannabis: entry.cannabis,
+    cannabisAmount: entry.cannabis_amount,
+    meditation: entry.meditation,
+    meditationTime: entry.meditation_time,
+    socialTime: entry.social_time,
+    workHours: entry.work_hours,
+    stressLevel: entry.stress_level,
+    happinessRating: entry.happiness_rating,
+    meals: entry.meals,
+    foodQuality: entry.food_quality,
+    notes: entry.notes,
+    userId: entry.user_id,
+    customCategories: (entry.custom_category_entries || []).map((cce: any) => ({
+      id: cce.custom_categories.id,
+      name: cce.custom_categories.name,
+      type: cce.custom_categories.type,
       value: cce.value
     })),
-    createdAt: entry.createdAt.toISOString(),
-    updatedAt: entry.updatedAt.toISOString(),
+    createdAt: entry.created_at,
+    updatedAt: entry.updated_at,
   }));
   
   return (
@@ -54,7 +73,7 @@ export default async function InsightsPage() {
               Discover correlations between your lifestyle factors and happiness.
             </p>
             
-            {entries.length < 5 ? (
+            {formattedEntries.length < 5 ? (
               <div className="bg-yellow-50 dark:bg-yellow-900/50 border-l-4 border-yellow-400 dark:border-yellow-500 p-4 mb-6">
                 <div className="flex">
                   <div className="flex-shrink-0">
@@ -64,14 +83,14 @@ export default async function InsightsPage() {
                   </div>
                   <div className="ml-3">
                     <p className="text-sm text-yellow-700 dark:text-yellow-200">
-                      You need at least 5 entries to generate meaningful insights. You currently have {entries.length} {entries.length === 1 ? 'entry' : 'entries'}.
+                      You need at least 5 entries to generate meaningful insights. You currently have {formattedEntries.length} {formattedEntries.length === 1 ? 'entry' : 'entries'}.
                     </p>
                   </div>
                 </div>
               </div>
             ) : null}
             
-            {entries.length === 0 ? (
+            {formattedEntries.length === 0 ? (
               <div className="text-center py-8">
                 <p className="text-description">You haven't recorded any entries yet.</p>
                 <Link href="/" className="mt-4 inline-block text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300">

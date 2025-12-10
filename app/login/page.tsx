@@ -1,6 +1,6 @@
 'use client';
 
-import { signIn } from 'next-auth/react';
+import { createClient } from '@/lib/supabase/client';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
@@ -51,15 +51,15 @@ export default function LoginPage() {
     setError('');
 
     try {
-      const result = await signIn('credentials', {
+      const supabase = createClient();
+      const { data, error: signInError } = await supabase.auth.signInWithPassword({
         email: formData.email,
         password: formData.password,
-        redirect: false,
       });
 
-      if (result?.error) {
+      if (signInError) {
         setError('Invalid email or password');
-      } else if (result?.ok) {
+      } else if (data.user) {
         router.push('/');
         router.refresh();
       }

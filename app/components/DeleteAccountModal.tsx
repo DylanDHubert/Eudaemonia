@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { signOut } from 'next-auth/react';
+import { createClient } from '@/lib/supabase/client';
 import { toast } from 'react-toastify';
 
 interface DeleteAccountModalProps {
@@ -41,8 +41,10 @@ export default function DeleteAccountModal({ isOpen, onClose }: DeleteAccountMod
         autoClose: 3000
       });
 
-      // Sign out and redirect to login
-      await signOut({ callbackUrl: '/login' });
+      // SIGN OUT AND REDIRECT TO LOGIN
+      const supabase = createClient();
+      await supabase.auth.signOut();
+      router.push('/login');
     } catch (error) {
       console.error('Error deleting account:', error);
       toast.error('Failed to delete account. Please try again.', {

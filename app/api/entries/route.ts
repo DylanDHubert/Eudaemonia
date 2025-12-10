@@ -1,12 +1,11 @@
 import { NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
-import { db } from '@/lib/db';
+import { getServerSession } from '@/lib/supabase/auth';
+import { createClient } from '@/lib/supabase/server';
 
-// POST: Create a new daily entry
+// POST: CREATE A NEW DAILY ENTRY
 export async function POST(request: Request) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await getServerSession();
     
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -14,7 +13,7 @@ export async function POST(request: Request) {
     
     const body = await request.json();
     
-    // Validate required fields
+    // VALIDATE REQUIRED FIELDS
     const requiredFields = ['sleepHours', 'sleepQuality', 'exercise', 'alcohol', 
                            'cannabis', 'meditation', 'stressLevel', 'happinessRating'];
     
@@ -24,7 +23,7 @@ export async function POST(request: Request) {
       }
     }
 
-    // Validate numeric fields
+    // VALIDATE NUMERIC FIELDS
     const numericFields = {
       sleepHours: { min: 0, max: 24 },
       sleepQuality: { min: 1, max: 10 },
@@ -42,39 +41,56 @@ export async function POST(request: Request) {
       }
     }
     
-    // Create the entry
-    const entry = await db.dailyEntry.create({
-      data: {
-        date: body.date ? new Date(body.date) : new Date(),
-        sleepHours: parseFloat(body.sleepHours),
-        sleepQuality: parseInt(body.sleepQuality),
+    const supabase = await createClient();
+    
+    // CREATE THE ENTRY
+    const { data: entry, error: entryError } = await supabase
+      .from('daily_entries')
+      .insert({
+        date: body.date ? new Date(body.date).toISOString() : new Date().toISOString(),
+        sleep_hours: parseFloat(body.sleepHours),
+        sleep_quality: parseInt(body.sleepQuality),
         exercise: Boolean(body.exercise),
-        exerciseTime: body.exerciseTime ? parseInt(body.exerciseTime) : null,
+        exercise_time: body.exerciseTime ? parseInt(body.exerciseTime) : null,
         alcohol: Boolean(body.alcohol),
-        alcoholUnits: body.alcoholUnits ? parseFloat(body.alcoholUnits) : null,
+        alcohol_units: body.alcoholUnits ? parseFloat(body.alcoholUnits) : null,
         cannabis: Boolean(body.cannabis),
-        cannabisAmount: body.cannabisAmount ? parseInt(body.cannabisAmount) : null,
+        cannabis_amount: body.cannabisAmount ? parseInt(body.cannabisAmount) : null,
         meditation: Boolean(body.meditation),
-        meditationTime: body.meditationTime ? parseInt(body.meditationTime) : null,
-        socialTime: body.socialTime ? parseFloat(body.socialTime) : null,
-        workHours: body.workHours ? parseFloat(body.workHours) : null,
-        stressLevel: parseInt(body.stressLevel),
-        happinessRating: parseInt(body.happinessRating),
+        meditation_time: body.meditationTime ? parseInt(body.meditationTime) : null,
+        social_time: body.socialTime ? parseFloat(body.socialTime) : null,
+        work_hours: body.workHours ? parseFloat(body.workHours) : null,
+        stress_level: parseInt(body.stressLevel),
+        happiness_rating: parseInt(body.happinessRating),
         meals: body.meals ? parseInt(body.meals) : null,
-        foodQuality: body.foodQuality ? parseInt(body.foodQuality) : null,
+        food_quality: body.foodQuality ? parseInt(body.foodQuality) : null,
         notes: body.notes || null,
-        userId: session.user.id,
-        customCategoryEntries: {
-          create: body.customCategoryEntries?.map((entry: any) => ({
-            customCategoryId: entry.customCategoryId,
-            value: entry.value
-          })) || []
-        }
-      },
-      include: {
-        customCategoryEntries: true
+        user_id: session.user.id,
+      })
+      .select()
+      .single();
+    
+    if (entryError || !entry) {
+      console.error('Entry creation error:', entryError);
+      return NextResponse.json({ error: 'Error creating entry' }, { status: 500 });
+    }
+    
+    // CREATE CUSTOM CATEGORY ENTRIES
+    if (body.customCategoryEntries && body.customCategoryEntries.length > 0) {
+      const customEntries = body.customCategoryEntries.map((catEntry: any) => ({
+        daily_entry_id: entry.id,
+        custom_category_id: catEntry.customCategoryId,
+        value: catEntry.value
+      }));
+      
+      const { error: customError } = await supabase
+        .from('custom_category_entries')
+        .insert(customEntries);
+      
+      if (customError) {
+        console.error('Custom category entries creation error:', customError);
       }
-    });
+    }
     
     return NextResponse.json({ message: 'Entry created successfully', entry });
   } catch (error) {
@@ -83,10 +99,10 @@ export async function POST(request: Request) {
   }
 }
 
-// GET: Fetch entries
+// GET: FETCH ENTRIES
 export async function GET(request: Request) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await getServerSession();
     
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -97,32 +113,39 @@ export async function GET(request: Request) {
     const limitParam = searchParams.get('limit');
     const limit = limitParam ? parseInt(limitParam) : undefined;
     
-    const where = {
-      userId: session.user.id,
-      ...(date ? {
-        date: {
-          gte: new Date(new Date(`${date}T00:00:00.000Z`).toISOString().split('T')[0]),
-          lt: new Date(new Date(`${date}T23:59:59.999Z`).toISOString().split('T')[0])
-        }
-      } : {})
-    };
+    const supabase = await createClient();
     
-    const entries = await db.dailyEntry.findMany({
-      where,
-      include: {
-        customCategoryEntries: {
-          include: {
-            customCategory: true
-          }
-        }
-      },
-      orderBy: {
-        date: 'desc'
-      },
-      ...(limit ? { take: limit } : {})
-    });
+    let query = supabase
+      .from('daily_entries')
+      .select(`
+        *,
+        custom_category_entries (
+          *,
+          custom_categories (*)
+        )
+      `)
+      .eq('user_id', session.user.id);
     
-    return NextResponse.json({ entries });
+    if (date) {
+      const startDate = new Date(`${date}T00:00:00.000Z`).toISOString();
+      const endDate = new Date(`${date}T23:59:59.999Z`).toISOString();
+      query = query.gte('date', startDate).lte('date', endDate);
+    }
+    
+    query = query.order('date', { ascending: false });
+    
+    if (limit) {
+      query = query.limit(limit);
+    }
+    
+    const { data: entries, error } = await query;
+    
+    if (error) {
+      console.error('Error fetching entries:', error);
+      return NextResponse.json({ error: 'Error fetching entries' }, { status: 500 });
+    }
+    
+    return NextResponse.json({ entries: entries || [] });
   } catch (error) {
     console.error('Error fetching entries:', error);
     return NextResponse.json({ error: 'Error fetching entries' }, { status: 500 });

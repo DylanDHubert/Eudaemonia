@@ -1,10 +1,9 @@
-import { getServerSession } from 'next-auth';
+import { getServerSession } from '@/lib/supabase/auth';
 import { redirect } from 'next/navigation';
-import { authOptions } from '@/lib/auth';
 import EntryForm from '../components/EntryForm';
 
 export default async function EntryPage() {
-  const session = await getServerSession(authOptions);
+  const session = await getServerSession();
 
   if (!session) {
     redirect('/login');

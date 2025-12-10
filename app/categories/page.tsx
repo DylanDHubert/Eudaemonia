@@ -1,10 +1,9 @@
-import { getServerSession } from 'next-auth';
+import { getServerSession } from '@/lib/supabase/auth';
 import { redirect } from 'next/navigation';
-import { authOptions } from '@/lib/auth';
 import CustomCategoriesManager from '../components/CustomCategoriesManager';
 
 export default async function Categories() {
-  const session = await getServerSession(authOptions);
+  const session = await getServerSession();
 
   if (!session) {
     redirect('/login');

@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
-import bcrypt from 'bcryptjs';
-import { db } from '@/lib/db';
+import { createClient } from '@/lib/supabase/server';
 
+// THIS ROUTE IS NOW HANDLED IN signup/page.tsx DIRECTLY
+// KEEPING FOR BACKWARDS COMPATIBILITY BUT CAN BE REMOVED
 export async function POST(request: Request) {
   try {
     const body = await request.json();
@@ -14,34 +15,52 @@ export async function POST(request: Request) {
       );
     }
 
-    // Check if user already exists
-    const existingUser = await db.user.findUnique({
-      where: {
-        email: email,
+    const supabase = await createClient();
+
+    // SIGN UP USER
+    const { data: authData, error: signUpError } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          name,
+        },
       },
     });
 
-    if (existingUser) {
+    if (signUpError) {
       return NextResponse.json(
-        { error: 'User already exists' },
+        { error: signUpError.message || 'Error creating user' },
         { status: 400 }
       );
     }
 
-    // Hash password
-    const hashedPassword = await bcrypt.hash(password, 12);
+    if (!authData.user) {
+      return NextResponse.json(
+        { error: 'Failed to create user' },
+        { status: 500 }
+      );
+    }
 
-    // Create user
-    const user = await db.user.create({
-      data: {
-        email,
+    // CREATE PROFILE
+    const { error: profileError } = await supabase
+      .from('profiles')
+      .insert({
+        id: authData.user.id,
+        email: authData.user.email,
         name,
-        password: hashedPassword
-      }
-    });
+      });
+
+    if (profileError) {
+      console.error('Profile creation error:', profileError);
+      // USER IS CREATED BUT PROFILE FAILED
+    }
 
     return NextResponse.json(
-      { message: 'User created successfully', user: { id: user.id, name: user.name, email: user.email } },
+      { 
+        message: 'User created successfully', 
+        user: { id: authData.user.id, name, email: authData.user.email } 
+      },
       { status: 201 }
     );
   } catch (error) {

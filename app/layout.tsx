@@ -3,8 +3,7 @@ import { GeistSans } from "geist/font/sans";
 import "./globals.css";
 import Providers from "./providers";
 import Navigation from "./components/Navigation";
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { getServerSession } from '@/lib/supabase/auth';
 import { Poppins } from 'next/font/google';
 
 // Configure Poppins font
@@ -25,8 +24,7 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const session = await getServerSession(authOptions);
-  const isAuthPage = (path: string) => path.startsWith('/login') || path.startsWith('/signup');
+  const session = await getServerSession();
   
   return (
     <html lang="en" className={`${poppins.variable} h-full`}>
@@ -35,7 +33,7 @@ export default async function RootLayout({
       </head>
       <body className={`font-sans h-full overflow-x-hidden`}>
         <div className="min-h-screen bg-gradient-to-br from-pink-300 to-rose-400 dark:from-gray-800 dark:to-indigo-500 bg-[url('/grid.svg')] bg-center">
-          {/* Only show Navigation if not on auth pages and user is authenticated */}
+          {/* Only show Navigation if user is authenticated */}
           {session && <div className="h-16"><Navigation user={session.user} /></div>}
           
           <main className="overflow-x-hidden">

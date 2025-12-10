@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useSession } from 'next-auth/react';
+import { createClient } from '@/lib/supabase/client';
 import { format } from 'date-fns';
 import { TrashIcon } from '@heroicons/react/24/outline';
 
@@ -12,7 +12,6 @@ interface Gratitude {
 }
 
 export default function GratitudeList() {
-  const { data: session } = useSession();
   const [gratitudes, setGratitudes] = useState<Gratitude[]>([]);
   const [loading, setLoading] = useState(true);
   const [isDarkMode, setIsDarkMode] = useState(false);
@@ -43,10 +42,8 @@ export default function GratitudeList() {
 
   useEffect(() => {
     const fetchGratitudes = async () => {
-      if (!session?.user?.id) return;
-
       try {
-        const response = await fetch(`/api/gratitudes?userId=${session.user.id}`);
+        const response = await fetch(`/api/gratitudes`);
         if (!response.ok) throw new Error('Failed to fetch gratitudes');
         const data = await response.json();
         setGratitudes(data);
@@ -58,7 +55,7 @@ export default function GratitudeList() {
     };
 
     fetchGratitudes();
-  }, [session?.user?.id]);
+  }, []);
 
   const handleDelete = async (id: string) => {
     try {
