@@ -1,6 +1,5 @@
-import type { NextConfig } from "next";
-
-const nextConfig: NextConfig = {
+/** @type {import('next').NextConfig} */
+const nextConfig = {
   // ENSURE PROPER TRANSPILING FOR DEPENDENCIES
   transpilePackages: ['react-chartjs-2', 'chart.js'],
   // INCREASE MEMORY LIMIT FOR BUILDS IF NEEDED
@@ -13,4 +12,5 @@ const nextConfig: NextConfig = {
   }
 };
 
-export default nextConfig;
+module.exports = nextConfig;
+
