@@ -66,7 +66,7 @@ export default async function RootLayout({
         <link rel="apple-touch-icon" href="/icon.png" />
       </head>
       <body className={`font-sans h-full overflow-x-hidden`}>
-        <div className="min-h-screen bg-gradient-to-br from-pink-300 to-rose-400 dark:from-gray-800 dark:to-indigo-500 bg-[url('/grid.svg')] bg-center">
+        <div className="min-h-screen bg-[url('/light_bg.png')] dark:bg-[url('/dark_bg.png')] bg-cover bg-center bg-fixed">
           {/* Only show Navigation if user is authenticated */}
           {session && <div className="h-16"><Navigation user={session.user} /></div>}
           

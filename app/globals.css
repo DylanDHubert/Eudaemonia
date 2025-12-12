@@ -12,7 +12,7 @@
   }
 
   body {
-    @apply bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 min-h-screen;
+    @apply min-h-screen;
   }
 }
 
@@ -76,22 +76,7 @@
 
 body {
   color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-    to bottom right,
-    #ffffff,
-    #ffffff,
-    #ffffff
-  );
   min-height: 100vh;
-}
-
-.dark body {
-  background: linear-gradient(
-    to bottom right,
-    #111827,
-    #111827,
-    #111827
-  );
 }
 
 /* Custom DatePicker styling to match glassmorphism theme */
@@ -308,3 +293,4 @@ body {
   display: flex;
   gap: 4px;
 }
+
