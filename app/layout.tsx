@@ -23,9 +23,10 @@ export const metadata: Metadata = {
       { url: '/light.png' }, // DEFAULT FALLBACK
     ],
     apple: [
-      { url: '/light.png' }, // APPLE TOUCH ICON
+      { url: '/icon.png' }, // PWA ICON FOR APPLE TOUCH ICON
     ],
   },
+  manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',
@@ -53,13 +54,16 @@ export default async function RootLayout({
         {/* ADDITIONAL IOS PWA META TAGS FOR SEARCH BAR HIDING */}
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="mobile-web-app-capable" content="yes" />
+        {/* PWA MANIFEST */}
+        <link rel="manifest" href="/manifest.json" />
         {/* THEME COLOR FOR PWA STATUS BAR - UPDATED DYNAMICALLY BY ThemeColorUpdater */}
         <meta name="theme-color" content="#FECDD3" />
         {/* APP ICONS - USE LIGHT AS DEFAULT, DARK FOR DARK MODE */}
         <link rel="icon" href="/light.png" media="(prefers-color-scheme: light)" />
         <link rel="icon" href="/dark.png" media="(prefers-color-scheme: dark)" />
         <link rel="icon" href="/light.png" />
-        <link rel="apple-touch-icon" href="/light.png" />
+        {/* PWA ICON - USE icon.png FOR APPLE TOUCH ICON */}
+        <link rel="apple-touch-icon" href="/icon.png" />
       </head>
       <body className={`font-sans h-full overflow-x-hidden`}>
         <div className="min-h-screen bg-gradient-to-br from-pink-300 to-rose-400 dark:from-gray-800 dark:to-indigo-500 bg-[url('/grid.svg')] bg-center">
