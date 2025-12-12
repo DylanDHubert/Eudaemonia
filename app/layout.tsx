@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { GeistSans } from "geist/font/sans";
 import "./globals.css";
 import Providers from "./providers";
 import Navigation from "./components/Navigation";

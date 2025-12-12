@@ -62,8 +62,8 @@ export default function ActivityHeatmap() {
           setEntries(data.entries.map((entry: any) => ({
             id: entry.id,
             date: entry.date,
-            happinessRating: entry.happinessRating,
-            stressLevel: entry.stressLevel
+            happinessRating: entry.happiness_rating ?? entry.happinessRating,
+            stressLevel: entry.stress_level ?? entry.stressLevel
           })));
         }
       } catch (error) {
@@ -145,13 +145,21 @@ export default function ActivityHeatmap() {
   };
 
   // Calculate background color for happiness
-  const getHappinessColor = (happiness: number) => {
+  const getHappinessColor = (happiness: number | null | undefined) => {
+    // HANDLE NULL/UNDEFINED VALUES
+    if (happiness == null || isNaN(happiness)) {
+      return happinessColors['1'];
+    }
     // Map happiness rating (1-10) directly to colors
     return happinessColors[happiness.toString()] || happinessColors['1'];
   };
 
   // Calculate stress gradient height (from bottom)
-  const getStressGradient = (stress: number) => {
+  const getStressGradient = (stress: number | null | undefined) => {
+    // HANDLE NULL/UNDEFINED VALUES
+    if (stress == null || isNaN(stress)) {
+      return 'none';
+    }
     // Map stress (1-10) to gradient height percentage (max 50%)
     // 10 -> 50%, 5 -> 25%, 1-3 very subtle
     let percentage = 0;
@@ -189,8 +197,11 @@ export default function ActivityHeatmap() {
     }
     
     // Get colors based on happiness and stress
-    const happinessColor = getHappinessColor(entry.happinessRating);
-    const stressGradient = getStressGradient(entry.stressLevel);
+    // HANDLE POTENTIALLY UNDEFINED VALUES
+    const happinessRating = entry.happinessRating ?? entry.happiness_rating;
+    const stressLevel = entry.stressLevel ?? entry.stress_level;
+    const happinessColor = getHappinessColor(happinessRating);
+    const stressGradient = getStressGradient(stressLevel);
     
     return {
       className: `day-cell${isCurrentDay ? ' today-cell' : ''}${isFirstDayOfMonth ? ' first-day-of-month' : ''}`,

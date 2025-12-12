@@ -4,15 +4,17 @@ import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 
 export async function updateSession(request: NextRequest) {
+  // CREATE AN UNMODIFIED RESPONSE FIRST
   let supabaseResponse = NextResponse.next({
-    request,
+    request: {
+      headers: request.headers,
+    },
   });
 
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
   if (!url || !key) {
-    console.error('Missing Supabase environment variables in middleware');
     return supabaseResponse;
   }
 
@@ -25,10 +27,13 @@ export async function updateSession(request: NextRequest) {
           return request.cookies.getAll();
         },
         setAll(cookiesToSet: Array<{ name: string; value: string; options?: any }>) {
+          // SET COOKIES ON REQUEST FIRST
           cookiesToSet.forEach(({ name, value, options }) => request.cookies.set(name, value));
+          // CREATE NEW RESPONSE WITH UPDATED REQUEST
           supabaseResponse = NextResponse.next({
             request,
           });
+          // SET COOKIES ON RESPONSE
           cookiesToSet.forEach(({ name, value, options }) =>
             supabaseResponse.cookies.set(name, value, options)
           );
@@ -37,10 +42,11 @@ export async function updateSession(request: NextRequest) {
     }
   );
 
-  // IMPORTANT: Avoid writing any logic between createServerClient and
-  // supabase.auth.getUser(). A simple mistake could make it very hard to debug
-  // issues with users being randomly logged out.
+  // IMPORTANT: Call getSession() to refresh the session if needed
+  // This ensures tokens are refreshed and cookies are updated
+  await supabase.auth.getSession();
 
+  // NOW GET USER FROM THE SESSION
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -54,6 +60,13 @@ export async function updateSession(request: NextRequest) {
     // no user, potentially respond by redirecting the user to the login page
     const url = request.nextUrl.clone();
     url.pathname = '/login';
+    return NextResponse.redirect(url);
+  }
+
+  if (user && request.nextUrl.pathname.startsWith('/login')) {
+    // USER IS LOGGED IN BUT ON LOGIN PAGE - REDIRECT TO HOME
+    const url = request.nextUrl.clone();
+    url.pathname = '/';
     return NextResponse.redirect(url);
   }
 

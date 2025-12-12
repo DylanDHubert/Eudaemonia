@@ -37,6 +37,19 @@ export default function LoginPage() {
     password: ''
   });
 
+  // CHECK IF USER IS ALREADY LOGGED IN
+  useEffect(() => {
+    const checkSession = async () => {
+      const supabase = createClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        console.log('User already logged in, redirecting...');
+        router.push('/');
+      }
+    };
+    checkSession();
+  }, [router]);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -58,15 +71,40 @@ export default function LoginPage() {
       });
 
       if (signInError) {
-        setError('Invalid email or password');
-      } else if (data.user) {
-        router.push('/');
-        router.refresh();
+        // CHECK FOR SPECIFIC ERROR MESSAGES
+        if (signInError.message.includes('Email not confirmed') || signInError.message.includes('email_not_confirmed')) {
+          setError('Please confirm your email address before signing in. Check your inbox for a confirmation link.');
+        } else if (signInError.message.includes('Invalid login credentials')) {
+          setError('Invalid email or password');
+        } else {
+          setError(signInError.message || 'Invalid email or password');
+        }
+        setIsLoading(false);
+        return;
       }
+
+      // IF LOGIN SUCCEEDED, ALWAYS REDIRECT
+      if (data.user || data.session) {
+        // REFRESH SESSION TO ENSURE COOKIES ARE SET
+        if (data.session) {
+          await supabase.auth.refreshSession();
+        } else {
+          await supabase.auth.getSession();
+        }
+        
+        // WAIT A MOMENT FOR COOKIES TO BE FULLY SET
+        await new Promise(resolve => setTimeout(resolve, 300));
+        
+        // ALWAYS REDIRECT IF USER EXISTS - LET MIDDLEWARE HANDLE AUTH CHECK
+        window.location.href = '/';
+        return; // EXIT EARLY TO PREVENT FURTHER EXECUTION
+      }
+      
+      // IF WE GET HERE, LOGIN FAILED
+      setError('Login failed. Please try again.');
+      setIsLoading(false);
     } catch (error) {
-      console.error('Login error:', error);
       setError('An unexpected error occurred. Please try again.');
-    } finally {
       setIsLoading(false);
     }
   };
