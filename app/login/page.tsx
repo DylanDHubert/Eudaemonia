@@ -75,7 +75,7 @@ export default function LoginPage() {
         if (signInError.message.includes('Email not confirmed') || signInError.message.includes('email_not_confirmed')) {
           setError('Please confirm your email address before signing in. Check your inbox for a confirmation link.');
         } else if (signInError.message.includes('Invalid login credentials')) {
-          setError('Invalid email or password');
+        setError('Invalid email or password');
         } else {
           setError(signInError.message || 'Invalid email or password');
         }

@@ -30,30 +30,45 @@ export async function PUT(
       return NextResponse.json({ error: 'Entry not found' }, { status: 404 });
     }
     
+    // VALIDATE REQUIRED FIELDS IF PROVIDED
+    if (body.sleepHours !== undefined && (isNaN(parseFloat(body.sleepHours)) || parseFloat(body.sleepHours) < 0 || parseFloat(body.sleepHours) > 24)) {
+      return NextResponse.json({ error: 'sleepHours must be between 0 and 24' }, { status: 400 });
+    }
+    if (body.sleepQuality !== undefined && (isNaN(parseInt(body.sleepQuality)) || parseInt(body.sleepQuality) < 1 || parseInt(body.sleepQuality) > 10)) {
+      return NextResponse.json({ error: 'sleepQuality must be between 1 and 10' }, { status: 400 });
+    }
+    if (body.stressLevel !== undefined && (isNaN(parseInt(body.stressLevel)) || parseInt(body.stressLevel) < 1 || parseInt(body.stressLevel) > 10)) {
+      return NextResponse.json({ error: 'stressLevel must be between 1 and 10' }, { status: 400 });
+    }
+    if (body.happinessRating !== undefined && (isNaN(parseInt(body.happinessRating)) || parseInt(body.happinessRating) < 1 || parseInt(body.happinessRating) > 10)) {
+      return NextResponse.json({ error: 'happinessRating must be between 1 and 10' }, { status: 400 });
+    }
+    
     // UPDATE THE ENTRY
     const { data: updatedEntry, error: updateError } = await supabase
       .from('daily_entries')
       .update({
         date: body.date ? new Date(body.date).toISOString() : existingEntry.date,
-        sleep_hours: parseFloat(body.sleepHours),
-        sleep_quality: parseInt(body.sleepQuality),
-        exercise: Boolean(body.exercise),
-        exercise_time: body.exerciseTime ? parseInt(body.exerciseTime) : null,
-        alcohol: Boolean(body.alcohol),
-        alcohol_units: body.alcoholUnits ? parseFloat(body.alcoholUnits) : null,
-        cannabis: Boolean(body.cannabis),
-        cannabis_amount: body.cannabisAmount ? parseInt(body.cannabisAmount) : null,
-        meditation: Boolean(body.meditation),
-        meditation_time: body.meditationTime ? parseInt(body.meditationTime) : null,
-        social_time: body.socialTime ? parseFloat(body.socialTime) : null,
-        work_hours: body.workHours ? parseFloat(body.workHours) : null,
-        stress_level: parseInt(body.stressLevel),
-        happiness_rating: parseInt(body.happinessRating),
-        meals: body.meals ? parseInt(body.meals) : null,
-        food_quality: body.foodQuality ? parseInt(body.foodQuality) : null,
-        notes: body.notes || null,
+        sleep_hours: body.sleepHours !== undefined ? parseFloat(body.sleepHours) : existingEntry.sleep_hours,
+        sleep_quality: body.sleepQuality !== undefined ? parseInt(body.sleepQuality) : existingEntry.sleep_quality,
+        exercise: body.exercise !== undefined ? Boolean(body.exercise) : existingEntry.exercise,
+        exercise_time: body.exerciseTime !== undefined ? (body.exerciseTime ? parseInt(body.exerciseTime) : null) : existingEntry.exercise_time,
+        alcohol: body.alcohol !== undefined ? Boolean(body.alcohol) : existingEntry.alcohol,
+        alcohol_units: body.alcoholUnits !== undefined ? (body.alcoholUnits ? parseFloat(body.alcoholUnits) : null) : existingEntry.alcohol_units,
+        cannabis: body.cannabis !== undefined ? Boolean(body.cannabis) : existingEntry.cannabis,
+        cannabis_amount: body.cannabisAmount !== undefined ? (body.cannabisAmount ? parseInt(body.cannabisAmount) : null) : existingEntry.cannabis_amount,
+        meditation: body.meditation !== undefined ? Boolean(body.meditation) : existingEntry.meditation,
+        meditation_time: body.meditationTime !== undefined ? (body.meditationTime ? parseInt(body.meditationTime) : null) : existingEntry.meditation_time,
+        social_time: body.socialTime !== undefined ? (body.socialTime ? parseFloat(body.socialTime) : null) : existingEntry.social_time,
+        work_hours: body.workHours !== undefined ? (body.workHours ? parseFloat(body.workHours) : null) : existingEntry.work_hours,
+        stress_level: body.stressLevel !== undefined ? parseInt(body.stressLevel) : existingEntry.stress_level,
+        happiness_rating: body.happinessRating !== undefined ? parseInt(body.happinessRating) : existingEntry.happiness_rating,
+        meals: body.meals !== undefined ? (body.meals ? parseInt(body.meals) : null) : existingEntry.meals,
+        food_quality: body.foodQuality !== undefined ? (body.foodQuality ? parseInt(body.foodQuality) : null) : existingEntry.food_quality,
+        notes: body.notes !== undefined ? (body.notes || null) : existingEntry.notes,
       })
       .eq('id', id)
+      .eq('user_id', session.user.id) // SECURITY: ENSURE USER CAN ONLY UPDATE THEIR OWN ENTRIES
       .select(`
         *,
         custom_category_entries (

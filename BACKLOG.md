@@ -24,18 +24,9 @@
   - Seasonal themes
   - Accessibility modes
 
-- [ ] Friend System
-  - Daily entry streaks
-  - Friend streak comparisons
-  - Streak milestones and achievements
-  - Streak recovery grace periods
-  - Optional friend check-in system
-  - Privacy controls for friend interactions
-
 ### Mobile Experience
 - [ ] PWA Implementation
   - Offline entry creation
-  - Push notifications
   - Touch-optimized interface
   - Mobile-specific features
   - Service worker for offline capabilities
@@ -116,26 +107,6 @@
   - Early warning system for potential low moods
   - Correlation-based predictions
 
-## Social Features
-### Friend System
-- [ ] Streak Tracking
-  - Daily entry streaks
-  - Friend streak comparisons
-  - Streak milestones and achievements
-  - Streak recovery grace periods
-
-- [ ] Support Network
-  - Anonymous mood indicators
-  - "Poke" system for inactive friends
-  - Encouragement messages
-  - Check-in reminders
-
-### Community
-- [ ] Anonymous Insights
-  - Share patterns (without personal data)
-  - Community trends
-  - Success stories
-  - Tips and strategies
 
 ## Data Visualization & Analysis
 ### Enhanced Charts

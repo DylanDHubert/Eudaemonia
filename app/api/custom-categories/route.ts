@@ -8,9 +8,8 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const { searchParams } = new URL(request.url);
-  const queryUserId = searchParams.get('userId');
-  const userId = queryUserId || session.user.id;
+  // SECURITY: ALWAYS USE THE AUTHENTICATED USER'S ID - NEVER ALLOW QUERY PARAMETER OVERRIDE
+  const userId = session.user.id;
 
   try {
     const supabase = await createClient();

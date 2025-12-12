@@ -53,6 +53,8 @@ export default async function RootLayout({
         {/* ADDITIONAL IOS PWA META TAGS FOR SEARCH BAR HIDING */}
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="mobile-web-app-capable" content="yes" />
+        {/* THEME COLOR FOR PWA STATUS BAR - UPDATED DYNAMICALLY BY ThemeColorUpdater */}
+        <meta name="theme-color" content="#FECDD3" />
         {/* APP ICONS - USE LIGHT AS DEFAULT, DARK FOR DARK MODE */}
         <link rel="icon" href="/light.png" media="(prefers-color-scheme: light)" />
         <link rel="icon" href="/dark.png" media="(prefers-color-scheme: dark)" />
