@@ -45,6 +45,18 @@ export default function Navigation({ user }: NavigationProps) {
     return () => observer.disconnect();
   }, []);
 
+  // PREVENT BODY SCROLL WHEN MOBILE MENU IS OPEN
+  useEffect(() => {
+    if (isMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isMenuOpen]);
+
   const getUserName = () => {
     return user?.name || user?.email?.split('@')[0] || 'User';
   };
@@ -187,8 +199,14 @@ export default function Navigation({ user }: NavigationProps) {
       
       {/* Mobile menu */}
       {isMenuOpen && (
-        <div className="sm:hidden absolute top-16 left-0 right-0 glass-card border-t border-gray-200/50 dark:border-gray-700/50">
-          <div className="px-2 pt-2 pb-3 space-y-1">
+        <div 
+          className="sm:hidden fixed inset-0 z-[100] bg-white/90 dark:bg-gray-900/90 backdrop-blur-lg"
+          onClick={closeMenu}
+        >
+          <div 
+            className="px-4 pt-20 pb-6 space-y-2 max-h-screen overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
             <Link 
               href="/" 
               className={`block px-3 py-2.5 rounded-md text-base font-medium ${
