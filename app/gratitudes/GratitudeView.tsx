@@ -9,6 +9,7 @@ interface Gratitude {
   id: string;
   content: string;
   createdAt: string;
+  isPlaceholder?: boolean;
 }
 
 interface GratitudeViewProps {
@@ -165,7 +166,7 @@ export default function GratitudeView({ homePage = false }: GratitudeViewProps) 
               className="glass-card p-2 border border-gray-200 dark:border-gray-700 mb-2 last:mb-0 h-8 overflow-hidden"
             >
               <p className="text-xs text-gray-800 dark:text-gray-200 truncate">
-                {(gratitude as any).isPlaceholder || gratitude.id.startsWith('placeholder')
+                {gratitude.isPlaceholder || gratitude.id.startsWith('placeholder')
                   ? <span className="text-gray-500 dark:text-gray-400">{gratitude.content}</span>
                   : gratitude.content
                 }
