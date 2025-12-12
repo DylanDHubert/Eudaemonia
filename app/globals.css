@@ -4,11 +4,11 @@
 
 @layer base {
   :root {
-    --font-poppins: 'Poppins', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+    --font-spectral-sc: 'Spectral SC', serif;
   }
   
   html {
-    font-family: var(--font-poppins), system-ui, sans-serif;
+    font-family: var(--font-spectral-sc), serif;
   }
 
   body {
