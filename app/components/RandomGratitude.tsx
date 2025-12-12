@@ -22,7 +22,13 @@ export default function RandomGratitude() {
         const response = await fetch('/api/gratitudes');
         if (response.ok) {
           const data = await response.json();
-          setGratitudes(data);
+          // TRANSFORM SNAKE_CASE TO CAMELCASE
+          const transformedData = data.map((gratitude: any) => ({
+            id: gratitude.id,
+            content: gratitude.content,
+            createdAt: gratitude.created_at || gratitude.createdAt
+          }));
+          setGratitudes(transformedData);
         }
       } catch (error) {
         console.error('Error fetching gratitudes:', error);
@@ -57,7 +63,13 @@ export default function RandomGratitude() {
       if (response.ok) {
         setGratitude(null);
         const newGratitude = await response.json();
-        setGratitudes([newGratitude, ...gratitudes]);
+        // TRANSFORM SNAKE_CASE TO CAMELCASE
+        const transformedGratitude = {
+          id: newGratitude.id,
+          content: newGratitude.content,
+          createdAt: newGratitude.created_at || newGratitude.createdAt
+        };
+        setGratitudes([transformedGratitude, ...gratitudes]);
       }
     } catch (error) {
       console.error('Error saving gratitude:', error);
@@ -75,7 +87,7 @@ export default function RandomGratitude() {
         <div className="space-y-4">
           <p className="text-input">{gratitude.content}</p>
           <p className="text-description">
-            {format(new Date(gratitude.createdAt), 'MMM d, yyyy')}
+            {gratitude.createdAt ? format(new Date(gratitude.createdAt), 'MMM d, yyyy') : 'Unknown date'}
           </p>
           <button
             onClick={fetchRandomGratitude}

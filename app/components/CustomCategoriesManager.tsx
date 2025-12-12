@@ -41,7 +41,15 @@ export default function CustomCategoriesManager({ userId }: CustomCategoriesMana
       const response = await fetch('/api/categories');
       if (!response.ok) throw new Error('Failed to fetch categories');
       const data = await response.json();
-      setCategories(data);
+      // TRANSFORM SNAKE_CASE TO CAMELCASE
+      const transformedData = data.map((category: any) => ({
+        id: category.id,
+        name: category.name,
+        type: category.type,
+        userId: category.user_id || category.userId,
+        createdAt: category.created_at || category.createdAt
+      }));
+      setCategories(transformedData);
     } catch (err) {
       setError('Failed to load categories');
       console.error(err);
@@ -65,7 +73,15 @@ export default function CustomCategoriesManager({ userId }: CustomCategoriesMana
       if (!response.ok) throw new Error('Failed to create category');
 
       const createdCategory = await response.json();
-      setCategories([...categories, createdCategory]);
+      // TRANSFORM SNAKE_CASE TO CAMELCASE
+      const transformedCategory = {
+        id: createdCategory.id,
+        name: createdCategory.name,
+        type: createdCategory.type,
+        userId: createdCategory.user_id || createdCategory.userId,
+        createdAt: createdCategory.created_at || createdCategory.createdAt
+      };
+      setCategories([...categories, transformedCategory]);
       setNewCategory({ name: '', type: 'numeric' });
       toast.success('Category created successfully!');
       router.refresh();
@@ -183,7 +199,7 @@ export default function CustomCategoriesManager({ userId }: CustomCategoriesMana
                        category.type === 'scale' ? 'Scale (1-10)' : 'Yes/No'}
                     </td>
                     <td className="px-2 sm:px-6 py-4 text-sm text-gray-500 dark:text-gray-300">
-                      {format(new Date(category.createdAt), 'MMM d, yyyy')}
+                      {category.createdAt ? format(new Date(category.createdAt), 'MMM d, yyyy') : 'Unknown date'}
                     </td>
                     <td className="px-2 sm:px-6 py-4 text-right text-sm">
                       <button

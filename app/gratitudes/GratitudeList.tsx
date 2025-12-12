@@ -46,7 +46,13 @@ export default function GratitudeList() {
         const response = await fetch(`/api/gratitudes`);
         if (!response.ok) throw new Error('Failed to fetch gratitudes');
         const data = await response.json();
-        setGratitudes(data);
+        // TRANSFORM SNAKE_CASE TO CAMELCASE
+        const transformedData = data.map((gratitude: any) => ({
+          id: gratitude.id,
+          content: gratitude.content,
+          createdAt: gratitude.created_at || gratitude.createdAt
+        }));
+        setGratitudes(transformedData);
       } catch (error) {
         console.error('Error fetching gratitudes:', error);
       } finally {
@@ -94,7 +100,7 @@ export default function GratitudeList() {
           <div key={gratitude.id} className="glass-card p-4 border border-gray-200 dark:border-gray-700 relative group">
             <p className="text-sm text-gray-800 dark:text-gray-200 mb-2 pr-8">{gratitude.content}</p>
             <p className="text-xs text-gray-600 dark:text-gray-400">
-              {format(new Date(gratitude.createdAt), 'MMMM d, yyyy')}
+              {gratitude.createdAt ? format(new Date(gratitude.createdAt), 'MMMM d, yyyy') : 'Unknown date'}
             </p>
             <button
               onClick={() => handleDelete(gratitude.id)}

@@ -3,7 +3,8 @@
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
 import DarkModeToggle from './DarkModeToggle';
 
@@ -20,6 +21,29 @@ export default function Navigation({ user }: NavigationProps) {
   const pathname = usePathname();
   const router = useRouter();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(false);
+
+  // CHECK DARK MODE STATE
+  useEffect(() => {
+    // CHECK INITIAL DARK MODE
+    setIsDarkMode(document.documentElement.classList.contains('dark'));
+
+    // SET UP OBSERVER FOR DARK MODE CHANGES
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.attributeName === 'class') {
+          setIsDarkMode(document.documentElement.classList.contains('dark'));
+        }
+      });
+    });
+
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['class']
+    });
+
+    return () => observer.disconnect();
+  }, []);
 
   const getUserName = () => {
     return user?.name || user?.email?.split('@')[0] || 'User';
@@ -41,7 +65,14 @@ export default function Navigation({ user }: NavigationProps) {
         <div className="flex justify-between h-full">
           <div className="flex items-center">
             <Link href="/" className="flex items-center">
-              <span className="text-xl font-bold text-rose-600 dark:text-indigo-600">Eudaemonia</span>
+              <Image
+                src={isDarkMode ? '/dark.png' : '/light.png'}
+                alt="Eudaemonia"
+                width={120}
+                height={40}
+                className="h-8 w-auto"
+                priority
+              />
             </Link>
           </div>
           

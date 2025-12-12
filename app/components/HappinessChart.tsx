@@ -65,7 +65,10 @@ export default function HappinessChart({ entries }: HappinessChartProps) {
 
   // Prepare time series data for the happiness trend chart
   const prepareTimeSeriesData = useCallback((entries: Entry[]) => {
-    if (entries.length < 2) return;
+    if (!entries || entries.length < 2) {
+      setTimeSeriesData(null);
+      return;
+    }
     
     // Sort entries by date (oldest first)
     const sortedEntries = [...entries].sort((a, b) => 
@@ -79,13 +82,21 @@ export default function HappinessChart({ entries }: HappinessChartProps) {
       const date = format(typeof entry.date === 'string' ? parseISO(entry.date) : entry.date, 'MMM d');
       const existing = entriesByDate.get(date);
       
+      // HANDLE BOTH CAMELCASE AND SNAKE_CASE FIELD NAMES
+      const happinessRating = entry.happinessRating ?? (entry as any).happiness_rating;
+      
+      // SKIP ENTRIES WITHOUT HAPPINESS RATING
+      if (!happinessRating || isNaN(happinessRating)) {
+        return;
+      }
+      
       if (existing) {
-        existing.happiness += entry.happinessRating;
+        existing.happiness += happinessRating;
         existing.count += 1;
       } else {
         entriesByDate.set(date, {
           date,
-          happiness: entry.happinessRating,
+          happiness: happinessRating,
           count: 1
         });
       }
@@ -126,12 +137,24 @@ export default function HappinessChart({ entries }: HappinessChartProps) {
       try {
         setIsLoading(true);
         const response = await fetch(`/api/entries?limit=90`);
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
         const data = await response.json();
-        if (data.entries) {
-          prepareTimeSeriesData(data.entries);
+        if (data.entries && Array.isArray(data.entries) && data.entries.length > 0) {
+          // TRANSFORM ENTRIES TO HANDLE SNAKE_CASE FROM API
+          const transformedEntries = data.entries.map((entry: any) => ({
+            ...entry,
+            happinessRating: entry.happiness_rating ?? entry.happinessRating,
+            date: entry.date
+          }));
+          prepareTimeSeriesData(transformedEntries);
+        } else {
+          setTimeSeriesData(null);
         }
       } catch (error) {
         console.error('Error fetching entries:', error);
+        setTimeSeriesData(null);
       } finally {
         setIsLoading(false);
       }

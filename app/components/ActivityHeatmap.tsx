@@ -6,8 +6,11 @@ import { format, parseISO, subDays, eachDayOfInterval, getDay, isSameDay, isToda
 interface Entry {
   id: string;
   date: string;
-  happinessRating: number;
-  stressLevel: number;
+  happinessRating?: number;
+  stressLevel?: number;
+  // SUPPORT BOTH CAMELCASE AND SNAKE_CASE FROM API
+  happiness_rating?: number;
+  stress_level?: number;
 }
 
 export default function ActivityHeatmap() {
