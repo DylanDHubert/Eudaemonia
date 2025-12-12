@@ -16,6 +16,28 @@ const poppins = Poppins({
 export const metadata: Metadata = {
   title: "Eudaemonia - Track Your Well-being",
   description: "Monitor lifestyle factors to improve your well-being",
+  icons: {
+    icon: [
+      { url: '/light.png', media: '(prefers-color-scheme: light)' },
+      { url: '/dark.png', media: '(prefers-color-scheme: dark)' },
+      { url: '/light.png' }, // DEFAULT FALLBACK
+    ],
+    apple: [
+      { url: '/light.png' }, // APPLE TOUCH ICON
+    ],
+  },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'black-translucent',
+    title: 'Eudaemonia',
+  },
+  viewport: {
+    width: 'device-width',
+    initialScale: 1,
+    maximumScale: 1,
+    userScalable: false,
+    viewportFit: 'cover',
+  },
 };
 
 export default async function RootLayout({
@@ -28,7 +50,14 @@ export default async function RootLayout({
   return (
     <html lang="en" className={`${poppins.variable} h-full`}>
       <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover, shrink-to-fit=no" />
+        {/* ADDITIONAL IOS PWA META TAGS FOR SEARCH BAR HIDING */}
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="mobile-web-app-capable" content="yes" />
+        {/* APP ICONS - USE LIGHT AS DEFAULT, DARK FOR DARK MODE */}
+        <link rel="icon" href="/light.png" media="(prefers-color-scheme: light)" />
+        <link rel="icon" href="/dark.png" media="(prefers-color-scheme: dark)" />
+        <link rel="icon" href="/light.png" />
+        <link rel="apple-touch-icon" href="/light.png" />
       </head>
       <body className={`font-sans h-full overflow-x-hidden`}>
         <div className="min-h-screen bg-gradient-to-br from-pink-300 to-rose-400 dark:from-gray-800 dark:to-indigo-500 bg-[url('/grid.svg')] bg-center">
