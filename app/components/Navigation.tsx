@@ -72,40 +72,27 @@ export default function Navigation({ user }: NavigationProps) {
   };
 
   return (
-    <nav className="glass-nav fixed top-0 left-0 right-0 z-50 h-16">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full">
-        <div className="flex justify-between h-full">
-          <div className="flex items-center">
-            <Link href="/" className="flex items-center p-2 -m-2">
-              <Image
-                src={isDarkMode ? '/dark.png' : '/light.png'}
-                alt="Eudaemonia"
-                width={120}
-                height={40}
-                className="h-8 w-auto drop-shadow-[0_0_8px_rgba(99,102,241,0.6)] dark:drop-shadow-[0_0_8px_rgba(99,102,241,0.8)] transition-all duration-300 hover:drop-shadow-[0_0_12px_rgba(99,102,241,0.8)] dark:hover:drop-shadow-[0_0_12px_rgba(99,102,241,1)]"
-                priority
-              />
+    <nav className="glass-nav fixed top-0 left-0 right-0 z-50 h-16 overflow-visible">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full overflow-visible">
+        <div className="flex sm:grid sm:grid-cols-3 items-center justify-between sm:justify-normal h-full overflow-visible">
+          {/* LEFT: LOGO */}
+          <div className="flex items-center overflow-visible">
+            <Link href="/" className="flex items-center p-3 -m-3 overflow-visible">
+              <div className="p-1">
+                <Image
+                  src={isDarkMode ? '/dark.png' : '/light.png'}
+                  alt="Eudaemonia"
+                  width={120}
+                  height={40}
+                  className="h-8 w-auto drop-shadow-[0_0_8px_rgba(99,102,241,0.6)] dark:drop-shadow-[0_0_8px_rgba(99,102,241,0.8)] transition-all duration-300 hover:drop-shadow-[0_0_12px_rgba(99,102,241,0.8)] dark:hover:drop-shadow-[0_0_12px_rgba(99,102,241,1)]"
+                  priority
+                />
+              </div>
             </Link>
           </div>
           
-          {/* Mobile menu button */}
-          <div className="flex items-center sm:hidden">
-            <DarkModeToggle />
-            <button
-              onClick={toggleMenu}
-              className="inline-flex items-center justify-center p-2 rounded-md text-stone-600 hover:text-indigo-500 hover:bg-indigo-500/10 focus:outline-none ml-2"
-            >
-              <span className="sr-only">Open main menu</span>
-              {isMenuOpen ? (
-                <XMarkIcon className="block h-6 w-6" aria-hidden="true" />
-              ) : (
-                <Bars3Icon className="block h-6 w-6" aria-hidden="true" />
-              )}
-            </button>
-          </div>
-          
-          {/* Desktop navigation */}
-          <div className="hidden sm:flex sm:items-center sm:space-x-6">
+          {/* CENTER: NAVIGATION BUTTONS */}
+          <div className="hidden sm:flex sm:items-center sm:justify-center sm:space-x-3">
             <Link 
               href="/" 
               className={`text-sm sm:text-base px-3 py-2 rounded-md transition-colors ${
@@ -177,9 +164,30 @@ export default function Navigation({ user }: NavigationProps) {
               Help
             </Link>
             <DarkModeToggle />
-            <div className="relative ml-3">
-              <div className="flex items-center">
-                <span className="text-sm text-stone-600 dark:text-gray-300 mr-2">{getUserName()}</span>
+          </div>
+          
+          {/* RIGHT: USERNAME AND SIGN OUT / MOBILE BUTTONS */}
+          <div className="flex items-center justify-end">
+            {/* Mobile menu button and dark mode toggle - same position as desktop sign out */}
+            <div className="flex items-center gap-2 sm:hidden">
+              <DarkModeToggle />
+              <button
+                onClick={toggleMenu}
+                className="inline-flex items-center justify-center p-2 rounded-md text-stone-600 hover:text-indigo-500 hover:bg-indigo-500/10 focus:outline-none"
+              >
+                <span className="sr-only">Open main menu</span>
+                {isMenuOpen ? (
+                  <XMarkIcon className="block h-6 w-6" aria-hidden="true" />
+                ) : (
+                  <Bars3Icon className="block h-6 w-6" aria-hidden="true" />
+                )}
+              </button>
+            </div>
+            
+            {/* Desktop: Username and Sign Out */}
+            <div className="hidden sm:block">
+              <div className="flex flex-col items-end">
+                <span className="text-sm text-stone-600 dark:text-gray-300 mb-1">{getUserName()}</span>
                 <button
                   onClick={async () => {
                     const supabase = createClient();
@@ -187,7 +195,7 @@ export default function Navigation({ user }: NavigationProps) {
                     router.push('/login');
                     router.refresh();
                   }}
-                  className="text-sm text-stone-600 hover:text-indigo-500 dark:text-gray-300 dark:hover:text-indigo-500"
+                  className="text-sm text-stone-600 hover:text-red-500 dark:text-gray-300 dark:hover:text-red-500"
                 >
                   Sign Out
                 </button>
@@ -320,7 +328,7 @@ export default function Navigation({ user }: NavigationProps) {
                   router.push('/login');
                   router.refresh();
                 }}
-                className="w-full px-4 py-2.5 rounded-md text-base font-medium text-white bg-rose-500 hover:bg-rose-600 dark:bg-indigo-600 dark:hover:bg-indigo-700 transition-colors"
+                className="w-full px-4 py-2.5 rounded-md text-base font-medium text-white bg-red-500 hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700 transition-colors"
               >
                 Sign Out
               </button>

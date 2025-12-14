@@ -340,3 +340,30 @@ body {
   gap: 4px;
 }
 
+/* TEXTURE OPACITY ANIMATION - LIGHT MODE: 10-20%, DARK MODE: 5-10% */
+@keyframes textureOpacityLight {
+  0%, 100% {
+    opacity: 0.1;
+  }
+  50% {
+    opacity: 0.15;
+  }
+}
+
+@keyframes textureOpacityDark {
+  0%, 100% {
+    opacity: 0.01;
+  }
+  50% {
+    opacity: 0.05;
+  }
+}
+
+.texture-animate {
+  animation: textureOpacityLight 4s ease-in-out infinite;
+}
+
+.dark .texture-animate {
+  animation: textureOpacityDark 4s ease-in-out infinite;
+}
+
