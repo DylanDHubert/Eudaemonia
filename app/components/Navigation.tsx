@@ -197,106 +197,137 @@ export default function Navigation({ user }: NavigationProps) {
         </div>
       </div>
       
-      {/* Mobile menu */}
+      {/* Mobile menu modal */}
       {isMenuOpen && (
-        <div 
-          className="sm:hidden fixed inset-0 z-[100] bg-white/90 dark:bg-gray-900/90 backdrop-blur-lg"
-          onClick={closeMenu}
-        >
+        <>
+          {/* BACKDROP - COVERS ENTIRE SCREEN */}
           <div 
-            className="px-4 pt-20 pb-6 space-y-2 max-h-screen overflow-y-auto"
-            onClick={(e) => e.stopPropagation()}
+            className="sm:hidden fixed top-0 left-0 right-0 bottom-0 w-screen h-screen z-[9999] bg-black/50 dark:bg-black/70"
+            style={{ backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)' }}
+            onClick={closeMenu}
+          />
+          
+          {/* MODAL CONTENT */}
+          <div 
+            className="sm:hidden fixed inset-0 z-[10000] flex items-start justify-center pt-[20vh] px-4 pointer-events-none"
           >
-            <Link 
-              href="/" 
-              className={`block px-3 py-2.5 rounded-md text-base font-medium ${
-                isActive('/')
-                  ? 'text-rose-600 dark:text-indigo-600 bg-rose-100/80 dark:bg-indigo-400/20' 
-                  : 'text-stone-600 hover:text-rose-500 hover:bg-rose-500/10 dark:text-gray-300 dark:hover:text-indigo-500 dark:hover:bg-indigo-500/10'
-              }`}
-              onClick={closeMenu}
+            <div 
+              className="relative w-full max-w-sm bg-white dark:bg-gray-800 rounded-2xl shadow-2xl overflow-hidden pointer-events-auto"
+              onClick={(e) => e.stopPropagation()}
             >
-              Dashboard
-            </Link>
-            <Link 
-              href="/entry" 
-              className={`block px-3 py-2.5 rounded-md text-base font-medium ${
-                isActive('/entry')
-                  ? 'text-rose-600 dark:text-indigo-600 bg-rose-100/80 dark:bg-indigo-400/20' 
-                  : 'text-stone-600 hover:text-rose-500 hover:bg-rose-500/10 dark:text-gray-300 dark:hover:text-indigo-500 dark:hover:bg-indigo-500/10'
-              }`}
-              onClick={closeMenu}
-            >
-              Entry
-            </Link>
-            <Link 
-              href="/insights" 
-              className={`block px-3 py-2.5 rounded-md text-base font-medium ${
-                isActive('/insights')
-                  ? 'text-rose-600 dark:text-indigo-600 bg-rose-100/80 dark:bg-indigo-400/20' 
-                  : 'text-stone-600 hover:text-rose-500 hover:bg-rose-500/10 dark:text-gray-300 dark:hover:text-indigo-500 dark:hover:bg-indigo-500/10'
-              }`}
-              onClick={closeMenu}
-            >
-              Insights
-            </Link>
-            <Link 
-              href="/history" 
-              className={`block px-3 py-2.5 rounded-md text-base font-medium ${
-                isActive('/history')
-                  ? 'text-rose-600 dark:text-indigo-600 bg-rose-100/80 dark:bg-indigo-400/20' 
-                  : 'text-stone-600 hover:text-rose-500 hover:bg-rose-500/10 dark:text-gray-300 dark:hover:text-indigo-500 dark:hover:bg-indigo-500/10'
-              }`}
-              onClick={closeMenu}
-            >
-              History
-            </Link>
-            <Link 
-              href="/gratitudes" 
-              className={`block px-3 py-2.5 rounded-md text-base font-medium ${
-                isActive('/gratitudes')
-                  ? 'text-rose-600 dark:text-indigo-600 bg-rose-100/80 dark:bg-indigo-400/20' 
-                  : 'text-stone-600 hover:text-rose-500 hover:bg-rose-500/10 dark:text-gray-300 dark:hover:text-indigo-500 dark:hover:bg-indigo-500/10'
-              }`}
-              onClick={closeMenu}
-            >
-              Gratitudes
-            </Link>
-            <Link
-              href="/categories"
-              className={`block px-3 py-2.5 rounded-md text-base font-medium ${
-                isActive('/categories')
-                  ? 'text-rose-600 dark:text-indigo-600 bg-rose-100/80 dark:bg-indigo-400/20' 
-                  : 'text-stone-600 hover:text-rose-500 hover:bg-rose-500/10 dark:text-gray-300 dark:hover:text-indigo-500 dark:hover:bg-indigo-500/10'
-              }`}
-              onClick={closeMenu}
-            >
-              Categories
-            </Link>
-            <Link
-              href="/how-to-use"
-              className={`block px-3 py-2.5 rounded-md text-base font-medium ${
-                isActive('/how-to-use')
-                  ? 'text-rose-600 dark:text-indigo-600 bg-rose-100/80 dark:bg-indigo-400/20' 
-                  : 'text-stone-600 hover:text-rose-500 hover:bg-rose-500/10 dark:text-gray-300 dark:hover:text-indigo-500 dark:hover:bg-indigo-500/10'
-              }`}
-              onClick={closeMenu}
-            >
-              Help
-            </Link>
-            <button
-              onClick={async () => {
-                const supabase = createClient();
-                await supabase.auth.signOut();
-                router.push('/login');
-                router.refresh();
-              }}
-              className="w-full text-left px-3 py-2.5 rounded-md text-base font-medium text-white bg-rose-500/70 hover:bg-rose-600/80 dark:bg-indigo-600/70 dark:hover:bg-indigo-700/80"
-            >
-              Sign Out
-            </button>
+            {/* MODAL HEADER */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-stone-200 dark:border-gray-700">
+              <h2 className="text-lg font-semibold text-stone-900 dark:text-gray-100">Menu</h2>
+              <button
+                onClick={closeMenu}
+                className="p-1.5 rounded-md text-stone-500 hover:text-stone-700 hover:bg-stone-100 dark:text-gray-400 dark:hover:text-gray-200 dark:hover:bg-gray-700 transition-colors"
+              >
+                <XMarkIcon className="h-5 w-5" aria-hidden="true" />
+                <span className="sr-only">Close menu</span>
+              </button>
+            </div>
+            
+            {/* MODAL BODY */}
+            <div className="px-4 py-4 space-y-1 max-h-[70vh] overflow-y-auto">
+              <Link 
+                href="/" 
+                className={`block px-3 py-2.5 rounded-md text-base font-medium transition-colors ${
+                  isActive('/')
+                    ? 'text-rose-600 dark:text-indigo-600 bg-rose-100/80 dark:bg-indigo-400/20' 
+                    : 'text-stone-600 hover:text-rose-500 hover:bg-rose-500/10 dark:text-gray-300 dark:hover:text-indigo-500 dark:hover:bg-indigo-500/10'
+                }`}
+                onClick={closeMenu}
+              >
+                Dashboard
+              </Link>
+              <Link 
+                href="/entry" 
+                className={`block px-3 py-2.5 rounded-md text-base font-medium transition-colors ${
+                  isActive('/entry')
+                    ? 'text-rose-600 dark:text-indigo-600 bg-rose-100/80 dark:bg-indigo-400/20' 
+                    : 'text-stone-600 hover:text-rose-500 hover:bg-rose-500/10 dark:text-gray-300 dark:hover:text-indigo-500 dark:hover:bg-indigo-500/10'
+                }`}
+                onClick={closeMenu}
+              >
+                Entry
+              </Link>
+              <Link 
+                href="/insights" 
+                className={`block px-3 py-2.5 rounded-md text-base font-medium transition-colors ${
+                  isActive('/insights')
+                    ? 'text-rose-600 dark:text-indigo-600 bg-rose-100/80 dark:bg-indigo-400/20' 
+                    : 'text-stone-600 hover:text-rose-500 hover:bg-rose-500/10 dark:text-gray-300 dark:hover:text-indigo-500 dark:hover:bg-indigo-500/10'
+                }`}
+                onClick={closeMenu}
+              >
+                Insights
+              </Link>
+              <Link 
+                href="/history" 
+                className={`block px-3 py-2.5 rounded-md text-base font-medium transition-colors ${
+                  isActive('/history')
+                    ? 'text-rose-600 dark:text-indigo-600 bg-rose-100/80 dark:bg-indigo-400/20' 
+                    : 'text-stone-600 hover:text-rose-500 hover:bg-rose-500/10 dark:text-gray-300 dark:hover:text-indigo-500 dark:hover:bg-indigo-500/10'
+                }`}
+                onClick={closeMenu}
+              >
+                History
+              </Link>
+              <Link 
+                href="/gratitudes" 
+                className={`block px-3 py-2.5 rounded-md text-base font-medium transition-colors ${
+                  isActive('/gratitudes')
+                    ? 'text-rose-600 dark:text-indigo-600 bg-rose-100/80 dark:bg-indigo-400/20' 
+                    : 'text-stone-600 hover:text-rose-500 hover:bg-rose-500/10 dark:text-gray-300 dark:hover:text-indigo-500 dark:hover:bg-indigo-500/10'
+                }`}
+                onClick={closeMenu}
+              >
+                Gratitudes
+              </Link>
+              <Link
+                href="/categories"
+                className={`block px-3 py-2.5 rounded-md text-base font-medium transition-colors ${
+                  isActive('/categories')
+                    ? 'text-rose-600 dark:text-indigo-600 bg-rose-100/80 dark:bg-indigo-400/20' 
+                    : 'text-stone-600 hover:text-rose-500 hover:bg-rose-500/10 dark:text-gray-300 dark:hover:text-indigo-500 dark:hover:bg-indigo-500/10'
+                }`}
+                onClick={closeMenu}
+              >
+                Categories
+              </Link>
+              <Link
+                href="/how-to-use"
+                className={`block px-3 py-2.5 rounded-md text-base font-medium transition-colors ${
+                  isActive('/how-to-use')
+                    ? 'text-rose-600 dark:text-indigo-600 bg-rose-100/80 dark:bg-indigo-400/20' 
+                    : 'text-stone-600 hover:text-rose-500 hover:bg-rose-500/10 dark:text-gray-300 dark:hover:text-indigo-500 dark:hover:bg-indigo-500/10'
+                }`}
+                onClick={closeMenu}
+              >
+                Help
+              </Link>
+            </div>
+            
+            {/* MODAL FOOTER */}
+            <div className="px-4 py-4 border-t border-stone-200 dark:border-gray-700">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-sm text-stone-600 dark:text-gray-400">{getUserName()}</span>
+              </div>
+              <button
+                onClick={async () => {
+                  const supabase = createClient();
+                  await supabase.auth.signOut();
+                  router.push('/login');
+                  router.refresh();
+                }}
+                className="w-full px-4 py-2.5 rounded-md text-base font-medium text-white bg-rose-500 hover:bg-rose-600 dark:bg-indigo-600 dark:hover:bg-indigo-700 transition-colors"
+              >
+                Sign Out
+              </button>
+            </div>
           </div>
         </div>
+        </>
       )}
     </nav>
   );

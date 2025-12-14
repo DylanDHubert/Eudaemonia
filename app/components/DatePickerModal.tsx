@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import DatePicker from 'react-datepicker';
+import { XMarkIcon } from '@heroicons/react/24/outline';
 import "react-datepicker/dist/react-datepicker.css";
 
 interface DatePickerModalProps {
