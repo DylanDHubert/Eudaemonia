@@ -56,8 +56,8 @@ export default async function RootLayout({
         <meta name="mobile-web-app-capable" content="yes" />
         {/* PWA MANIFEST */}
         <link rel="manifest" href="/manifest.json" />
-        {/* THEME COLOR FOR PWA STATUS BAR - ALWAYS BLACK, UPDATED BY ThemeColorUpdater */}
-        <meta name="theme-color" content="#000000" />
+        {/* THEME COLOR FOR PWA STATUS BAR - ROSE FOR LIGHT, FUSCHIA 800 FOR DARK, UPDATED BY ThemeColorUpdater */}
+        <meta name="theme-color" content="#f43f5e" />
         {/* APP ICONS - USE LIGHT AS DEFAULT, DARK FOR DARK MODE */}
         <link rel="icon" href="/light.png" media="(prefers-color-scheme: light)" />
         <link rel="icon" href="/dark.png" media="(prefers-color-scheme: dark)" />
