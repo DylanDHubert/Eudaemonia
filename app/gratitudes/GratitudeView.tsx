@@ -140,6 +140,17 @@ export default function GratitudeView({ homePage = false }: GratitudeViewProps) 
 
   const currentGratitude = gratitudes[currentIndex];
 
+  // HELPER FUNCTION TO RANDOMLY SELECT 3 GRATITUDES
+  const getRandomGratitudes = (gratitudesList: Gratitude[], count: number): Gratitude[] => {
+    if (gratitudesList.length <= count) {
+      return [...gratitudesList];
+    }
+    
+    // CREATE A SHUFFLED COPY OF THE ARRAY
+    const shuffled = [...gratitudesList].sort(() => Math.random() - 0.5);
+    return shuffled.slice(0, count);
+  };
+
   // For the home page, show a simplified view with three entries or placeholder entries
   if (homePage) {
     const displayGratitudes = [...gratitudes];
@@ -154,23 +165,28 @@ export default function GratitudeView({ homePage = false }: GratitudeViewProps) 
       });
     }
     
-    // Only show the first 3 gratitudes
-    const firstThreeGratitudes = displayGratitudes.slice(0, 3);
+    // RANDOMLY SELECT 3 GRATITUDES
+    const randomThreeGratitudes = getRandomGratitudes(displayGratitudes, 3);
     
     return (
       <div className="flex flex-col h-full">
         <div className="flex-1">
-          {firstThreeGratitudes.map((gratitude, index) => (
+          {randomThreeGratitudes.map((gratitude, index) => (
             <div 
               key={gratitude.id} 
-              className="glass-card p-2 border border-gray-200 dark:border-gray-700 mb-2 last:mb-0 h-8 overflow-hidden"
+              className="glass-card p-2 border border-gray-200 dark:border-gray-700 mb-2 last:mb-0 h-8 overflow-hidden flex items-center justify-between gap-2"
             >
-              <p className="text-xs text-gray-800 dark:text-gray-200 truncate">
+              <p className="text-xs text-gray-800 dark:text-gray-200 truncate flex-1">
                 {gratitude.isPlaceholder || gratitude.id.startsWith('placeholder')
                   ? <span className="text-gray-500 dark:text-gray-400">{gratitude.content}</span>
                   : gratitude.content
                 }
               </p>
+              {!gratitude.isPlaceholder && !gratitude.id.startsWith('placeholder') && gratitude.createdAt && (
+                <p className="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap flex-shrink-0">
+                  {format(new Date(gratitude.createdAt), 'MMM d')}
+                </p>
+              )}
             </div>
           ))}
         </div>
