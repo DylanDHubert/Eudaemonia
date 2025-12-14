@@ -70,8 +70,8 @@ export default async function RootLayout({
           {/* GRADIENT BASE BACKGROUND - RED TO ROSE TO PINK (LIGHT), INDIGO/PURPLE (DARK) */}
           <div className="absolute inset-0 bg-gradient-to-br from-red-400 via-rose-300 to-pink-300 dark:from-indigo-950 dark:via-purple-900 dark:to-indigo-800"></div>
           
-          {/* IMAGE OVERLAY AT 10% OPACITY */}
-          <div className="absolute inset-0 bg-[url('/light_bg.png')] dark:bg-[url('/dark_bg.png')] bg-cover bg-center bg-fixed opacity-20"></div>
+          {/* TEXTURE OVERLAY AT 20% OPACITY - TILED 100X100 */}
+          <div className="absolute inset-0 bg-[url('/texture.png')] bg-repeat bg-[length:100px_100px] opacity-10"></div>
           
           {/* CONTENT LAYER */}
           <div className="relative z-10">
