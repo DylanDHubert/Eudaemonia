@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import Image from 'next/image';
 import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
 import DarkModeToggle from './DarkModeToggle';
@@ -22,6 +23,12 @@ export default function Navigation({ user }: NavigationProps) {
   const router = useRouter();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  // SET MOUNTED STATE FOR PORTAL
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // CHECK DARK MODE STATE
   useEffect(() => {
@@ -206,12 +213,18 @@ export default function Navigation({ user }: NavigationProps) {
       </div>
       
       {/* Mobile menu modal */}
-      {isMenuOpen && (
+      {isMenuOpen && mounted && createPortal(
         <>
           {/* BACKDROP - COVERS ENTIRE SCREEN */}
           <div 
-            className="sm:hidden fixed top-0 left-0 right-0 bottom-0 w-screen h-screen z-[9999] bg-black/50 dark:bg-black/70"
-            style={{ backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)' }}
+            className="sm:hidden fixed top-0 left-0 right-0 bottom-0 z-[9999] bg-black/50 dark:bg-black/70"
+            style={{ 
+              backdropFilter: 'blur(12px)', 
+              WebkitBackdropFilter: 'blur(12px)',
+              width: '100vw',
+              height: '100vh',
+              position: 'fixed'
+            }}
             onClick={closeMenu}
           />
           
@@ -335,7 +348,8 @@ export default function Navigation({ user }: NavigationProps) {
             </div>
           </div>
         </div>
-        </>
+        </>,
+        document.body
       )}
     </nav>
   );
