@@ -10,7 +10,7 @@
   html {
     font-family: var(--font-spectral-sc), serif;
     /* BACKGROUND COLOR FOR OVERSCROLL AREA - MATCHES GRADIENT THEME */
-    @apply bg-rose-200 dark:bg-indigo-900;
+    @apply bg-rose-500 dark:bg-indigo-900;
     /* PREVENT TOP OVERSCROLL - HEADER STAYS FIXED */
     overscroll-behavior-y: none;
     overscroll-behavior: none;
