@@ -39,7 +39,29 @@ export default function CorrelationMatrix() {
         const entriesData = await entriesResponse.json();
         
         if (entriesData.entries) {
-          setEntries(entriesData.entries);
+          // TRANSFORM SNAKE_CASE FROM API TO CAMELCASE FOR COMPONENT
+          const transformedEntries = entriesData.entries.map((entry: any) => ({
+            id: entry.id,
+            date: entry.date,
+            sleepHours: entry.sleep_hours ?? entry.sleepHours,
+            sleepQuality: entry.sleep_quality ?? entry.sleepQuality,
+            exercise: entry.exercise,
+            exerciseTime: entry.exercise_time ?? entry.exerciseTime,
+            alcohol: entry.alcohol,
+            alcoholUnits: entry.alcohol_units ?? entry.alcoholUnits,
+            cannabis: entry.cannabis,
+            cannabisAmount: entry.cannabis_amount ?? entry.cannabisAmount,
+            meditation: entry.meditation,
+            meditationTime: entry.meditation_time ?? entry.meditationTime,
+            socialTime: entry.social_time ?? entry.socialTime,
+            workHours: entry.work_hours ?? entry.workHours,
+            stressLevel: entry.stress_level ?? entry.stressLevel,
+            happinessRating: entry.happiness_rating ?? entry.happinessRating,
+            meals: entry.meals,
+            foodQuality: entry.food_quality ?? entry.foodQuality,
+            notes: entry.notes,
+          }));
+          setEntries(transformedEntries);
         }
       } catch (error) {
         console.error('Error fetching data for correlation matrix:', error);
@@ -102,6 +124,7 @@ export default function CorrelationMatrix() {
     
     // Sleep metrics
     { id: 'sleepHours', name: 'Sleep Hours' },
+    { id: 'sleepQuality', name: 'Sleep Quality' },
     
     // Exercise metrics
     { id: 'exercise', name: 'Exercise' },
@@ -124,32 +147,51 @@ export default function CorrelationMatrix() {
 
   // Calculate the correlation between two variables
   const calculateCorrelation = (fieldX: string, fieldY: string) => {
-    if (entries.length < 10) return null; // Need enough data for meaningful correlation
+    if (entries.length < 3) return null; // REDUCED THRESHOLD - Need at least 3 entries for any correlation
     if (fieldX === fieldY) return 1.0; // Perfect correlation with self
     
     // Extract values
     const getFieldValue = (entry: Entry, fieldId: string) => {
-      // Handle boolean fields
+      // Handle boolean fields - convert to 0/1
       if (fieldId === 'exercise') return entry.exercise ? 1 : 0;
       if (fieldId === 'alcohol') return entry.alcohol ? 1 : 0;
       if (fieldId === 'cannabis') return entry.cannabis ? 1 : 0;
       if (fieldId === 'meditation') return entry.meditation ? 1 : 0;
       
-      // Handle numeric fields
+      // Handle numeric fields - return null only if truly missing
       const value = (entry as any)[fieldId];
-      return value !== null && value !== undefined ? value : null;
+      // FOR REQUIRED FIELDS (happinessRating, stressLevel, sleepHours, sleepQuality), they should always exist
+      // FOR OPTIONAL FIELDS, null/undefined means missing data
+      if (value === null || value === undefined) {
+        return null;
+      }
+      // CONVERT TO NUMBER IF NEEDED
+      const numValue = typeof value === 'number' ? value : parseFloat(value);
+      return isNaN(numValue) ? null : numValue;
     };
     
     // Get all pairs of values for the two fields
+    // ONLY INCLUDE ENTRIES WHERE BOTH VALUES ARE PRESENT
     const pairs = entries.map(entry => {
       const x = getFieldValue(entry, fieldX);
       const y = getFieldValue(entry, fieldY);
       return { x, y };
-    }).filter(pair => pair.x !== null && pair.y !== null);
+    }).filter((pair): pair is { x: number; y: number } => 
+      pair.x !== null && pair.y !== null && !isNaN(pair.x) && !isNaN(pair.y)
+    );
     
-    if (pairs.length < 10) return null; // Need at least 10 pairs
+    // REDUCED THRESHOLD - Need at least 3 pairs for meaningful correlation
+    // This allows correlations to show even with some missing data
+    if (pairs.length < 3) return null;
     
-    // Calculate correlation
+    // CHECK FOR CONSTANT VALUES (no variance) - correlation undefined in this case
+    const xValues = pairs.map(p => p.x);
+    const yValues = pairs.map(p => p.y);
+    const xVariance = Math.max(...xValues) - Math.min(...xValues);
+    const yVariance = Math.max(...yValues) - Math.min(...yValues);
+    if (xVariance === 0 || yVariance === 0) return null;
+    
+    // Calculate Pearson correlation coefficient
     const n = pairs.length;
     const sumX = pairs.reduce((sum, pair) => sum + pair.x, 0);
     const sumY = pairs.reduce((sum, pair) => sum + pair.y, 0);
@@ -160,8 +202,13 @@ export default function CorrelationMatrix() {
     const numerator = n * sumXY - sumX * sumY;
     const denominator = Math.sqrt((n * sumXX - sumX * sumX) * (n * sumYY - sumY * sumY));
     
-    if (denominator === 0) return null;
-    return numerator / denominator;
+    if (denominator === 0 || isNaN(denominator)) return null;
+    
+    const correlation = numerator / denominator;
+    // ENSURE CORRELATION IS VALID
+    if (isNaN(correlation) || !isFinite(correlation)) return null;
+    
+    return correlation;
   };
 
   // Calculate color based on correlation value
@@ -304,14 +351,22 @@ export default function CorrelationMatrix() {
                     }
                     
                     const backgroundColor = getCorrelationColor(correlation);
+                    // SHOW "S" FOR SELF-CORRELATION (DIAGONAL), OTHERWISE FORMAT NORMALLY
+                    const correlationText = fieldX.id === fieldY.id ? 'S' : formatCorrelation(correlation);
                     
                     return (
                       <div 
                         key={`${fieldY.id}-${fieldX.id}`} 
-                        className="day-cell"
+                        className="day-cell flex items-center justify-center"
                         style={{ backgroundColor }}
                         title={`${fieldY.name} vs ${fieldX.name}: ${formatCorrelation(correlation)}`}
-                      />
+                      >
+                        <span 
+                          className="text-[6px] sm:text-[8px] font-medium leading-none text-white"
+                        >
+                          {correlationText}
+                        </span>
+                      </div>
                     );
                   })}
                 </div>
