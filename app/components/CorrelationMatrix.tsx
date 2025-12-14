@@ -28,6 +28,7 @@ export default function CorrelationMatrix() {
   const [entries, setEntries] = useState<Entry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isDarkMode, setIsDarkMode] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
     async function fetchData() {
@@ -48,6 +49,23 @@ export default function CorrelationMatrix() {
     }
 
     fetchData();
+  }, []);
+
+  // CHECK IF MOBILE
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 640);
+    };
+
+    // Initial check
+    checkMobile();
+
+    // Listen for resize events
+    window.addEventListener('resize', checkMobile);
+
+    return () => {
+      window.removeEventListener('resize', checkMobile);
+    };
   }, []);
 
   // Check if dark mode is enabled
@@ -199,7 +217,7 @@ export default function CorrelationMatrix() {
         ticks: {
           color: isDarkMode ? 'rgba(209, 213, 219, 0.8)' : 'rgba(75, 85, 99, 0.8)',
           font: {
-            size: 10
+            size: isMobile ? 8 : 10
           }
         },
         grid: {
@@ -210,7 +228,7 @@ export default function CorrelationMatrix() {
         ticks: {
           color: isDarkMode ? 'rgba(209, 213, 219, 0.8)' : 'rgba(75, 85, 99, 0.8)',
           font: {
-            size: 10
+            size: isMobile ? 8 : 10
           }
         },
         grid: {
@@ -239,13 +257,13 @@ export default function CorrelationMatrix() {
 
   return (
     <div className="glass-card p-4 sm:p-6 w-full max-w-fit mx-auto">
-      <h3 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4 pb-12 text-center text-gray-800">Feature Correlation Matrix</h3>
+      <h3 className="text-lg sm:text-xl font-semibold mb-2 sm:mb-4 pb-[10px] sm:pb-12 text-center text-gray-800">Feature Correlation Matrix</h3>
       
       <div className="flex">
         {/* Row labels */}
-        <div className="flex flex-col mr-2 text-[8px] sm:text-xs text-gray-600 pt-12">
+        <div className="flex flex-col mr-[6.4px] sm:mr-2 text-[10px] sm:text-xs text-gray-600 pt-[40px] sm:pt-12">
           {displayFields.map((field, index) => (
-            <div key={field.id} className="flex items-center justify-end w-[100px] h-[24px] mb-[4px]">
+            <div key={field.id} className="flex items-center justify-end w-[80px] sm:w-[100px] h-[19px] sm:h-[24px] mb-[3px] sm:mb-[4px]">
               {field.name}
             </div>
           ))}
@@ -254,12 +272,12 @@ export default function CorrelationMatrix() {
         {/* Column labels and heatmap grid */}
         <div className="flex flex-col">
           {/* Column labels */}
-          <div className="flex mb-2">
+          <div className="flex ml-[6.4px] sm:mr-2 mb-[6.4px] sm:mb-2">
             {displayFields.map((field, index) => (
-              <div key={field.id} className="w-[24px] sm:w-[24px] mx-[2.1px] h-8 relative">
+              <div key={field.id} className="w-[19px] sm:w-[24px] mx-[1.7px] sm:mx-[2.1px] h-8 relative">
                 <div 
-                  className="absolute origin-bottom-left rotate-[-90deg] whitespace-nowrap text-[8px] sm:text-xs text-gray-600"
-                  style={{ bottom: 0, left: 12 }}
+                  className="absolute origin-bottom-left rotate-[-90deg] whitespace-nowrap text-[10px] sm:text-xs text-gray-600"
+                  style={{ bottom: 0, left: isMobile ? 9.5 : 12 }}
                 >
                   {field.name}
                 </div>
@@ -269,7 +287,7 @@ export default function CorrelationMatrix() {
           
           {/* Heatmap grid */}
           <div className="overflow-x-auto">
-            <div className="grid-display pt-[10px]">
+            <div className="grid-display pt-[0px] sm:pt-0px]">
               {displayFields.map(fieldX => (
                 <div key={fieldX.id} className="week-column">
                   {displayFields.map(fieldY => {
@@ -304,8 +322,8 @@ export default function CorrelationMatrix() {
       </div>
 
       {/* Correlation Legend */}
-      <div className="mt-8 flex flex-col items-center">
-        <div className="text-[8px] sm:text-xs text-gray-600 mb-2">Correlation Strength</div>
+      <div className="mt-2 flex flex-col items-center">
+        <div className="text-[10px] sm:text-xs text-gray-600 mb-2">Correlation Strength</div>
         <div className="flex h-4 w-full max-w-md rounded-sm overflow-hidden">
           {Array.from({ length: 10 }, (_, i) => {
             const correlation = (i + 1) / 10;
@@ -319,7 +337,7 @@ export default function CorrelationMatrix() {
             );
           })}
         </div>
-        <div className="flex justify-between w-full max-w-md mt-4 text-[8px] sm:text-xs text-gray-600">
+        <div className="flex justify-between w-full max-w-md mt-2 text-[10px] sm:text-xs text-gray-600">
           <span>Strong Negative</span>
           <span>No Correlation</span>
           <span>Strong Positive</span>

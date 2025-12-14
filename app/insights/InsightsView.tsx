@@ -961,8 +961,8 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
       {mounted && modalContent && createPortal(modalContent, document.body)}
       
       <div>
-        {/* View mode tabs - hidden on mobile */}
-        <div className="hidden sm:flex flex-row space-x-2 mb-6">
+        {/* View mode tabs */}
+        <div className="flex flex-row space-x-2 mb-6">
           <button 
             onClick={() => setViewMode('correlations')}
             className={`px-4 py-2 rounded-lg transition-colors ${viewMode === 'correlations' ? 'bg-rose-400 dark:bg-indigo-500 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'}`}>
@@ -1032,7 +1032,7 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
             </div>
           </>
         ) : (
-          <div className="glass-card p-4 sm:p-6 rounded-lg hidden sm:block">
+          <div className="glass-card p-4 sm:p-6 rounded-lg">
             <h3 className="text-subheader mb-4">Feature Correlation Matrix</h3>
             <div className="relative">
               <CorrelationMatrix />

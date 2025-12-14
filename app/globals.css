@@ -244,28 +244,32 @@ body {
 }
 
 @media (max-width: 640px) {
+  .grid-display {
+    gap: 3.2px;
+  }
+  
   .day-cell {
-    width: 20px;
-    height: 20px;
+    width: 19px;
+    height: 19px;
   }
   
   .grid-display .day-cell {
-    width: 20px;
-    height: 20px;
+    width: 19px;
+    height: 19px;
   }
   
   .grid-display .week-column {
-    width: 20px;
-    gap: 2.5px;
+    width: 19px;
+    gap: 2.8px;
   }
   
   .correlation-table td {
-    width: 20px;
-    height: 20px;
-    min-width: 20px;
-    min-height: 20px;
-    max-width: 20px;
-    max-height: 20px;
+    width: 19px;
+    height: 19px;
+    min-width: 19px;
+    min-height: 19px;
+    max-width: 19px;
+    max-height: 19px;
   }
 }
 
