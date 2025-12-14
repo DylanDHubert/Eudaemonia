@@ -22,6 +22,40 @@
     overscroll-behavior-y: none;
     overscroll-behavior: none;
   }
+
+  /* PREVENT IOS AUTO-ZOOM ON INPUT FOCUS - MINIMUM 16PX FONT SIZE */
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="number"],
+  input[type="tel"],
+  input[type="url"],
+  input[type="search"],
+  input[type="date"],
+  input[type="time"],
+  input[type="datetime-local"],
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
+
+  /* MOBILE SPECIFIC - PREVENT ZOOM ON FOCUS */
+  @media screen and (max-width: 768px) {
+    input[type="text"],
+    input[type="email"],
+    input[type="password"],
+    input[type="number"],
+    input[type="tel"],
+    input[type="url"],
+    input[type="search"],
+    input[type="date"],
+    input[type="time"],
+    input[type="datetime-local"],
+    textarea,
+    select {
+      font-size: 16px !important;
+    }
+  }
 }
 
 :root {
