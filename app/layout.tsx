@@ -67,11 +67,11 @@ export default async function RootLayout({
       </head>
       <body className={`font-sans h-full overflow-x-hidden`}>
         <div className="min-h-screen relative">
-          {/* GRADIENT BASE BACKGROUND - RED TO ROSE TO PINK */}
-          <div className="absolute inset-0 bg-gradient-to-br from-red-400 via-rose-300 to-pink-300 dark:from-red-900 dark:via-rose-800 dark:to-pink-800"></div>
+          {/* GRADIENT BASE BACKGROUND - RED TO ROSE TO PINK (LIGHT), INDIGO/PURPLE (DARK) */}
+          <div className="absolute inset-0 bg-gradient-to-br from-red-400 via-rose-300 to-pink-300 dark:from-indigo-950 dark:via-purple-900 dark:to-indigo-800"></div>
           
           {/* IMAGE OVERLAY AT 10% OPACITY */}
-          <div className="absolute inset-0 bg-[url('/light_bg.png')] dark:bg-[url('/dark_bg.png')] bg-cover bg-center bg-fixed opacity-10"></div>
+          <div className="absolute inset-0 bg-[url('/light_bg.png')] dark:bg-[url('/dark_bg.png')] bg-cover bg-center bg-fixed opacity-20"></div>
           
           {/* CONTENT LAYER */}
           <div className="relative z-10">
