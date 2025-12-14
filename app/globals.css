@@ -132,7 +132,11 @@ body {
 }
 
 .react-datepicker__day {
-  @apply hover:bg-rose-100/80 hover:text-rose-700 rounded-full transition-colors dark:hover:bg-indigo-900/80 dark:hover:text-indigo-300 !important;
+  @apply text-gray-900 dark:text-white hover:bg-rose-100/80 hover:text-rose-700 rounded-full transition-colors dark:hover:bg-indigo-900/80 dark:hover:text-indigo-300 !important;
+}
+
+.react-datepicker__day--disabled {
+  @apply text-gray-900 dark:text-white !important;
 }
 
 .react-datepicker__day--selected {

@@ -180,7 +180,7 @@ export default function Navigation({ user }: NavigationProps) {
               <DarkModeToggle />
               <button
                 onClick={toggleMenu}
-                className="inline-flex items-center justify-center p-2 rounded-md text-stone-600 hover:text-indigo-500 hover:bg-indigo-500/10 focus:outline-none"
+                className="inline-flex items-center justify-center p-2 rounded-md text-stone-600 hover:text-rose-500 hover:bg-rose-500/10 dark:hover:text-indigo-500 dark:hover:bg-indigo-500/10 focus:outline-none"
               >
                 <span className="sr-only">Open main menu</span>
                 {isMenuOpen ? (
