@@ -66,13 +66,22 @@ export default async function RootLayout({
         <link rel="apple-touch-icon" href="/icon.png" />
       </head>
       <body className={`font-sans h-full overflow-x-hidden`}>
-        <div className="min-h-screen bg-[url('/light_bg.png')] dark:bg-[url('/dark_bg.png')] bg-cover bg-center bg-fixed">
-          {/* Only show Navigation if user is authenticated */}
-          {session && <div className="h-16"><Navigation user={session.user} /></div>}
+        <div className="min-h-screen relative">
+          {/* GRADIENT BASE BACKGROUND - RED TO ROSE TO PINK */}
+          <div className="absolute inset-0 bg-gradient-to-br from-red-400 via-rose-300 to-pink-300 dark:from-red-900 dark:via-rose-800 dark:to-pink-800"></div>
           
-          <main className="overflow-x-hidden">
-            <Providers>{children}</Providers>
-          </main>
+          {/* IMAGE OVERLAY AT 10% OPACITY */}
+          <div className="absolute inset-0 bg-[url('/light_bg.png')] dark:bg-[url('/dark_bg.png')] bg-cover bg-center bg-fixed opacity-10"></div>
+          
+          {/* CONTENT LAYER */}
+          <div className="relative z-10">
+            {/* Only show Navigation if user is authenticated */}
+            {session && <div className="h-16"><Navigation user={session.user} /></div>}
+            
+            <main className="overflow-x-hidden">
+              <Providers>{children}</Providers>
+            </main>
+          </div>
         </div>
       </body>
     </html>
