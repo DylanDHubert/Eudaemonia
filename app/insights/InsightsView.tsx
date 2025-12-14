@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import { 
   Chart as ChartJS, 
   CategoryScale,
@@ -85,6 +86,7 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [entryCounts, setEntryCounts] = useState<number[]>([]);
   const [isDarkMode, setIsDarkMode] = useState(false);
+  const [mounted, setMounted] = useState(false);
   
   // Mapping of internal factor names to display names
   const factorNameMap = useMemo<Record<string, string>>(() => ({
@@ -828,6 +830,23 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
   // Helper function to format factor names for display
   const formatFactorName = getDisplayName;
   
+  // CHECK IF COMPONENT IS MOUNTED (FOR PORTAL)
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // PREVENT BODY SCROLL WHEN MODAL IS OPEN
+  useEffect(() => {
+    if (isModalOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isModalOpen]);
+
   // Check if dark mode is enabled
   useEffect(() => {
     const checkDarkMode = () => {
@@ -864,55 +883,82 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
     );
   }
   
-  return (
+  // MODAL CONTENT
+  const modalContent = isModalOpen && selectedFactor && mounted ? (
     <>
-      {/* Modal for scatter plot and time series - desktop only */}
-      {isModalOpen && selectedFactor && (
-        <div className="fixed inset-0 hidden sm:flex items-center justify-center z-[10000] rounded-lg bg-rose-100/50 dark:bg-indigo-900/50 backdrop-blur-sm">
-          <div className="glass-card p-4 w-auto max-w-4xl h-auto max-h-[80vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
-            <div className="flex justify-end">
-              <button
-                onClick={() => {
-                  setIsModalOpen(false);
-                  setSelectedFactor(null);
-                }}
-                className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-              >
-                <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-            <div className="flex flex-col items-center gap-0">
-              {selectedFactor && scatterData.length > 0 ? (
-                <div className="h-[30vh] w-full flex justify-center">
-                  <Scatter 
-                    options={getScatterOptions(selectedFactor)} 
-                    data={getScatterChartData(selectedFactor)} 
-                  />
-                </div>
-              ) : null}
-              
-              {factorTimeSeriesData && factorTimeSeriesData.datasets[0].data.length > 0 ? (
-                <div className="h-[30vh] w-full flex justify-center">
-                  <Line 
-                    options={getFactorTimeSeriesOptions(selectedFactor)} 
-                    data={factorTimeSeriesData} 
-                  />
-                </div>
-              ) : null}
-            </div>
-            <div className="text-center mt-0">
-              <p className="text-xs sm:text-sm text-description">
-                {selectedFactor && (correlations.find(c => 
-                  c.factor === selectedFactor || 
-                  c.factor === getInternalName(selectedFactor))?.description || 
-                  'No interpretation available')}
-              </p>
-            </div>
+      {/* BACKDROP - COVERS ENTIRE SCREEN */}
+      <div 
+        className="fixed top-0 left-0 right-0 bottom-0 z-[9999] bg-black/50 dark:bg-black/70"
+        style={{ 
+          backdropFilter: 'blur(12px)', 
+          WebkitBackdropFilter: 'blur(12px)',
+          width: '100vw',
+          height: '100vh',
+          position: 'fixed'
+        }}
+        onClick={() => {
+          setIsModalOpen(false);
+          setSelectedFactor(null);
+        }}
+      />
+      
+      {/* MODAL CONTENT */}
+      <div 
+        className="fixed inset-0 z-[10000] flex items-start justify-center pt-[20vh] px-4 pointer-events-none"
+      >
+        <div 
+          className="glass-card p-4 w-full max-w-4xl h-auto max-h-[80vh] overflow-y-auto pointer-events-auto"
+          onClick={e => e.stopPropagation()}
+        >
+          <div className="flex justify-end">
+            <button
+              onClick={() => {
+                setIsModalOpen(false);
+                setSelectedFactor(null);
+              }}
+              className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+            >
+              <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+          <div className="flex flex-col items-center gap-0">
+            {selectedFactor && scatterData.length > 0 ? (
+              <div className="h-[30vh] w-full flex justify-center">
+                <Scatter 
+                  options={getScatterOptions(selectedFactor)} 
+                  data={getScatterChartData(selectedFactor)} 
+                />
+              </div>
+            ) : null}
+            
+            {factorTimeSeriesData && factorTimeSeriesData.datasets[0].data.length > 0 ? (
+              <div className="h-[30vh] w-full flex justify-center">
+                <Line 
+                  options={getFactorTimeSeriesOptions(selectedFactor)} 
+                  data={factorTimeSeriesData} 
+                />
+              </div>
+            ) : null}
+          </div>
+          <div className="text-center mt-0">
+            <p className="text-xs sm:text-sm text-description">
+              {selectedFactor && (correlations.find(c => 
+                c.factor === selectedFactor || 
+                c.factor === getInternalName(selectedFactor))?.description || 
+                'No interpretation available')}
+            </p>
           </div>
         </div>
-      )}
+      </div>
+    </>
+  ) : null;
+
+  return (
+    <>
+      {/* Modal for scatter plot and time series */}
+      {mounted && modalContent && createPortal(modalContent, document.body)}
       
       <div>
         {/* View mode tabs - hidden on mobile */}
