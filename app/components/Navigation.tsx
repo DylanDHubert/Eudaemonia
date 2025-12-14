@@ -76,13 +76,13 @@ export default function Navigation({ user }: NavigationProps) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full">
         <div className="flex justify-between h-full">
           <div className="flex items-center">
-            <Link href="/" className="flex items-center">
+            <Link href="/" className="flex items-center p-2 -m-2">
               <Image
                 src={isDarkMode ? '/dark.png' : '/light.png'}
                 alt="Eudaemonia"
                 width={120}
                 height={40}
-                className="h-8 w-auto"
+                className="h-8 w-auto drop-shadow-[0_0_8px_rgba(99,102,241,0.6)] dark:drop-shadow-[0_0_8px_rgba(99,102,241,0.8)] transition-all duration-300 hover:drop-shadow-[0_0_12px_rgba(99,102,241,0.8)] dark:hover:drop-shadow-[0_0_12px_rgba(99,102,241,1)]"
                 priority
               />
             </Link>
