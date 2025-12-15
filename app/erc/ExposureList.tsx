@@ -6,6 +6,7 @@ import { toast } from 'react-toastify';
 import ExposureEntryModal from './ExposureEntryModal';
 import { format } from 'date-fns';
 import { PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { CloudDrizzle, CloudHail, CloudRain, Plane } from 'lucide-react';
 
 type ExposureEntry = {
   id: string;
@@ -29,6 +30,7 @@ export default function ExposureList({ initialEntries }: { initialEntries: Expos
   const [filter, setFilter] = useState<FilterOption>('all');
   const [sortBy, setSortBy] = useState<SortOption>('date');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+  const [viewMode, setViewMode] = useState<'expanded' | 'collapsed'>('expanded');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingEntry, setEditingEntry] = useState<ExposureEntry | null>(null);
   const router = useRouter();
@@ -47,7 +49,21 @@ export default function ExposureList({ initialEntries }: { initialEntries: Expos
       if (!response.ok) throw new Error('Failed to fetch entries');
 
       const data = await response.json();
-      setEntries(data.entries);
+      // FORMAT ENTRIES FROM SNAKE_CASE TO CAMELCASE
+      const formattedEntries = (data.entries || []).map((entry: any) => ({
+        id: entry.id,
+        type: entry.type,
+        title: entry.title,
+        notes: entry.notes,
+        sudsPre: entry.suds_pre,
+        sudsPeak: entry.suds_peak,
+        sudsPost: entry.suds_post,
+        duration: entry.duration,
+        date: entry.date,
+        createdAt: entry.created_at,
+        updatedAt: entry.updated_at,
+      }));
+      setEntries(formattedEntries);
     } catch (error) {
       console.error('Error fetching entries:', error);
       toast.error('Failed to load entries');
@@ -115,6 +131,36 @@ export default function ExposureList({ initialEntries }: { initialEntries: Expos
     return ((entry.sudsPre + entry.sudsPeak + entry.sudsPost) / 3).toFixed(1);
   };
 
+  const getTypeIcon = (type: string) => {
+    switch (type) {
+      case 'easy':
+        return <CloudDrizzle className="w-4 h-4" />;
+      case 'medium':
+        return <CloudHail className="w-4 h-4" />;
+      case 'hard':
+        return <CloudRain className="w-4 h-4" />;
+      case 'flight':
+        return <Plane className="w-4 h-4" />;
+      default:
+        return null;
+    }
+  };
+
+  const getTypeBadgeColor = (type: string) => {
+    switch (type) {
+      case 'easy':
+        return 'bg-green-500';
+      case 'medium':
+        return 'bg-yellow-500';
+      case 'hard':
+        return 'bg-orange-500';
+      case 'flight':
+        return 'bg-red-500';
+      default:
+        return 'bg-gray-500';
+    }
+  };
+
   return (
     <div>
       {/* CONTROLS */}
@@ -127,6 +173,32 @@ export default function ExposureList({ initialEntries }: { initialEntries: Expos
         </button>
 
         <div className="flex flex-wrap gap-2 sm:gap-3 items-center">
+          {/* VIEW TOGGLE */}
+          <div className="flex items-center gap-1 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 p-0.5">
+            <button
+              onClick={() => setViewMode('expanded')}
+              className={`px-2 py-1 rounded text-xs font-medium transition-colors ${
+                viewMode === 'expanded'
+                  ? 'bg-rose-500/80 dark:bg-indigo-500/80 text-white'
+                  : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+              }`}
+              title="Expanded view"
+            >
+              Expanded
+            </button>
+            <button
+              onClick={() => setViewMode('collapsed')}
+              className={`px-2 py-1 rounded text-xs font-medium transition-colors ${
+                viewMode === 'collapsed'
+                  ? 'bg-rose-500/80 dark:bg-indigo-500/80 text-white'
+                  : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+              }`}
+              title="Collapsed view"
+            >
+              Collapsed
+            </button>
+          </div>
+
           {/* FILTER */}
           <div className="flex items-center gap-2">
             <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Filter:</label>
@@ -176,80 +248,128 @@ export default function ExposureList({ initialEntries }: { initialEntries: Expos
       ) : (
         <div className="space-y-4">
           {entries.map((entry) => (
-            <div
-              key={entry.id}
-              className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm"
-            >
-              <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-                {/* LEFT: MAIN INFO */}
-                <div className="flex-1">
-                  <div className="flex items-start gap-3 mb-2">
-                    <span className={`px-2 py-1 rounded text-xs font-medium ${getTypeColor(entry.type)}`}>
-                      {entry.type.charAt(0).toUpperCase() + entry.type.slice(1)}
-                    </span>
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                      {entry.title}
-                    </h3>
+            viewMode === 'collapsed' ? (
+              // COLLAPSED VIEW
+              <div
+                key={entry.id}
+                className="border border-gray-200 dark:border-gray-700 rounded-lg p-3 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm"
+              >
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-3 flex-1 min-w-0">
+                    {/* ICON WITH BADGE */}
+                    <div className="relative flex-shrink-0">
+                      <div className={`${getTypeBadgeColor(entry.type)} rounded-full p-2 text-white`}>
+                        {getTypeIcon(entry.type)}
+                      </div>
+                    </div>
+                    
+                    {/* TITLE AND DATE */}
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100 truncate">
+                        {entry.title}
+                      </h3>
+                      <p className="text-xs text-gray-600 dark:text-gray-400">
+                        {format(new Date(entry.date), 'MMM d, yyyy')}
+                      </p>
+                    </div>
                   </div>
-                  
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 mb-3">
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                      {format(new Date(entry.date), 'MMM d, yyyy')}
-                    </p>
-                    {entry.duration !== null && (
+
+                  {/* ACTIONS */}
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <button
+                      onClick={() => handleEdit(entry)}
+                      className="p-2 text-gray-600 dark:text-gray-400 hover:text-rose-600 dark:hover:text-indigo-400 hover:bg-rose-50 dark:hover:bg-indigo-900/20 rounded-md transition-colors"
+                      title="Edit"
+                    >
+                      <PencilIcon className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => handleDelete(entry.id)}
+                      className="p-2 text-gray-600 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-md transition-colors"
+                      title="Delete"
+                    >
+                      <TrashIcon className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              // EXPANDED VIEW
+              <div
+                key={entry.id}
+                className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm"
+              >
+                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+                  {/* LEFT: MAIN INFO */}
+                  <div className="flex-1">
+                    <div className="flex items-start gap-3 mb-2">
+                      <span className={`px-2 py-1 rounded text-xs font-medium ${getTypeColor(entry.type)}`}>
+                        {entry.type.charAt(0).toUpperCase() + entry.type.slice(1)}
+                      </span>
+                      <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                        {entry.title}
+                      </h3>
+                    </div>
+                    
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 mb-3">
                       <p className="text-sm text-gray-600 dark:text-gray-400">
-                        {entry.duration} min
+                        {format(new Date(entry.date), 'MMM d, yyyy')}
+                      </p>
+                      {entry.duration !== null && (
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                          {entry.duration} min
+                        </p>
+                      )}
+                    </div>
+
+                    {/* SUDS VALUES */}
+                    <div className="flex flex-wrap gap-4 mb-3">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-medium text-gray-500 dark:text-gray-400">Pre:</span>
+                        <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">{entry.sudsPre}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-medium text-gray-500 dark:text-gray-400">Peak:</span>
+                        <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">{entry.sudsPeak}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-medium text-gray-500 dark:text-gray-400">Post:</span>
+                        <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">{entry.sudsPost}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-medium text-gray-500 dark:text-gray-400">Avg:</span>
+                        <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">{getAverageSUDS(entry)}</span>
+                      </div>
+                    </div>
+
+                    {/* NOTES */}
+                    {entry.notes && (
+                      <p className="text-sm text-gray-700 dark:text-gray-300 mt-2">
+                        {entry.notes}
                       </p>
                     )}
                   </div>
 
-                  {/* SUDS VALUES */}
-                  <div className="flex flex-wrap gap-4 mb-3">
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-medium text-gray-500 dark:text-gray-400">Pre:</span>
-                      <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">{entry.sudsPre}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-medium text-gray-500 dark:text-gray-400">Peak:</span>
-                      <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">{entry.sudsPeak}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-medium text-gray-500 dark:text-gray-400">Post:</span>
-                      <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">{entry.sudsPost}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-medium text-gray-500 dark:text-gray-400">Avg:</span>
-                      <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">{getAverageSUDS(entry)}</span>
-                    </div>
+                  {/* RIGHT: ACTIONS */}
+                  <div className="flex items-start gap-2">
+                    <button
+                      onClick={() => handleEdit(entry)}
+                      className="p-2 text-gray-600 dark:text-gray-400 hover:text-rose-600 dark:hover:text-indigo-400 hover:bg-rose-50 dark:hover:bg-indigo-900/20 rounded-md transition-colors"
+                      title="Edit"
+                    >
+                      <PencilIcon className="w-5 h-5" />
+                    </button>
+                    <button
+                      onClick={() => handleDelete(entry.id)}
+                      className="p-2 text-gray-600 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-md transition-colors"
+                      title="Delete"
+                    >
+                      <TrashIcon className="w-5 h-5" />
+                    </button>
                   </div>
-
-                  {/* NOTES */}
-                  {entry.notes && (
-                    <p className="text-sm text-gray-700 dark:text-gray-300 mt-2">
-                      {entry.notes}
-                    </p>
-                  )}
-                </div>
-
-                {/* RIGHT: ACTIONS */}
-                <div className="flex items-start gap-2">
-                  <button
-                    onClick={() => handleEdit(entry)}
-                    className="p-2 text-gray-600 dark:text-gray-400 hover:text-rose-600 dark:hover:text-indigo-400 hover:bg-rose-50 dark:hover:bg-indigo-900/20 rounded-md transition-colors"
-                    title="Edit"
-                  >
-                    <PencilIcon className="w-5 h-5" />
-                  </button>
-                  <button
-                    onClick={() => handleDelete(entry.id)}
-                    className="p-2 text-gray-600 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-md transition-colors"
-                    title="Delete"
-                  >
-                    <TrashIcon className="w-5 h-5" />
-                  </button>
                 </div>
               </div>
-            </div>
+            )
           ))}
         </div>
       )}
