@@ -6,7 +6,7 @@ import { toast } from 'react-toastify';
 import ExposureEntryModal from './ExposureEntryModal';
 import { format } from 'date-fns';
 import { PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
-import { CloudDrizzle, CloudHail, CloudRain, Plane } from 'lucide-react';
+import { CloudDrizzle, CloudHail, CloudRain, Plane, Plus, Maximize2, Minimize2 } from 'lucide-react';
 
 type ExposureEntry = {
   id: string;
@@ -35,15 +35,16 @@ export default function ExposureList({ initialEntries }: { initialEntries: Expos
   const [editingEntry, setEditingEntry] = useState<ExposureEntry | null>(null);
   const router = useRouter();
 
-  // FETCH ENTRIES WITH FILTER AND SORT
+  // FETCH ENTRIES WITH FILTER
   const fetchEntries = async () => {
     try {
       const params = new URLSearchParams();
       if (filter !== 'all') {
         params.append('type', filter);
       }
-      params.append('sortBy', sortBy);
-      params.append('sortOrder', sortOrder);
+      // DEFAULT SORT BY DATE DESC (NEWEST FIRST)
+      params.append('sortBy', 'date');
+      params.append('sortOrder', 'desc');
 
       const response = await fetch(`/api/exposure-entries?${params.toString()}`);
       if (!response.ok) throw new Error('Failed to fetch entries');
@@ -72,7 +73,7 @@ export default function ExposureList({ initialEntries }: { initialEntries: Expos
 
   useEffect(() => {
     fetchEntries();
-  }, [filter, sortBy, sortOrder]);
+  }, [filter]);
 
   const handleCreate = () => {
     setEditingEntry(null);
@@ -164,48 +165,55 @@ export default function ExposureList({ initialEntries }: { initialEntries: Expos
   return (
     <div>
       {/* CONTROLS */}
-      <div className="mb-6 flex flex-row flex-wrap gap-3 items-center justify-between">
-        <button
-          onClick={handleCreate}
-          className="bg-rose-500/80 dark:bg-indigo-500/80 backdrop-blur-sm border border-rose-600/50 dark:border-indigo-600/50 rounded-lg px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium text-white dark:text-gray-200 hover:bg-rose-600/90 dark:hover:bg-indigo-600/90 focus:outline-none focus:ring-2 focus:ring-rose-500/50 dark:focus:ring-indigo-500/50 transition-all duration-200 whitespace-nowrap"
-        >
-          + New Entry
-        </button>
+      <div className="mb-6 flex flex-row gap-1.5 sm:gap-3 items-center justify-between overflow-x-auto">
+        {/* LEFT SIDE: NEW ENTRY AND VIEW TOGGLE */}
+        <div className="flex flex-row gap-1.5 sm:gap-3 items-center flex-shrink-0">
+          <button
+            onClick={handleCreate}
+            className="bg-rose-500/80 dark:bg-indigo-500/80 backdrop-blur-sm border border-rose-600/50 dark:border-indigo-600/50 rounded-lg px-2 sm:px-4 py-0 h-[28px] sm:h-[36px] text-xs sm:text-sm font-medium text-white dark:text-gray-200 hover:bg-rose-600/90 dark:hover:bg-indigo-600/90 focus:outline-none focus:ring-2 focus:ring-rose-500/50 dark:focus:ring-indigo-500/50 transition-all duration-200 whitespace-nowrap flex-shrink-0 flex items-center justify-center gap-1.5"
+          >
+            <Plus className="w-4 h-4" />
+            <span className="hidden sm:inline">New Entry</span>
+          </button>
 
-        <div className="flex flex-wrap gap-2 sm:gap-3 items-center">
           {/* VIEW TOGGLE */}
-          <div className="flex items-center gap-1 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 p-0.5">
+          <div className="flex items-center gap-0.5 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 p-0.5 flex-shrink-0 h-[28px] sm:h-[36px]">
             <button
               onClick={() => setViewMode('expanded')}
-              className={`px-2 py-1 rounded text-xs font-medium transition-colors ${
+              className={`px-1.5 sm:px-2 py-0 h-full rounded text-xs font-medium transition-colors flex items-center justify-center ${
                 viewMode === 'expanded'
                   ? 'bg-rose-500/80 dark:bg-indigo-500/80 text-white'
                   : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
               }`}
               title="Expanded view"
             >
-              Expanded
+              <Maximize2 className="w-3.5 h-3.5 sm:hidden" />
+              <span className="hidden sm:inline">Expanded</span>
             </button>
             <button
               onClick={() => setViewMode('collapsed')}
-              className={`px-2 py-1 rounded text-xs font-medium transition-colors ${
+              className={`px-1.5 sm:px-2 py-0 h-full rounded text-xs font-medium transition-colors flex items-center justify-center ${
                 viewMode === 'collapsed'
                   ? 'bg-rose-500/80 dark:bg-indigo-500/80 text-white'
                   : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
               }`}
               title="Collapsed view"
             >
-              Collapsed
+              <Minimize2 className="w-3.5 h-3.5 sm:hidden" />
+              <span className="hidden sm:inline">Collapsed</span>
             </button>
           </div>
+        </div>
 
+        {/* RIGHT SIDE: FILTER AND SORT */}
+        <div className="flex flex-row gap-1.5 sm:gap-3 items-center flex-shrink-0">
           {/* FILTER */}
-          <div className="flex items-center gap-2">
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Filter:</label>
+          <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
+            <label className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 hidden sm:inline">Filter:</label>
             <select
               value={filter}
               onChange={(e) => setFilter(e.target.value as FilterOption)}
-              className="px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm"
+              className="px-2 sm:px-3 py-1 sm:py-1.5 h-[28px] sm:h-[36px] border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-xs sm:text-sm"
             >
               <option value="all">All</option>
               <option value="easy">Easy</option>
@@ -213,29 +221,6 @@ export default function ExposureList({ initialEntries }: { initialEntries: Expos
               <option value="hard">Hard</option>
               <option value="flight">Flight</option>
             </select>
-          </div>
-
-          {/* SORT */}
-          <div className="flex items-center gap-2">
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Sort:</label>
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as SortOption)}
-              className="px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm"
-            >
-              <option value="date">Date</option>
-              <option value="sudsPre">SUDS Pre</option>
-              <option value="sudsPeak">SUDS Peak</option>
-              <option value="sudsPost">SUDS Post</option>
-              <option value="sudsAverage">SUDS Average</option>
-            </select>
-            <button
-              onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
-              className="px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm hover:bg-gray-50 dark:hover:bg-gray-700"
-              title={sortOrder === 'asc' ? 'Ascending' : 'Descending'}
-            >
-              {sortOrder === 'asc' ? '↑' : '↓'}
-            </button>
           </div>
         </div>
       </div>
