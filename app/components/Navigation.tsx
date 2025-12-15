@@ -99,7 +99,7 @@ export default function Navigation({ user }: NavigationProps) {
           </div>
           
           {/* CENTER: NAVIGATION BUTTONS */}
-          <div className="hidden sm:flex sm:items-center sm:justify-center sm:space-x-3">
+          <div className="hidden sm:flex sm:items-center sm:justify-center sm:space-x-3 relative z-10">
             <Link 
               href="/" 
               className={`text-sm sm:text-base px-3 py-2 rounded-md transition-colors ${
@@ -161,14 +161,14 @@ export default function Navigation({ user }: NavigationProps) {
               Categories
             </Link>
             <Link
-              href="/how-to-use"
-              className={`text-sm sm:text-base px-3 py-2 rounded-md transition-colors ${
-                isActive('/how-to-use')
+              href="/erc"
+              className={`relative z-10 text-sm sm:text-base px-3 py-2 rounded-md transition-colors ${
+                isActive('/erc')
                   ? 'text-rose-600 dark:text-indigo-600 bg-white/50 dark:bg-gray-800/50' 
                   : 'text-stone-600 hover:text-rose-500 hover:bg-rose-500/10 dark:text-gray-300 dark:hover:text-indigo-500 dark:hover:bg-indigo-500/10'
               }`}
             >
-              Help
+              ERC
             </Link>
             <DarkModeToggle />
           </div>
@@ -317,15 +317,15 @@ export default function Navigation({ user }: NavigationProps) {
                 Categories
               </Link>
               <Link
-                href="/how-to-use"
+                href="/erc"
                 className={`block px-3 py-2.5 rounded-md text-base font-medium transition-colors ${
-                  isActive('/how-to-use')
+                  isActive('/erc')
                     ? 'text-rose-600 dark:text-indigo-600 bg-rose-100/80 dark:bg-indigo-400/20' 
                     : 'text-stone-600 hover:text-rose-500 hover:bg-rose-500/10 dark:text-gray-300 dark:hover:text-indigo-500 dark:hover:bg-indigo-500/10'
                 }`}
                 onClick={closeMenu}
               >
-                Help
+                ERC
               </Link>
             </div>
             
