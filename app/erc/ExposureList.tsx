@@ -162,6 +162,28 @@ export default function ExposureList({ initialEntries }: { initialEntries: Expos
     }
   };
 
+  // HAPPINESS COLOR SCHEME FROM ACTIVITY HEATMAP (1-10 SCALE)
+  const happinessColors: Record<string, string> = {
+    '1': '#cc3258',  // Deep red
+    '2': '#c12e6b',  // Deep rose
+    '3': '#b72b7d',  // Deep magenta
+    '4': '#ac2790',  // Deep purple
+    '5': '#a123a2',  // Deep violet
+    '6': '#9720b5',  // Violet
+    '7': '#8c1cc7',  // Light violet
+    '8': '#8118da',  // Light purple
+    '9': '#7715ec',  // Very light purple
+    '10': '#6c11ff'  // Lightest purple
+  };
+
+  // GET COLOR FOR SUDS VALUE (1-10)
+  const getSUDSColor = (suds: number) => {
+    if (suds == null || isNaN(suds) || suds < 1 || suds > 10) {
+      return happinessColors['1'];
+    }
+    return happinessColors[suds.toString()] || happinessColors['1'];
+  };
+
   return (
     <div>
       {/* CONTROLS */}
@@ -246,6 +268,25 @@ export default function ExposureList({ initialEntries }: { initialEntries: Expos
                       <div className={`${getTypeBadgeColor(entry.type)} rounded-full p-2 text-white`}>
                         {getTypeIcon(entry.type)}
                       </div>
+                    </div>
+
+                    {/* SUDS CIRCLES - STACKED VERTICALLY */}
+                    <div className="flex flex-col gap-1 flex-shrink-0">
+                      <div
+                        className="w-3 h-3 rounded-full"
+                        style={{ backgroundColor: getSUDSColor(entry.sudsPre) }}
+                        title={`Pre: ${entry.sudsPre}`}
+                      />
+                      <div
+                        className="w-3 h-3 rounded-full"
+                        style={{ backgroundColor: getSUDSColor(entry.sudsPeak) }}
+                        title={`Peak: ${entry.sudsPeak}`}
+                      />
+                      <div
+                        className="w-3 h-3 rounded-full"
+                        style={{ backgroundColor: getSUDSColor(entry.sudsPost) }}
+                        title={`Post: ${entry.sudsPost}`}
+                      />
                     </div>
                     
                     {/* TITLE AND DATE */}
