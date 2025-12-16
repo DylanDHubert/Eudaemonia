@@ -3,36 +3,29 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'react-toastify';
-import ExposureEntryModal from './ExposureEntryModal';
+import QuickEntryModal from './QuickEntryModal';
 import { format } from 'date-fns';
 import { PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
-import { CloudDrizzle, CloudHail, CloudRain, Plane, Plus, Maximize2, Minimize2 } from 'lucide-react';
+import { Moon, Heart, Smile, Zap, Plus, Maximize2, Minimize2 } from 'lucide-react';
 
-type ExposureEntry = {
+type QuickEntry = {
   id: string;
-  type: 'easy' | 'medium' | 'hard' | 'flight';
-  title: string;
+  category: 'sleep' | 'anxiety' | 'contentment' | 'energy';
+  rating: number;
   notes: string | null;
-  sudsPre: number;
-  sudsPeak: number;
-  sudsPost: number;
-  duration: number | null;
   date: string;
   createdAt: string;
   updatedAt: string;
 };
 
-type SortOption = 'date' | 'sudsPre' | 'sudsPeak' | 'sudsPost' | 'sudsAverage';
-type FilterOption = 'all' | 'easy' | 'medium' | 'hard' | 'flight';
+type FilterOption = 'all' | 'sleep' | 'anxiety' | 'contentment' | 'energy';
 
-export default function ExposureList({ initialEntries }: { initialEntries: ExposureEntry[] }) {
-  const [entries, setEntries] = useState<ExposureEntry[]>(initialEntries);
+export default function QuickEntryList({ initialEntries }: { initialEntries: QuickEntry[] }) {
+  const [entries, setEntries] = useState<QuickEntry[]>(initialEntries);
   const [filter, setFilter] = useState<FilterOption>('all');
-  const [sortBy, setSortBy] = useState<SortOption>('date');
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [viewMode, setViewMode] = useState<'expanded' | 'collapsed'>('expanded');
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingEntry, setEditingEntry] = useState<ExposureEntry | null>(null);
+  const [editingEntry, setEditingEntry] = useState<QuickEntry | null>(null);
   const router = useRouter();
 
   // SET DEFAULT VIEW MODE BASED ON SCREEN SIZE
@@ -55,31 +48,16 @@ export default function ExposureList({ initialEntries }: { initialEntries: Expos
     try {
       const params = new URLSearchParams();
       if (filter !== 'all') {
-        params.append('type', filter);
+        params.append('category', filter);
       }
-      // DEFAULT SORT BY DATE DESC (NEWEST FIRST)
       params.append('sortBy', 'date');
       params.append('sortOrder', 'desc');
 
-      const response = await fetch(`/api/exposure-entries?${params.toString()}`);
+      const response = await fetch(`/api/quick-entries?${params.toString()}`);
       if (!response.ok) throw new Error('Failed to fetch entries');
 
       const data = await response.json();
-      // FORMAT ENTRIES FROM SNAKE_CASE TO CAMELCASE
-      const formattedEntries = (data.entries || []).map((entry: any) => ({
-        id: entry.id,
-        type: entry.type,
-        title: entry.title,
-        notes: entry.notes,
-        sudsPre: entry.suds_pre,
-        sudsPeak: entry.suds_peak,
-        sudsPost: entry.suds_post,
-        duration: entry.duration,
-        date: entry.date,
-        createdAt: entry.created_at,
-        updatedAt: entry.updated_at,
-      }));
-      setEntries(formattedEntries);
+      setEntries(data.entries || []);
     } catch (error) {
       console.error('Error fetching entries:', error);
       toast.error('Failed to load entries');
@@ -95,7 +73,7 @@ export default function ExposureList({ initialEntries }: { initialEntries: Expos
     setIsModalOpen(true);
   };
 
-  const handleEdit = (entry: ExposureEntry) => {
+  const handleEdit = (entry: QuickEntry) => {
     setEditingEntry(entry);
     setIsModalOpen(true);
   };
@@ -106,7 +84,7 @@ export default function ExposureList({ initialEntries }: { initialEntries: Expos
     }
 
     try {
-      const response = await fetch(`/api/exposure-entries/${id}`, {
+      const response = await fetch(`/api/quick-entries/${id}`, {
         method: 'DELETE',
       });
 
@@ -128,50 +106,46 @@ export default function ExposureList({ initialEntries }: { initialEntries: Expos
     fetchEntries();
   };
 
-  const getTypeColor = (type: string) => {
-    switch (type) {
-      case 'easy':
-        return 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200';
-      case 'medium':
-        return 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-200';
-      case 'hard':
-        return 'bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-200';
-      case 'flight':
-        return 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-200';
-      default:
-        return 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200';
-    }
-  };
-
-  const getAverageSUDS = (entry: ExposureEntry) => {
-    return ((entry.sudsPre + entry.sudsPeak + entry.sudsPost) / 3).toFixed(1);
-  };
-
-  const getTypeIcon = (type: string) => {
-    switch (type) {
-      case 'easy':
-        return <CloudDrizzle className="w-4 h-4" />;
-      case 'medium':
-        return <CloudHail className="w-4 h-4" />;
-      case 'hard':
-        return <CloudRain className="w-4 h-4" />;
-      case 'flight':
-        return <Plane className="w-4 h-4" />;
+  const getCategoryIcon = (category: string) => {
+    switch (category) {
+      case 'sleep':
+        return <Moon className="w-4 h-4" />;
+      case 'anxiety':
+        return <Heart className="w-4 h-4" />;
+      case 'contentment':
+        return <Smile className="w-4 h-4" />;
+      case 'energy':
+        return <Zap className="w-4 h-4" />;
       default:
         return null;
     }
   };
 
-  const getTypeBadgeColor = (type: string) => {
-    switch (type) {
-      case 'easy':
+  const getCategoryColor = (category: string) => {
+    switch (category) {
+      case 'sleep':
+        return 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200';
+      case 'anxiety':
+        return 'bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-200';
+      case 'contentment':
+        return 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200';
+      case 'energy':
+        return 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-200';
+      default:
+        return 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200';
+    }
+  };
+
+  const getCategoryBadgeColor = (category: string) => {
+    switch (category) {
+      case 'sleep':
+        return 'bg-blue-500';
+      case 'anxiety':
+        return 'bg-purple-500';
+      case 'contentment':
         return 'bg-green-500';
-      case 'medium':
+      case 'energy':
         return 'bg-yellow-500';
-      case 'hard':
-        return 'bg-orange-500';
-      case 'flight':
-        return 'bg-red-500';
       default:
         return 'bg-gray-500';
     }
@@ -191,18 +165,18 @@ export default function ExposureList({ initialEntries }: { initialEntries: Expos
     '10': '#6c11ff'  // Lightest purple
   };
 
-  // GET COLOR FOR SUDS VALUE (1-10)
-  const getSUDSColor = (suds: number) => {
-    if (suds == null || isNaN(suds) || suds < 1 || suds > 10) {
+  // GET COLOR FOR RATING VALUE (1-10)
+  const getRatingColor = (rating: number) => {
+    if (rating == null || isNaN(rating) || rating < 1 || rating > 10) {
       return happinessColors['1'];
     }
-    return happinessColors[suds.toString()] || happinessColors['1'];
+    return happinessColors[rating.toString()] || happinessColors['1'];
   };
 
   return (
     <div>
       {/* CONTROLS */}
-      <div className="mb-6 flex flex-row gap-1.5 sm:gap-3 items-center justify-between overflow-x-auto">
+      <div className="mb-6 flex flex-row gap-1.5 sm:gap-3 items-center overflow-x-auto">
         {/* LEFT SIDE: NEW ENTRY AND VIEW TOGGLE */}
         <div className="flex flex-row gap-1.5 sm:gap-3 items-center flex-shrink-0">
           <button
@@ -242,8 +216,8 @@ export default function ExposureList({ initialEntries }: { initialEntries: Expos
           </div>
         </div>
 
-        {/* RIGHT SIDE: FILTER AND SORT */}
-        <div className="flex flex-row gap-1.5 sm:gap-3 items-center flex-shrink-0">
+        {/* RIGHT SIDE: FILTER */}
+        <div className="flex flex-row gap-1.5 sm:gap-3 items-center flex-shrink-0 ml-auto">
           {/* FILTER */}
           <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
             <label className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 hidden sm:inline">Filter:</label>
@@ -253,10 +227,10 @@ export default function ExposureList({ initialEntries }: { initialEntries: Expos
               className="px-2 sm:px-3 py-1 sm:py-1.5 h-[28px] sm:h-[36px] border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-xs sm:text-sm"
             >
               <option value="all">All</option>
-              <option value="easy">Easy</option>
-              <option value="medium">Medium</option>
-              <option value="hard">Hard</option>
-              <option value="flight">Flight</option>
+              <option value="sleep">Sleep</option>
+              <option value="anxiety">Anxiety</option>
+              <option value="contentment">Contentment</option>
+              <option value="energy">Energy</option>
             </select>
           </div>
         </div>
@@ -265,7 +239,7 @@ export default function ExposureList({ initialEntries }: { initialEntries: Expos
       {/* ENTRIES LIST */}
       {entries.length === 0 ? (
         <div className="text-center py-8">
-          <p className="text-description">No exposure entries yet. Create your first entry to get started.</p>
+          <p className="text-description">No quick entries yet. Create your first entry to get started.</p>
         </div>
       ) : (
         <div className="space-y-4">
@@ -280,34 +254,24 @@ export default function ExposureList({ initialEntries }: { initialEntries: Expos
                   <div className="flex items-center gap-3 flex-1 min-w-0">
                     {/* ICON WITH BADGE */}
                     <div className="relative flex-shrink-0">
-                      <div className={`${getTypeBadgeColor(entry.type)} rounded-full p-2 text-white`}>
-                        {getTypeIcon(entry.type)}
+                      <div className={`${getCategoryBadgeColor(entry.category)} rounded-full p-2 text-white`}>
+                        {getCategoryIcon(entry.category)}
                       </div>
                     </div>
 
-                    {/* SUDS CIRCLES - STACKED VERTICALLY */}
-                    <div className="flex flex-col gap-1 flex-shrink-0">
+                    {/* RATING CIRCLE */}
+                    <div className="flex-shrink-0">
                       <div
-                        className="w-3 h-3 rounded-full"
-                        style={{ backgroundColor: getSUDSColor(entry.sudsPre) }}
-                        title={`Pre: ${entry.sudsPre}`}
-                      />
-                      <div
-                        className="w-3 h-3 rounded-full"
-                        style={{ backgroundColor: getSUDSColor(entry.sudsPeak) }}
-                        title={`Peak: ${entry.sudsPeak}`}
-                      />
-                      <div
-                        className="w-3 h-3 rounded-full"
-                        style={{ backgroundColor: getSUDSColor(entry.sudsPost) }}
-                        title={`Post: ${entry.sudsPost}`}
+                        className="w-6 h-6 rounded-full border-2 border-gray-300 dark:border-gray-600"
+                        style={{ backgroundColor: getRatingColor(entry.rating) }}
+                        title={`Rating: ${entry.rating}`}
                       />
                     </div>
                     
-                    {/* TITLE AND DATE */}
+                    {/* CATEGORY AND DATE */}
                     <div className="flex-1 min-w-0">
-                      <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100 truncate">
-                        {entry.title}
+                      <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100 truncate capitalize">
+                        {entry.category}
                       </h3>
                       <p className="text-xs text-gray-600 dark:text-gray-400">
                         {format(new Date(entry.date), 'MMM d, yyyy')}
@@ -344,43 +308,25 @@ export default function ExposureList({ initialEntries }: { initialEntries: Expos
                   {/* LEFT: MAIN INFO */}
                   <div className="flex-1">
                     <div className="flex items-start gap-3 mb-2">
-                      <span className={`px-2 py-1 rounded text-xs font-medium ${getTypeColor(entry.type)}`}>
-                        {entry.type.charAt(0).toUpperCase() + entry.type.slice(1)}
+                      <span className={`px-2 py-1 rounded text-xs font-medium ${getCategoryColor(entry.category)}`}>
+                        {entry.category.charAt(0).toUpperCase() + entry.category.slice(1)}
                       </span>
-                      <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                        {entry.title}
-                      </h3>
+                      <div className="flex items-center gap-2">
+                        <div
+                          className="w-8 h-8 rounded-full border-2 border-gray-300 dark:border-gray-600 flex items-center justify-center text-white font-semibold text-sm"
+                          style={{ backgroundColor: getRatingColor(entry.rating) }}
+                          title={`Rating: ${entry.rating}`}
+                        >
+                          {entry.rating}
+                        </div>
+                        <span className="text-sm text-gray-600 dark:text-gray-400">/ 10</span>
+                      </div>
                     </div>
                     
                     <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 mb-3">
                       <p className="text-sm text-gray-600 dark:text-gray-400">
                         {format(new Date(entry.date), 'MMM d, yyyy')}
                       </p>
-                      {entry.duration !== null && (
-                        <p className="text-sm text-gray-600 dark:text-gray-400">
-                          {entry.duration} min
-                        </p>
-                      )}
-                    </div>
-
-                    {/* SUDS VALUES */}
-                    <div className="flex flex-wrap gap-4 mb-3">
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs font-medium text-gray-500 dark:text-gray-400">Pre:</span>
-                        <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">{entry.sudsPre}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs font-medium text-gray-500 dark:text-gray-400">Peak:</span>
-                        <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">{entry.sudsPeak}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs font-medium text-gray-500 dark:text-gray-400">Post:</span>
-                        <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">{entry.sudsPost}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs font-medium text-gray-500 dark:text-gray-400">Avg:</span>
-                        <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">{getAverageSUDS(entry)}</span>
-                      </div>
                     </div>
 
                     {/* NOTES */}
@@ -416,7 +362,7 @@ export default function ExposureList({ initialEntries }: { initialEntries: Expos
       )}
 
       {/* MODAL */}
-      <ExposureEntryModal
+      <QuickEntryModal
         isOpen={isModalOpen}
         onClose={handleModalClose}
         entry={editingEntry}

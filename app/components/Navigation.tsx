@@ -170,6 +170,16 @@ export default function Navigation({ user }: NavigationProps) {
             >
               ERC
             </Link>
+            <Link
+              href="/quick-entry"
+              className={`text-sm sm:text-base px-3 py-2 rounded-md transition-colors ${
+                isActive('/quick-entry')
+                  ? 'text-rose-600 dark:text-indigo-600 bg-white/50 dark:bg-gray-800/50' 
+                  : 'text-stone-600 hover:text-rose-500 hover:bg-rose-500/10 dark:text-gray-300 dark:hover:text-indigo-500 dark:hover:bg-indigo-500/10'
+              }`}
+            >
+              Quick Entry
+            </Link>
             <DarkModeToggle />
           </div>
           
@@ -326,6 +336,17 @@ export default function Navigation({ user }: NavigationProps) {
                 onClick={closeMenu}
               >
                 ERC
+              </Link>
+              <Link
+                href="/quick-entry"
+                className={`block px-3 py-2.5 rounded-md text-base font-medium transition-colors ${
+                  isActive('/quick-entry')
+                    ? 'text-rose-600 dark:text-indigo-600 bg-rose-100/80 dark:bg-indigo-400/20' 
+                    : 'text-stone-600 hover:text-rose-500 hover:bg-rose-500/10 dark:text-gray-300 dark:hover:text-indigo-500 dark:hover:bg-indigo-500/10'
+                }`}
+                onClick={closeMenu}
+              >
+                Quick Entry
               </Link>
             </div>
             
