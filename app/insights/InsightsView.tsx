@@ -46,9 +46,7 @@ type DailyEntry = {
   sleepQuality: number;
   exercise: boolean;
   exerciseTime: number | null;
-  alcohol: boolean;
   alcoholUnits: number | null;
-  cannabis: boolean;
   cannabisAmount: number | null;
   meditation: boolean;
   meditationTime: number | null;
@@ -96,9 +94,7 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
     exerciseTime: 'Exercise Time',
     meditation: 'Meditation',
     meditationTime: 'Meditation Time',
-    alcohol: 'Alcohol Consumption',
     alcoholUnits: 'Alcohol Units',
-    cannabis: 'Cannabis',
     cannabisAmount: 'Cannabis Amount',
     socialTime: 'Social Time',
     workHours: 'Work Hours',
@@ -115,7 +111,7 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
   );
   
   // List of boolean factors (all others are numeric)
-  const booleanFactors = useMemo(() => ['exercise', 'meditation', 'alcohol', 'cannabis'], []);
+  const booleanFactors = useMemo(() => ['exercise', 'meditation'], []);
   
   // List of numeric factors
   const numericFactors = useMemo(() => {
@@ -133,12 +129,15 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
       'stressLevel'
     ];
 
-    // Add custom numeric and scale categories
+    // COLLECT ALL UNIQUE CUSTOM NUMERIC AND SCALE CATEGORIES FROM ALL ENTRIES
     if (entries.length > 0) {
-      const firstEntry = entries[0];
-      const customNumericCategories = firstEntry.customCategories
-        .filter(cat => cat.type === 'numeric' || cat.type === 'scale')
-        .map(cat => cat.name);
+      const customCategorySet = new Set<string>();
+      entries.forEach(entry => {
+        entry.customCategories
+          .filter(cat => cat.type === 'numeric' || cat.type === 'scale')
+          .forEach(cat => customCategorySet.add(cat.name));
+      });
+      const customNumericCategories = Array.from(customCategorySet);
       return [...baseFactors, ...customNumericCategories];
     }
 
@@ -147,9 +146,14 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
   
   // Helper function to get display name from internal name
   const getDisplayName = useCallback((internalName: string): string => {
-    // Check if it's a custom category first
-    if (entries.length > 0 && entries[0].customCategories.some(cat => cat.name === internalName)) {
-      return internalName;
+    // CHECK IF IT'S A CUSTOM CATEGORY BY SEARCHING ALL ENTRIES
+    if (entries.length > 0) {
+      const isCustomCategory = entries.some(entry => 
+        entry.customCategories.some(cat => cat.name === internalName)
+      );
+      if (isCustomCategory) {
+        return internalName;
+      }
     }
     return factorNameMap[internalName] || internalName;
   }, [entries, factorNameMap]);
@@ -166,10 +170,20 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
       return true;
     }
     
+    // CHECK IF IT'S A CUSTOM BOOLEAN CATEGORY
+    if (entries.length > 0) {
+      const isCustomBoolean = entries.some(entry =>
+        entry.customCategories.some(cat => cat.name === factorName && cat.type === 'boolean')
+      );
+      if (isCustomBoolean) {
+        return true;
+      }
+    }
+    
     // Then check if it's a display name that maps to a boolean factor
     const internalName = getInternalName(factorName);
     return booleanFactors.includes(internalName);
-  }, [booleanFactors, getInternalName]);
+  }, [booleanFactors, getInternalName, entries]);
   
   // Prepare time series data for the happiness trend chart
   const prepareTimeSeriesData = useCallback(() => {
@@ -260,17 +274,17 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
             case 'meditationTime':
               return entry.meditation ? entry.meditationTime || 0 : 0;
             case 'alcoholUnits':
-              return entry.alcohol ? entry.alcoholUnits || 0 : 0;
+              return entry.alcoholUnits ?? 0;
             case 'cannabisAmount':
-              return entry.cannabis ? entry.cannabisAmount || 0 : 0;
+              return entry.cannabisAmount ?? 0;
             case 'socialTime':
-              return entry.socialTime || 0;
+              return entry.socialTime ?? 0;
             case 'workHours':
-              return entry.workHours || 0;
+              return entry.workHours ?? 0;
             case 'meals':
-              return entry.meals || 0;
+              return entry.meals ?? 0;
             case 'foodQuality':
-              return entry.foodQuality || 0;
+              return entry.foodQuality ?? 0;
             case 'stressLevel':
               return entry.stressLevel;
             default:
@@ -294,10 +308,6 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
               return entry.exercise;
             case 'meditation':
               return entry.meditation;
-            case 'alcohol':
-              return entry.alcohol;
-            case 'cannabis':
-              return entry.cannabis;
             default:
               return false;
           }
@@ -307,34 +317,68 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
       // Calculate correlations for numeric factors
       numericFactors.forEach(factor => {
         const values = getNumericValues(factor);
-        const correlation = calculatePearsonCorrelation(values, entries.map(e => e.happinessRating));
-        if (!isNaN(correlation)) {
-          correlations.push({
-            factor,
-            correlation,
-            description: getCorrelationDescription(factor, correlation)
-          });
+        // FILTER OUT ENTRIES WHERE THE FACTOR HAS NO VARIANCE (ALL ZEROS OR NULLS)
+        const validIndices: number[] = [];
+        const validValues: number[] = [];
+        const validHappiness: number[] = [];
+        
+        values.forEach((val, idx) => {
+          // INCLUDE ENTRY IF VALUE IS A VALID NUMBER (INCLUDING 0)
+          // FOR CUSTOM CATEGORIES, ALWAYS INCLUDE (THEY SHOULD ALWAYS HAVE VALUES)
+          // FOR BUILT-IN FACTORS, INCLUDE ALL ENTRIES (0 IS A VALID VALUE)
+          const isCustomCategory = entries[idx].customCategories.some(cat => cat.name === factor);
+          
+          // CHECK IF VALUE IS VALID (NOT NULL, NOT UNDEFINED, NOT NaN)
+          // NOTE: 0 IS A VALID VALUE AND SHOULD BE INCLUDED
+          const isValidValue = val !== null && val !== undefined && !isNaN(val);
+          
+          if (isValidValue) {
+            validIndices.push(idx);
+            validValues.push(val);
+            validHappiness.push(entries[idx].happinessRating);
+          }
+        });
+        
+        // ONLY CALCULATE CORRELATION IF WE HAVE ENOUGH VALID DATA POINTS
+        if (validValues.length >= minimumEntries) {
+          // CHECK FOR VARIANCE - IF ALL VALUES ARE THE SAME, CORRELATION IS MEANINGLESS
+          const uniqueValues = new Set(validValues);
+          if (uniqueValues.size > 1) {
+            const correlation = calculatePearsonCorrelation(validValues, validHappiness);
+            if (!isNaN(correlation) && isFinite(correlation)) {
+              correlations.push({
+                factor,
+                correlation,
+                description: getCorrelationDescription(factor, correlation)
+              });
+            }
+          }
         }
       });
 
       // Calculate correlations for boolean factors
       const customBooleanFactors = [...booleanFactors];
       
-      // Add custom boolean categories
+      // COLLECT ALL UNIQUE CUSTOM BOOLEAN CATEGORIES FROM ALL ENTRIES
       if (entries.length > 0) {
-        const firstEntry = entries[0];
-        firstEntry.customCategories.forEach(cat => {
-          if (cat.type === 'boolean') {
-            customBooleanFactors.push(cat.name);
-          }
+        const customBooleanSet = new Set<string>();
+        entries.forEach(entry => {
+          entry.customCategories
+            .filter(cat => cat.type === 'boolean')
+            .forEach(cat => customBooleanSet.add(cat.name));
         });
+        customBooleanSet.forEach(catName => customBooleanFactors.push(catName));
       }
       
       customBooleanFactors.forEach(factor => {
         let values: boolean[];
         
-        // Check if this is a custom boolean category
-        if (entries.length > 0 && entries[0].customCategories.some(cat => cat.name === factor && cat.type === 'boolean')) {
+        // CHECK IF THIS IS A CUSTOM BOOLEAN CATEGORY BY SEARCHING ALL ENTRIES
+        const isCustomBoolean = entries.some(entry => 
+          entry.customCategories.some(cat => cat.name === factor && cat.type === 'boolean')
+        );
+        
+        if (isCustomBoolean) {
           values = entries.map(entry => {
             const customCat = entry.customCategories.find(cat => cat.name === factor);
             return customCat ? customCat.value === 1 : false;
@@ -343,13 +387,32 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
           values = getBooleanValues(factor);
         }
         
-        const correlation = calculatePointBiserialCorrelation(values, entries.map(e => e.happinessRating));
-        if (!isNaN(correlation)) {
-          correlations.push({
-            factor,
-            correlation,
-            description: getCorrelationDescription(factor, correlation)
-          });
+        // FILTER TO ONLY ENTRIES WHERE THE FACTOR IS PRESENT
+        const validIndices: number[] = [];
+        const validValues: boolean[] = [];
+        const validHappiness: number[] = [];
+        
+        values.forEach((val, idx) => {
+          // FOR CUSTOM BOOLEAN CATEGORIES, INCLUDE ALL ENTRIES (MISSING = FALSE)
+          // FOR BUILT-IN BOOLEAN FACTORS, INCLUDE ALL ENTRIES
+          validIndices.push(idx);
+          validValues.push(val);
+          validHappiness.push(entries[idx].happinessRating);
+        });
+        
+        // CHECK THAT WE HAVE BOTH TRUE AND FALSE VALUES FOR MEANINGFUL CORRELATION
+        const hasTrue = validValues.some(v => v === true);
+        const hasFalse = validValues.some(v => v === false);
+        
+        if (validValues.length >= minimumEntries && hasTrue && hasFalse) {
+          const correlation = calculatePointBiserialCorrelation(validValues, validHappiness);
+          if (!isNaN(correlation) && isFinite(correlation)) {
+            correlations.push({
+              factor,
+              correlation,
+              description: getCorrelationDescription(factor, correlation)
+            });
+          }
         }
       });
 
@@ -389,11 +452,15 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
         
         // Get the value based on factor type
         let value: number;
-        if (booleanFactors.includes(internalName)) {
-          value = entry[internalName as keyof DailyEntry] ? 1 : 0;
-        } else if (entries[0].customCategories.some(cat => cat.name === selectedFactor)) {
+        // CHECK FOR CUSTOM CATEGORY FIRST - SEARCH ALL ENTRIES TO FIND IF IT'S A CUSTOM CATEGORY
+        const isCustomCategory = entries.some(e => 
+          e.customCategories.some(cat => cat.name === selectedFactor)
+        );
+        if (isCustomCategory) {
           const customCat = entry.customCategories.find(cat => cat.name === selectedFactor);
           value = customCat ? customCat.value : 0;
+        } else if (booleanFactors.includes(internalName)) {
+          value = entry[internalName as keyof DailyEntry] ? 1 : 0;
         } else {
           const rawValue = entry[internalName as keyof DailyEntry];
           value = typeof rawValue === 'number' ? rawValue : 
@@ -442,7 +509,7 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
       setFactorTimeSeriesData(factorTimeSeriesData);
       setFactorCounts(newFactorCounts);
       
-      // Step 4: Handle boolean factors (exercise, meditation, alcohol, cannabis)
+      // Step 4: Handle boolean factors (exercise, meditation)
       if (booleanFactors.includes(internalName)) {
         // For boolean factors, create a bar chart showing happiness averages for true/false values
         const validEntriesWithKey = entries.filter(e => internalName in e && e[internalName as keyof DailyEntry] !== undefined);
@@ -470,6 +537,11 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
       else if (entries.length > 0 && entries.some(e => 
         e.customCategories && Array.isArray(e.customCategories) && e.customCategories.some(cat => cat.name === selectedFactor)
       )) {
+        // DETERMINE IF IT'S A BOOLEAN OR NUMERIC CUSTOM CATEGORY
+        const firstEntryWithCategory = entries.find(e => 
+          e.customCategories.some(cat => cat.name === selectedFactor)
+        );
+        const categoryType = firstEntryWithCategory?.customCategories.find(cat => cat.name === selectedFactor)?.type;
         // Get entries that have this custom category
         const validEntries = entries.filter(e => 
           e.customCategories && Array.isArray(e.customCategories) && e.customCategories.some(cat => cat.name === selectedFactor)
@@ -792,25 +864,8 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
   
   // Get correlation description
   const getCorrelationDescription = (factor: string, correlation: number) => {
-    const factorNames: { [key: string]: string } = {
-      sleepHours: 'Sleep Hours',
-      sleepQuality: 'Sleep Quality',
-      exercise: 'Exercise',
-      exerciseTime: 'Exercise Time',
-      meditation: 'Meditation',
-      meditationTime: 'Meditation Time',
-      alcohol: 'Alcohol Consumption',
-      alcoholUnits: 'Alcohol Units',
-      cannabis: 'Cannabis',
-      cannabisAmount: 'Cannabis Amount',
-      socialTime: 'Social Time',
-      workHours: 'Work Hours',
-      meals: 'Number of Meals',
-      foodQuality: 'Food Quality',
-      stressLevel: 'Stress Level'
-    };
-
-    const factorName = factorNames[factor] || factor;
+    // USE THE DISPLAY NAME FROM FACTOR NAME MAP OR CUSTOM CATEGORY NAME
+    const factorName = getDisplayName(factor);
     const strength = Math.abs(correlation);
     const direction = correlation > 0 ? 'positive' : 'negative';
 

@@ -129,11 +129,11 @@ export default function EntryForm({ userId }: EntryFormProps) {
         case 'meditation':
           setFormData(prev => ({ ...prev, meditationTime: '' }));
           break;
-        case 'alcohol':
-          setFormData(prev => ({ ...prev, alcoholUnits: '' }));
-          break;
         case 'cannabis':
           setFormData(prev => ({ ...prev, cannabisAmount: '' }));
+          break;
+        case 'alcohol':
+          setFormData(prev => ({ ...prev, alcoholUnits: '' }));
           break;
       }
     }
@@ -165,10 +165,8 @@ export default function EntryForm({ userId }: EntryFormProps) {
         sleepQuality: formData.sleepQuality ? parseInt(formData.sleepQuality) : null,
         exercise: formData.exercise ? parseFloat(formData.exercise) : null,
         exerciseTime: formData.exerciseTime ? parseInt(formData.exerciseTime) : null,
-        alcohol: formData.alcohol,
-        alcoholUnits: formData.alcoholUnits ? parseFloat(formData.alcoholUnits) : null,
-        cannabis: formData.cannabis,
-        cannabisAmount: formData.cannabisAmount ? parseInt(formData.cannabisAmount) : null,
+        alcoholUnits: formData.alcohol ? (formData.alcoholUnits !== undefined && formData.alcoholUnits !== null && formData.alcoholUnits !== '' ? parseFloat(formData.alcoholUnits) : 0) : null,
+        cannabisAmount: formData.cannabis ? (formData.cannabisAmount !== undefined && formData.cannabisAmount !== null && formData.cannabisAmount !== '' ? parseFloat(formData.cannabisAmount) : 0) : null,
         meditation: formData.meditation,
         meditationTime: formData.meditationTime ? parseInt(formData.meditationTime) : null,
         socialTime: formData.socialTime ? parseFloat(formData.socialTime) : null,
@@ -185,10 +183,21 @@ export default function EntryForm({ userId }: EntryFormProps) {
       
       const method = overwrite && existingEntryId ? 'PUT' : 'POST';
       
-      const customCategoryEntries = customCategories.map(category => ({
-        customCategoryId: category.id,
-        value: parseFloat(customValues[category.id] || '0')
-      })).filter(entry => !isNaN(entry.value));
+      const customCategoryEntries = customCategories.map(category => {
+        let value: number;
+        if (category.type === 'boolean') {
+          // FOR BOOLEAN CATEGORIES, CONVERT 'true'/'false' STRING TO 1/0
+          value = customValues[category.id] === 'true' ? 1 : 0;
+        } else {
+          // FOR NUMERIC AND SCALE CATEGORIES, PARSE AS FLOAT
+          const parsed = parseFloat(customValues[category.id] || '0');
+          value = isNaN(parsed) ? 0 : parsed;
+        }
+        return {
+          customCategoryId: category.id,
+          value
+        };
+      });
       
       const response = await fetch(url, {
         method,
@@ -482,9 +491,10 @@ export default function EntryForm({ userId }: EntryFormProps) {
                   onChange={handleChange}
                   onWheel={handleWheel}
                   className="glass-input w-24 h-10 px-3 py-0 m-0 text-input"
-                  min="0.01"
+                  min="0"
                   max="10"
                   step="0.01"
+                  placeholder="0"
                 />
               )}
             </div>

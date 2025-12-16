@@ -9,9 +9,7 @@ interface Entry {
   sleepQuality: number;
   exercise: boolean;
   exerciseTime: number | null;
-  alcohol: boolean;
   alcoholUnits: number | null;
-  cannabis: boolean;
   cannabisAmount: number | null;
   meditation: boolean;
   meditationTime: number | null;
@@ -47,9 +45,7 @@ export default function CorrelationMatrix() {
             sleepQuality: entry.sleep_quality ?? entry.sleepQuality,
             exercise: entry.exercise,
             exerciseTime: entry.exercise_time ?? entry.exerciseTime,
-            alcohol: entry.alcohol,
             alcoholUnits: entry.alcohol_units ?? entry.alcoholUnits,
-            cannabis: entry.cannabis,
             cannabisAmount: entry.cannabis_amount ?? entry.cannabisAmount,
             meditation: entry.meditation,
             meditationTime: entry.meditation_time ?? entry.meditationTime,
@@ -133,8 +129,8 @@ export default function CorrelationMatrix() {
     { id: 'meditation', name: 'Meditation' },
     
     // Substance metrics
-    { id: 'alcohol', name: 'Alcohol' },
-    { id: 'cannabis', name: 'Cannabis' },
+    { id: 'alcoholUnits', name: 'Alcohol Units' },
+    { id: 'cannabisAmount', name: 'Cannabis Amount' },
     
     // Social and work metrics
     { id: 'socialTime', name: 'Social Time' },
@@ -154,8 +150,6 @@ export default function CorrelationMatrix() {
     const getFieldValue = (entry: Entry, fieldId: string) => {
       // Handle boolean fields - convert to 0/1
       if (fieldId === 'exercise') return entry.exercise ? 1 : 0;
-      if (fieldId === 'alcohol') return entry.alcohol ? 1 : 0;
-      if (fieldId === 'cannabis') return entry.cannabis ? 1 : 0;
       if (fieldId === 'meditation') return entry.meditation ? 1 : 0;
       
       // Handle numeric fields - return null only if truly missing
@@ -213,23 +207,16 @@ export default function CorrelationMatrix() {
 
   // Calculate color based on correlation value
   const getCorrelationColor = (correlation: number) => {
-    // Absolute correlation strength determines color intensity
-    const intensity = Math.min(Math.abs(correlation), 1);
-    
     if (correlation === 1) {
       // Special case for perfect self-correlation (diagonal)
       return '#6c11ff'; // Lightest purple
-    } else if (correlation > 0) {
-      // Positive correlation: purple shades (matching happiness from heatmap)
-      const purpleColors = ['#cc3258', '#c12e6b', '#b72b7d', '#ac2790', '#a123a2', '#9720b5', '#8c1cc7', '#8118da', '#7715ec', '#6c11ff'];
-      const colorIndex = Math.min(Math.floor(intensity * 10), 9);
-      return purpleColors[colorIndex];
-    } else {
-      // Negative correlation: rose shades
-      const roseColors = ['#cc3258', '#c12e6b', '#b72b7d', '#ac2790', '#a123a2', '#9720b5', '#8c1cc7', '#8118da', '#7715ec', '#6c11ff'];
-      const colorIndex = Math.min(Math.floor(intensity * 10), 9);
-      return roseColors[colorIndex];
     }
+    
+    // MAP CORRELATION FROM [-1, 1] TO COLOR INDEX [0, 9]
+    // -1 maps to index 0, 0 maps to ~index 4-5, +1 maps to index 9
+    const colorArray = ['#cc3258', '#c12e6b', '#b72b7d', '#ac2790', '#a123a2', '#9720b5', '#8c1cc7', '#8118da', '#7715ec', '#6c11ff'];
+    const colorIndex = Math.min(Math.max(Math.floor((correlation + 1) / 2 * 10), 0), 9);
+    return colorArray[colorIndex];
   };
 
   // Format correlation for display
@@ -381,7 +368,8 @@ export default function CorrelationMatrix() {
         <div className="text-[10px] sm:text-xs text-gray-600 mb-2">Correlation Strength</div>
         <div className="flex h-4 w-full max-w-md rounded-sm overflow-hidden">
           {Array.from({ length: 10 }, (_, i) => {
-            const correlation = (i + 1) / 10;
+            // MAP INDEX [0, 9] TO CORRELATION [-1, 1]
+            const correlation = (i / 9) * 2 - 1;
             return (
               <div 
                 key={i}

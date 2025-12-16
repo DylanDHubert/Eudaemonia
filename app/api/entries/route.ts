@@ -14,8 +14,7 @@ export async function POST(request: Request) {
     const body = await request.json();
     
     // VALIDATE REQUIRED FIELDS
-    const requiredFields = ['sleepHours', 'sleepQuality', 'exercise', 'alcohol', 
-                           'cannabis', 'meditation', 'stressLevel', 'happinessRating'];
+    const requiredFields = ['sleepHours', 'sleepQuality', 'exercise', 'meditation', 'stressLevel', 'happinessRating'];
     
     for (const field of requiredFields) {
       if (body[field] === undefined) {
@@ -52,10 +51,8 @@ export async function POST(request: Request) {
         sleep_quality: parseInt(body.sleepQuality),
         exercise: Boolean(body.exercise),
         exercise_time: body.exerciseTime ? parseInt(body.exerciseTime) : null,
-        alcohol: Boolean(body.alcohol),
-        alcohol_units: body.alcoholUnits ? parseFloat(body.alcoholUnits) : null,
-        cannabis: Boolean(body.cannabis),
-        cannabis_amount: body.cannabisAmount ? parseInt(body.cannabisAmount) : null,
+        alcohol_units: body.alcoholUnits !== undefined && body.alcoholUnits !== null && body.alcoholUnits !== '' ? parseFloat(body.alcoholUnits) : null,
+        cannabis_amount: body.cannabisAmount !== undefined && body.cannabisAmount !== null && body.cannabisAmount !== '' ? parseFloat(body.cannabisAmount) : null,
         meditation: Boolean(body.meditation),
         meditation_time: body.meditationTime ? parseInt(body.meditationTime) : null,
         social_time: body.socialTime ? parseFloat(body.socialTime) : null,
