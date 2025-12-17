@@ -44,11 +44,21 @@ export async function PUT(
       return NextResponse.json({ error: 'happinessRating must be between 1 and 10' }, { status: 400 });
     }
     
+    // NORMALIZE DATE TO CALENDAR DAY AT MIDNIGHT UTC IF PROVIDED
+    let normalizedDate: string | undefined;
+    if (body.date) {
+      const dateObj = new Date(body.date);
+      const year = dateObj.getFullYear();
+      const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+      const day = String(dateObj.getDate()).padStart(2, '0');
+      normalizedDate = `${year}-${month}-${day}T00:00:00.000Z`;
+    }
+    
     // UPDATE THE ENTRY
     const { data: updatedEntry, error: updateError } = await supabase
       .from('daily_entries')
       .update({
-        date: body.date ? new Date(body.date).toISOString() : existingEntry.date,
+        date: normalizedDate !== undefined ? normalizedDate : existingEntry.date,
         sleep_hours: body.sleepHours !== undefined ? parseFloat(body.sleepHours) : existingEntry.sleep_hours,
         sleep_quality: body.sleepQuality !== undefined ? parseInt(body.sleepQuality) : existingEntry.sleep_quality,
         exercise: body.exercise !== undefined ? Boolean(body.exercise) : existingEntry.exercise,

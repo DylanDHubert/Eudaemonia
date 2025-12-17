@@ -32,9 +32,9 @@ export async function PUT(
     
     // VALIDATE CATEGORY IF PROVIDED
     if (body.category !== undefined) {
-      const validCategories = ['sleep', 'anxiety', 'contentment', 'energy'];
+      const validCategories = ['sleep', 'mood', 'pride', 'energy'];
       if (!validCategories.includes(body.category)) {
-        return NextResponse.json({ error: 'category must be one of: sleep, anxiety, contentment, energy' }, { status: 400 });
+        return NextResponse.json({ error: 'category must be one of: sleep, mood, pride, energy' }, { status: 400 });
       }
     }
     
@@ -118,4 +118,6 @@ export async function DELETE(
     return NextResponse.json({ error: 'Error deleting quick entry' }, { status: 500 });
   }
 }
+
+
 

@@ -41,7 +41,7 @@ export default async function QuickEntryPage() {
           <div className="glass-card p-4 sm:p-8">
             <h1 className="text-header mb-6">Quick Entry</h1>
             <p className="text-description mb-6">
-              Quickly track your sleep, anxiety, contentment, and energy levels throughout the day.
+              Quickly track your sleep, mood, pride, and energy levels throughout the day.
             </p>
             
             <QuickEntryList initialEntries={formattedEntries} />
@@ -51,4 +51,6 @@ export default async function QuickEntryPage() {
     </div>
   );
 }
+
+
 

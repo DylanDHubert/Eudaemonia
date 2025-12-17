@@ -23,9 +23,9 @@ export async function POST(request: Request) {
     }
 
     // VALIDATE CATEGORY
-    const validCategories = ['sleep', 'anxiety', 'contentment', 'energy'];
+    const validCategories = ['sleep', 'mood', 'pride', 'energy'];
     if (!validCategories.includes(body.category)) {
-      return NextResponse.json({ error: 'category must be one of: sleep, anxiety, contentment, energy' }, { status: 400 });
+      return NextResponse.json({ error: 'category must be one of: sleep, mood, pride, energy' }, { status: 400 });
     }
 
     // VALIDATE RATING (1-10)
@@ -83,7 +83,7 @@ export async function GET(request: Request) {
       .eq('user_id', session.user.id);
     
     // FILTER BY CATEGORY IF PROVIDED
-    if (category && ['sleep', 'anxiety', 'contentment', 'energy'].includes(category)) {
+    if (category && ['sleep', 'mood', 'pride', 'energy'].includes(category)) {
       query = query.eq('category', category);
     }
     
@@ -110,4 +110,6 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'Error fetching quick entries' }, { status: 500 });
   }
 }
+
+
 

@@ -42,11 +42,27 @@ export async function POST(request: Request) {
     
     const supabase = await createClient();
     
+    // NORMALIZE DATE TO CALENDAR DAY AT MIDNIGHT UTC
+    let normalizedDate: string;
+    if (body.date) {
+      const dateObj = new Date(body.date);
+      const year = dateObj.getFullYear();
+      const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+      const day = String(dateObj.getDate()).padStart(2, '0');
+      normalizedDate = `${year}-${month}-${day}T00:00:00.000Z`;
+    } else {
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const day = String(now.getDate()).padStart(2, '0');
+      normalizedDate = `${year}-${month}-${day}T00:00:00.000Z`;
+    }
+    
     // CREATE THE ENTRY
     const { data: entry, error: entryError } = await supabase
       .from('daily_entries')
       .insert({
-        date: body.date ? new Date(body.date).toISOString() : new Date().toISOString(),
+        date: normalizedDate,
         sleep_hours: parseFloat(body.sleepHours),
         sleep_quality: parseInt(body.sleepQuality),
         exercise: Boolean(body.exercise),

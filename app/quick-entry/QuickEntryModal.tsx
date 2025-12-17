@@ -11,7 +11,7 @@ import "react-datepicker/dist/react-datepicker.css";
 
 type QuickEntry = {
   id: string;
-  category: 'sleep' | 'anxiety' | 'contentment' | 'energy';
+  category: 'sleep' | 'mood' | 'pride' | 'energy';
   rating: number;
   notes: string | null;
   date: string;
@@ -29,7 +29,7 @@ export default function QuickEntryModal({ isOpen, onClose, entry }: QuickEntryMo
   const [mounted, setMounted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
-    category: 'sleep' as 'sleep' | 'anxiety' | 'contentment' | 'energy',
+    category: 'sleep' as 'sleep' | 'mood' | 'pride' | 'energy',
     rating: 5,
     notes: '',
     date: new Date(),
@@ -133,9 +133,9 @@ export default function QuickEntryModal({ isOpen, onClose, entry }: QuickEntryMo
     switch (category) {
       case 'sleep':
         return <Moon className="w-5 h-5" />;
-      case 'anxiety':
+      case 'mood':
         return <Heart className="w-5 h-5" />;
-      case 'contentment':
+      case 'pride':
         return <Smile className="w-5 h-5" />;
       case 'energy':
         return <Zap className="w-5 h-5" />;
@@ -148,9 +148,9 @@ export default function QuickEntryModal({ isOpen, onClose, entry }: QuickEntryMo
     switch (category) {
       case 'sleep':
         return 'border-blue-500 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300';
-      case 'anxiety':
+      case 'mood':
         return 'border-purple-500 bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300';
-      case 'contentment':
+      case 'pride':
         return 'border-green-500 bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-300';
       case 'energy':
         return 'border-yellow-500 bg-yellow-50 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300';
@@ -217,27 +217,27 @@ export default function QuickEntryModal({ isOpen, onClose, entry }: QuickEntryMo
                 </button>
                 <button
                   type="button"
-                  onClick={() => setFormData(prev => ({ ...prev, category: 'anxiety' }))}
+                  onClick={() => setFormData(prev => ({ ...prev, category: 'mood' }))}
                   className={`flex flex-col sm:flex-row items-center justify-center gap-2 px-3 py-3 rounded-md border-2 transition-all ${
-                    formData.category === 'anxiety'
+                    formData.category === 'mood'
                       ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300'
                       : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:border-purple-400 dark:hover:border-purple-500'
                   }`}
                 >
                   <Heart className="w-5 h-5 sm:hidden" />
-                  <span className="hidden sm:inline text-sm font-medium">Anxiety</span>
+                  <span className="hidden sm:inline text-sm font-medium">Mood</span>
                 </button>
                 <button
                   type="button"
-                  onClick={() => setFormData(prev => ({ ...prev, category: 'contentment' }))}
+                  onClick={() => setFormData(prev => ({ ...prev, category: 'pride' }))}
                   className={`flex flex-col sm:flex-row items-center justify-center gap-2 px-3 py-3 rounded-md border-2 transition-all ${
-                    formData.category === 'contentment'
+                    formData.category === 'pride'
                       ? 'border-green-500 bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-300'
                       : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:border-green-400 dark:hover:border-green-500'
                   }`}
                 >
                   <Smile className="w-5 h-5 sm:hidden" />
-                  <span className="hidden sm:inline text-sm font-medium">Contentment</span>
+                  <span className="hidden sm:inline text-sm font-medium">Pride</span>
                 </button>
                 <button
                   type="button"
@@ -326,4 +326,6 @@ export default function QuickEntryModal({ isOpen, onClose, entry }: QuickEntryMo
 
   return createPortal(modalContent, document.body);
 }
+
+
 

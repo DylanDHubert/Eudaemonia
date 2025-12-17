@@ -10,7 +10,7 @@ import { Moon, Heart, Smile, Zap, Plus, Maximize2, Minimize2 } from 'lucide-reac
 
 type QuickEntry = {
   id: string;
-  category: 'sleep' | 'anxiety' | 'contentment' | 'energy';
+  category: 'sleep' | 'mood' | 'pride' | 'energy';
   rating: number;
   notes: string | null;
   date: string;
@@ -18,7 +18,7 @@ type QuickEntry = {
   updatedAt: string;
 };
 
-type FilterOption = 'all' | 'sleep' | 'anxiety' | 'contentment' | 'energy';
+type FilterOption = 'all' | 'sleep' | 'mood' | 'pride' | 'energy';
 
 export default function QuickEntryList({ initialEntries }: { initialEntries: QuickEntry[] }) {
   const [entries, setEntries] = useState<QuickEntry[]>(initialEntries);
@@ -110,9 +110,9 @@ export default function QuickEntryList({ initialEntries }: { initialEntries: Qui
     switch (category) {
       case 'sleep':
         return <Moon className="w-4 h-4" />;
-      case 'anxiety':
+      case 'mood':
         return <Heart className="w-4 h-4" />;
-      case 'contentment':
+      case 'pride':
         return <Smile className="w-4 h-4" />;
       case 'energy':
         return <Zap className="w-4 h-4" />;
@@ -125,9 +125,9 @@ export default function QuickEntryList({ initialEntries }: { initialEntries: Qui
     switch (category) {
       case 'sleep':
         return 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200';
-      case 'anxiety':
+      case 'mood':
         return 'bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-200';
-      case 'contentment':
+      case 'pride':
         return 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200';
       case 'energy':
         return 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-200';
@@ -140,9 +140,9 @@ export default function QuickEntryList({ initialEntries }: { initialEntries: Qui
     switch (category) {
       case 'sleep':
         return 'bg-blue-500';
-      case 'anxiety':
+      case 'mood':
         return 'bg-purple-500';
-      case 'contentment':
+      case 'pride':
         return 'bg-green-500';
       case 'energy':
         return 'bg-yellow-500';
@@ -228,8 +228,8 @@ export default function QuickEntryList({ initialEntries }: { initialEntries: Qui
             >
               <option value="all">All</option>
               <option value="sleep">Sleep</option>
-              <option value="anxiety">Anxiety</option>
-              <option value="contentment">Contentment</option>
+              <option value="mood">Mood</option>
+              <option value="pride">Pride</option>
               <option value="energy">Energy</option>
             </select>
           </div>
@@ -311,16 +311,9 @@ export default function QuickEntryList({ initialEntries }: { initialEntries: Qui
                       <span className={`px-2 py-1 rounded text-xs font-medium ${getCategoryColor(entry.category)}`}>
                         {entry.category.charAt(0).toUpperCase() + entry.category.slice(1)}
                       </span>
-                      <div className="flex items-center gap-2">
-                        <div
-                          className="w-8 h-8 rounded-full border-2 border-gray-300 dark:border-gray-600 flex items-center justify-center text-white font-semibold text-sm"
-                          style={{ backgroundColor: getRatingColor(entry.rating) }}
-                          title={`Rating: ${entry.rating}`}
-                        >
-                          {entry.rating}
-                        </div>
-                        <span className="text-sm text-gray-600 dark:text-gray-400">/ 10</span>
-                      </div>
+                      <span className="text-sm text-gray-600 dark:text-gray-400">
+                        {entry.rating} / 10
+                      </span>
                     </div>
                     
                     <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 mb-3">
