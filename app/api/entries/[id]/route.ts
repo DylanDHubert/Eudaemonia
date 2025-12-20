@@ -44,14 +44,10 @@ export async function PUT(
       return NextResponse.json({ error: 'happinessRating must be between 1 and 10' }, { status: 400 });
     }
     
-    // NORMALIZE DATE TO CALENDAR DAY AT MIDNIGHT UTC IF PROVIDED
+    // USE DATE AS PROVIDED (NO NORMALIZATION - PRESERVES ACTUAL TIME)
     let normalizedDate: string | undefined;
     if (body.date) {
-      const dateObj = new Date(body.date);
-      const year = dateObj.getFullYear();
-      const month = String(dateObj.getMonth() + 1).padStart(2, '0');
-      const day = String(dateObj.getDate()).padStart(2, '0');
-      normalizedDate = `${year}-${month}-${day}T00:00:00.000Z`;
+      normalizedDate = new Date(body.date).toISOString();
     }
     
     // UPDATE THE ENTRY

@@ -1,10 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import { format } from 'date-fns';
 import EditEntryModal from '../components/EditEntryModal';
 import { Entry } from '../types/entry';
 import { useRouter } from 'next/navigation';
+import { formatEntryDate } from '@/lib/utils';
 
 interface CustomCategory {
   id: string;
@@ -77,10 +77,10 @@ export default function HistoryView({ entries }: HistoryViewProps) {
             <div className="flex justify-between items-start mb-4">
               <div>
                 <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
-                  {format(new Date(entry.date), 'MMMM d, yyyy')}
+                  {formatEntryDate(entry.date, 'MMMM d, yyyy')}
                 </h3>
                 <p className="text-sm text-gray-500 dark:text-gray-400">
-                  {format(new Date(entry.date), 'EEEE')}
+                  {formatEntryDate(entry.date, 'EEEE')}
                 </p>
               </div>
               <div className="flex space-x-4">
@@ -216,7 +216,7 @@ export default function HistoryView({ entries }: HistoryViewProps) {
               Delete Entry
             </h3>
             <p className="text-gray-700 dark:text-gray-300 mb-6">
-              Are you sure you want to delete the entry from {format(new Date(selectedEntry.date), 'MMMM d, yyyy')}? This action cannot be undone.
+              Are you sure you want to delete the entry from {formatEntryDate(selectedEntry.date, 'MMMM d, yyyy')}? This action cannot be undone.
             </p>
             
             {deleteError && (

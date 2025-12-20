@@ -42,27 +42,14 @@ export async function POST(request: Request) {
     
     const supabase = await createClient();
     
-    // NORMALIZE DATE TO CALENDAR DAY AT MIDNIGHT UTC
-    let normalizedDate: string;
-    if (body.date) {
-      const dateObj = new Date(body.date);
-      const year = dateObj.getFullYear();
-      const month = String(dateObj.getMonth() + 1).padStart(2, '0');
-      const day = String(dateObj.getDate()).padStart(2, '0');
-      normalizedDate = `${year}-${month}-${day}T00:00:00.000Z`;
-    } else {
-      const now = new Date();
-      const year = now.getFullYear();
-      const month = String(now.getMonth() + 1).padStart(2, '0');
-      const day = String(now.getDate()).padStart(2, '0');
-      normalizedDate = `${year}-${month}-${day}T00:00:00.000Z`;
-    }
+    // USE DATE AS PROVIDED (ALREADY HAS SELECTED DATE + CURRENT TIME FROM CLIENT)
+    const entryDate = body.date ? new Date(body.date).toISOString() : new Date().toISOString();
     
     // CREATE THE ENTRY
     const { data: entry, error: entryError } = await supabase
       .from('daily_entries')
       .insert({
-        date: normalizedDate,
+        date: entryDate,
         sleep_hours: parseFloat(body.sleepHours),
         sleep_quality: parseInt(body.sleepQuality),
         exercise: Boolean(body.exercise),
@@ -140,9 +127,12 @@ export async function GET(request: Request) {
       .eq('user_id', session.user.id);
     
     if (date) {
-      const startDate = new Date(`${date}T00:00:00.000Z`).toISOString();
-      const endDate = new Date(`${date}T23:59:59.999Z`).toISOString();
-      query = query.gte('date', startDate).lte('date', endDate);
+      // CREATE DATE BOUNDARIES IN LOCAL TIMEZONE
+      // DATE FORMAT IS YYYY-MM-DD, CREATE START AND END OF DAY IN LOCAL TIME, THEN CONVERT TO UTC
+      const [year, month, day] = date.split('-').map(Number);
+      const startOfDay = new Date(year, month - 1, day, 0, 0, 0, 0); // LOCAL MIDNIGHT
+      const endOfDay = new Date(year, month - 1, day, 23, 59, 59, 999); // LOCAL END OF DAY
+      query = query.gte('date', startOfDay.toISOString()).lte('date', endOfDay.toISOString());
     }
     
     query = query.order('date', { ascending: false });

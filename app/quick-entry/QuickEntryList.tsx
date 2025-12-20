@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'react-toastify';
 import QuickEntryModal from './QuickEntryModal';
-import { format } from 'date-fns';
+import { formatEntryDate } from '@/lib/utils';
 import { PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { Moon, Heart, Smile, Zap, Plus, Maximize2, Minimize2 } from 'lucide-react';
 
@@ -274,7 +274,7 @@ export default function QuickEntryList({ initialEntries }: { initialEntries: Qui
                         {entry.category}
                       </h3>
                       <p className="text-xs text-gray-600 dark:text-gray-400">
-                        {format(new Date(entry.date), 'MMM d, yyyy')}
+                        {formatEntryDate(entry.date, 'MMM d, yyyy')}
                       </p>
                     </div>
                   </div>
@@ -318,7 +318,7 @@ export default function QuickEntryList({ initialEntries }: { initialEntries: Qui
                     
                     <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 mb-3">
                       <p className="text-sm text-gray-600 dark:text-gray-400">
-                        {format(new Date(entry.date), 'MMM d, yyyy')}
+                        {formatEntryDate(entry.date, 'MMM d, yyyy')}
                       </p>
                     </div>
 

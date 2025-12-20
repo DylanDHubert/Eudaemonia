@@ -2,7 +2,7 @@ import { getServerSession } from '@/lib/supabase/auth';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import InsightsView from './InsightsView';
-import { format } from 'date-fns';
+import { formatEntryDate } from '@/lib/utils';
 import Link from 'next/link';
 
 export default async function InsightsPage() {
@@ -50,7 +50,7 @@ export default async function InsightsPage() {
   // FORMAT DATE FIELD FOR EACH ENTRY
   const formattedEntries = (entries || []).map((entry: any) => ({
     id: entry.id,
-    date: format(new Date(entry.date), 'yyyy-MM-dd'),
+    date: formatEntryDate(entry.date, 'yyyy-MM-dd'),
     sleepHours: entry.sleep_hours,
     sleepQuality: entry.sleep_quality,
     exercise: entry.exercise,
