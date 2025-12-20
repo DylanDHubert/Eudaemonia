@@ -6,8 +6,8 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 // FORMAT DATE USING LOCAL TIMEZONE COMPONENTS (DISPLAYS USER'S LOCAL DAY)
-export function formatEntryDate(dateString: string, formatStr: string): string {
-  const d = new Date(dateString);
+export function formatEntryDate(dateString: string | Date, formatStr: string): string {
+  const d = dateString instanceof Date ? dateString : new Date(dateString);
   const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
   const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
   
@@ -25,5 +25,5 @@ export function formatEntryDate(dateString: string, formatStr: string): string {
     return `${year}-${month}-${day}`;
   }
   // FALLBACK TO STANDARD FORMAT
-  return new Date(dateString).toLocaleDateString();
+  return d.toLocaleDateString();
 } 
