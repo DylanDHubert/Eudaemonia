@@ -28,9 +28,14 @@ interface QuickEntryModalProps {
 export default function QuickEntryModal({ isOpen, onClose, entry }: QuickEntryModalProps) {
   const [mounted, setMounted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [formData, setFormData] = useState({
-    category: 'sleep' as 'sleep' | 'mood' | 'pride' | 'energy',
-    rating: 5,
+  const [formData, setFormData] = useState<{
+    category: 'sleep' | 'mood' | 'pride' | 'energy';
+    rating: number | '';
+    notes: string;
+    date: Date;
+  }>({
+    category: 'sleep',
+    rating: '',
     notes: '',
     date: new Date(),
   });
@@ -54,7 +59,7 @@ export default function QuickEntryModal({ isOpen, onClose, entry }: QuickEntryMo
         // CREATE MODE
         setFormData({
           category: 'sleep',
-          rating: 5,
+          rating: '',
           notes: '',
           date: new Date(),
         });
@@ -91,7 +96,7 @@ export default function QuickEntryModal({ isOpen, onClose, entry }: QuickEntryMo
         },
         body: JSON.stringify({
           category: formData.category,
-          rating: formData.rating,
+          rating: typeof formData.rating === 'number' ? formData.rating : parseInt(String(formData.rating)) || 0,
           notes: formData.notes || null,
           date: formData.date.toISOString(),
         }),
@@ -124,7 +129,7 @@ export default function QuickEntryModal({ isOpen, onClose, entry }: QuickEntryMo
     setFormData(prev => ({
       ...prev,
       [name]: name === 'rating' 
-        ? parseInt(value) || 0 
+        ? value === '' ? '' : parseInt(value) || ''
         : value
     }));
   };
@@ -282,6 +287,7 @@ export default function QuickEntryModal({ isOpen, onClose, entry }: QuickEntryMo
                 max="10"
                 required
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                placeholder="1-10"
               />
             </div>
 

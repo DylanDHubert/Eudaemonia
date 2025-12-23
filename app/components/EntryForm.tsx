@@ -92,13 +92,13 @@ export default function EntryForm({ userId }: EntryFormProps) {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
     
-    // Handle number inputs
+    // Handle number inputs - KEEP AS STRING TO ALLOW EASY CLEARING
     if (type === 'number') {
       // Allow empty value or valid number
       if (value === '' || (!isNaN(Number(value)) && Number(value) >= 0)) {
         setFormData(prev => ({
           ...prev,
-          [name]: value === '' ? '' : Number(value)
+          [name]: value // KEEP AS STRING, NOT CONVERTED TO NUMBER
         }));
       }
     } else {

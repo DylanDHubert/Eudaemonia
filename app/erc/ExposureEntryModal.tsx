@@ -32,14 +32,23 @@ interface ExposureEntryModalProps {
 export default function ExposureEntryModal({ isOpen, onClose, entry }: ExposureEntryModalProps) {
   const [mounted, setMounted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [formData, setFormData] = useState({
-    type: 'easy' as 'easy' | 'medium' | 'hard' | 'flight',
+  const [formData, setFormData] = useState<{
+    type: 'easy' | 'medium' | 'hard' | 'flight';
+    title: string;
+    notes: string;
+    sudsPre: number | '';
+    sudsPeak: number | '';
+    sudsPost: number | '';
+    duration: number | null;
+    date: Date;
+  }>({
+    type: 'easy',
     title: '',
     notes: '',
-    sudsPre: 5,
-    sudsPeak: 5,
-    sudsPost: 5,
-    duration: null as number | null,
+    sudsPre: '',
+    sudsPeak: '',
+    sudsPost: '',
+    duration: null,
     date: new Date(),
   });
   const router = useRouter();
@@ -68,9 +77,9 @@ export default function ExposureEntryModal({ isOpen, onClose, entry }: ExposureE
           type: 'easy',
           title: '',
           notes: '',
-          sudsPre: 5,
-          sudsPeak: 5,
-          sudsPost: 5,
+          sudsPre: '',
+          sudsPeak: '',
+          sudsPost: '',
           duration: null,
           date: new Date(),
         });
@@ -109,9 +118,9 @@ export default function ExposureEntryModal({ isOpen, onClose, entry }: ExposureE
           type: formData.type,
           title: formData.title,
           notes: formData.notes || null,
-          sudsPre: formData.sudsPre,
-          sudsPeak: formData.sudsPeak,
-          sudsPost: formData.sudsPost,
+          sudsPre: typeof formData.sudsPre === 'number' ? formData.sudsPre : parseInt(String(formData.sudsPre)) || 0,
+          sudsPeak: typeof formData.sudsPeak === 'number' ? formData.sudsPeak : parseInt(String(formData.sudsPeak)) || 0,
+          sudsPost: typeof formData.sudsPost === 'number' ? formData.sudsPost : parseInt(String(formData.sudsPost)) || 0,
           duration: formData.duration,
           date: formData.date.toISOString(),
         }),
@@ -144,7 +153,7 @@ export default function ExposureEntryModal({ isOpen, onClose, entry }: ExposureE
     setFormData(prev => ({
       ...prev,
       [name]: name === 'sudsPre' || name === 'sudsPeak' || name === 'sudsPost' 
-        ? parseInt(value) || 0 
+        ? value === '' ? '' : parseInt(value) || ''
         : name === 'duration'
         ? value === '' ? null : parseInt(value) || null
         : value
@@ -307,6 +316,7 @@ export default function ExposureEntryModal({ isOpen, onClose, entry }: ExposureE
                   max="10"
                   required
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                  placeholder="1-10"
                 />
               </div>
               <div>
@@ -322,6 +332,7 @@ export default function ExposureEntryModal({ isOpen, onClose, entry }: ExposureE
                   max="10"
                   required
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                  placeholder="1-10"
                 />
               </div>
               <div>
@@ -337,6 +348,7 @@ export default function ExposureEntryModal({ isOpen, onClose, entry }: ExposureE
                   max="10"
                   required
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                  placeholder="1-10"
                 />
               </div>
             </div>
