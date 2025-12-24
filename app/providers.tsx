@@ -9,7 +9,17 @@ export default function Providers({ children }: { children: React.ReactNode }) {
     <>
       <ThemeColorUpdater />
       {children}
-      <ToastContainer position="bottom-right" autoClose={3000} />
+      <ToastContainer 
+        position="bottom-right" 
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={true}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+      />
     </>
   );
 } 

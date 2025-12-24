@@ -20,7 +20,7 @@ export default function SameDayEntryModal({
   
   return (
     <div 
-      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+      className="fixed inset-0 bg-black/40 dark:bg-black/60 backdrop-blur-sm flex items-center justify-center z-50"
       onClick={() => onClose()}
     >
       <div 
@@ -48,7 +48,7 @@ export default function SameDayEntryModal({
         
         <button
           onClick={onClose}
-          className="w-full flex justify-center py-2 px-4 glassmorphism text-sm font-medium text-gray-700 hover:bg-white/40 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+          className="w-full mt-4 flex justify-center py-2 px-4 bg-white/30 dark:bg-gray-700/30 backdrop-blur-sm border border-gray-300/50 dark:border-gray-600/50 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-white/50 dark:hover:bg-gray-700/50 focus:outline-none focus:ring-2 focus:ring-rose-500/50 dark:focus:ring-indigo-500/50 transition-all duration-200"
         >
           Cancel
         </button>

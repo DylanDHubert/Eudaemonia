@@ -100,72 +100,81 @@ export default function HistoryView({ entries }: HistoryViewProps) {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Sleep</p>
-                <p className="text-gray-900 dark:text-gray-100">
-                  {entry.sleepHours} hours ({entry.sleepQuality}/10)
-                </p>
-              </div>
+              {entry.sleepHours != null && entry.sleepHours > 0 && (
+                <div>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Sleep</p>
+                  <p className="text-gray-900 dark:text-gray-100">
+                    {entry.sleepHours} hours {entry.sleepQuality != null && entry.sleepQuality > 0 && `(${entry.sleepQuality}/10)`}
+                  </p>
+                </div>
+              )}
 
-              <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Exercise</p>
-                <p className="text-gray-900 dark:text-gray-100">
-                  {entry.exercise ? 'Yes' : 'No'}
-                  {entry.exerciseTime && ` (${entry.exerciseTime} min)`}
-                </p>
-              </div>
+              {(entry.exercise || (entry.exerciseTime != null && entry.exerciseTime > 0)) && (
+                <div>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Exercise</p>
+                  <p className="text-gray-900 dark:text-gray-100">
+                    {entry.exercise ? 'Yes' : 'No'}
+                    {entry.exerciseTime && entry.exerciseTime > 0 && ` (${entry.exerciseTime} min)`}
+                  </p>
+                </div>
+              )}
 
-              <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Alcohol</p>
-                <p className="text-gray-900 dark:text-gray-100">
-                  {entry.alcohol ? 'Yes' : 'No'}
-                  {entry.alcoholUnits && ` (${entry.alcoholUnits} units)`}
-                </p>
-              </div>
+              {(entry.alcohol || (entry.alcoholUnits != null && entry.alcoholUnits > 0)) && (
+                <div>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Alcohol</p>
+                  <p className="text-gray-900 dark:text-gray-100">
+                    {entry.alcohol ? 'Yes' : 'No'}
+                    {entry.alcoholUnits && entry.alcoholUnits > 0 && ` (${entry.alcoholUnits} units)`}
+                  </p>
+                </div>
+              )}
 
-              <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Cannabis</p>
-                <p className="text-gray-900 dark:text-gray-100">
-                  {entry.cannabis ? 'Yes' : 'No'}
-                  {entry.cannabisAmount && ` (${entry.cannabisAmount}/5)`}
-                </p>
-              </div>
+              {(entry.cannabis || (entry.cannabisAmount != null && entry.cannabisAmount > 0)) && (
+                <div>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Cannabis</p>
+                  <p className="text-gray-900 dark:text-gray-100">
+                    {entry.cannabis ? 'Yes' : 'No'}
+                    {entry.cannabisAmount && entry.cannabisAmount > 0 && ` (${entry.cannabisAmount}g)`}
+                  </p>
+                </div>
+              )}
 
-              <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Meditation</p>
-                <p className="text-gray-900 dark:text-gray-100">
-                  {entry.meditation ? 'Yes' : 'No'}
-                  {entry.meditationTime && ` (${entry.meditationTime} min)`}
-                </p>
-              </div>
+              {(entry.meditation || (entry.meditationTime != null && entry.meditationTime > 0)) && (
+                <div>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Meditation</p>
+                  <p className="text-gray-900 dark:text-gray-100">
+                    {entry.meditation ? 'Yes' : 'No'}
+                    {entry.meditationTime && entry.meditationTime > 0 && ` (${entry.meditationTime} min)`}
+                  </p>
+                </div>
+              )}
 
-              <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Social Time</p>
-                <p className="text-gray-900 dark:text-gray-100">
-                  {entry.socialTime ? `${entry.socialTime} hours` : 'N/A'}
-                </p>
-              </div>
+              {entry.socialTime != null && entry.socialTime > 0 && (
+                <div>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Social Time</p>
+                  <p className="text-gray-900 dark:text-gray-100">
+                    {entry.socialTime} hours
+                  </p>
+                </div>
+              )}
 
-              <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Work Hours</p>
-                <p className="text-gray-900 dark:text-gray-100">
-                  {entry.workHours ? `${entry.workHours} hours` : 'N/A'}
-                </p>
-              </div>
+              {entry.workHours != null && entry.workHours > 0 && (
+                <div>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Work Hours</p>
+                  <p className="text-gray-900 dark:text-gray-100">
+                    {entry.workHours} hours
+                  </p>
+                </div>
+              )}
 
-              <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Meals</p>
-                <p className="text-gray-900 dark:text-gray-100">
-                  {entry.meals ? `${entry.meals} meals` : 'N/A'}
-                </p>
-              </div>
-
-              <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Food Quality</p>
-                <p className="text-gray-900 dark:text-gray-100">
-                  {entry.foodQuality ? `${entry.foodQuality}/10` : 'N/A'}
-                </p>
-              </div>
+              {entry.meals != null && entry.meals > 0 && (
+                <div>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Meals</p>
+                  <p className="text-gray-900 dark:text-gray-100">
+                    {entry.meals} meals {entry.foodQuality != null && entry.foodQuality > 0 && `(${entry.foodQuality}/10)`}
+                  </p>
+                </div>
+              )}
 
               <div>
                 <p className="text-sm text-gray-500 dark:text-gray-400">Stress Level</p>
@@ -177,14 +186,20 @@ export default function HistoryView({ entries }: HistoryViewProps) {
                 <p className="text-gray-900 dark:text-gray-100">{entry.happinessRating}/10</p>
               </div>
 
-              {entry.customCategoryEntries.map((categoryEntry) => (
-                <div key={categoryEntry.id}>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">{categoryEntry.customCategory.name}</p>
-                  <p className="text-gray-900 dark:text-gray-100">
-                    {categoryEntry.customCategory.type === 'scale' ? `${categoryEntry.value}/10` : categoryEntry.value}
-                  </p>
-                </div>
-              ))}
+              {entry.customCategoryEntries
+                .filter((categoryEntry) => categoryEntry.value != null && categoryEntry.value !== 0)
+                .map((categoryEntry) => (
+                  <div key={categoryEntry.id}>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">{categoryEntry.customCategory.name}</p>
+                    <p className="text-gray-900 dark:text-gray-100">
+                      {categoryEntry.customCategory.type === 'boolean' 
+                        ? (categoryEntry.value ? 'Yes' : 'No')
+                        : categoryEntry.customCategory.type === 'scale' 
+                        ? `${categoryEntry.value}/10` 
+                        : categoryEntry.value}
+                    </p>
+                  </div>
+                ))}
 
               {entry.notes && (
                 <div className="col-span-full">
@@ -210,7 +225,7 @@ export default function HistoryView({ entries }: HistoryViewProps) {
 
       {/* Delete Confirmation Modal */}
       {isDeleteModalOpen && selectedEntry && (
-        <div className="fixed inset-0 bg-black/50 dark:bg-gray-900/70 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-black/40 dark:bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="glass-card p-6 max-w-md w-full rounded-lg">
             <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">
               Delete Entry
@@ -228,7 +243,7 @@ export default function HistoryView({ entries }: HistoryViewProps) {
             <div className="flex justify-end space-x-3">
               <button
                 onClick={() => setIsDeleteModalOpen(false)}
-                className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+                className="px-4 py-2 bg-white/30 dark:bg-gray-700/30 backdrop-blur-sm border border-gray-300/50 dark:border-gray-600/50 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-white/50 dark:hover:bg-gray-700/50 focus:outline-none focus:ring-2 focus:ring-rose-500/50 dark:focus:ring-indigo-500/50 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                 disabled={isDeleting}
               >
                 Cancel

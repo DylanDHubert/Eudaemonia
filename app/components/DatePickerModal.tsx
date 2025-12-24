@@ -51,10 +51,10 @@ export default function DatePickerModal({ isOpen, onClose, date, onDateChange }:
     <>
       {/* BACKDROP - COVERS ENTIRE SCREEN */}
       <div 
-        className="fixed top-0 left-0 right-0 bottom-0 z-[9999] bg-black/50 dark:bg-black/70"
+        className="fixed top-0 left-0 right-0 bottom-0 z-[9999] bg-black/40 dark:bg-black/60"
         style={{ 
-          backdropFilter: 'blur(12px)', 
-          WebkitBackdropFilter: 'blur(12px)',
+          backdropFilter: 'blur(8px)', 
+          WebkitBackdropFilter: 'blur(8px)',
           width: '100vw',
           height: '100vh',
           position: 'fixed'
