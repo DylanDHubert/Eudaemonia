@@ -3,14 +3,14 @@ import "./globals.css";
 import Providers from "./providers";
 import Navigation from "./components/Navigation";
 import { getServerSession } from '@/lib/supabase/auth';
-import { IM_Fell_Great_Primer_SC } from 'next/font/google';
+import { Spectral_SC } from 'next/font/google';
 
-// CONFIGURE IM FELL GREAT PRIMER SC FONT
-const imFellGreatPrimerSC = IM_Fell_Great_Primer_SC({ 
+// CONFIGURE SPECTRAL SC FONT
+const spectralSC = Spectral_SC({ 
   weight: ['400'],
   subsets: ['latin'],
   display: 'swap',
-  variable: '--font-im-fell-great-primer-sc',
+  variable: '--font-spectral-sc',
 });
 
 export const metadata: Metadata = {
@@ -49,7 +49,7 @@ export default async function RootLayout({
   const session = await getServerSession();
   
   return (
-    <html lang="en" className={`${imFellGreatPrimerSC.variable} h-full`}>
+    <html lang="en" className={`${spectralSC.variable} h-full`}>
       <head>
         {/* ADDITIONAL IOS PWA META TAGS FOR SEARCH BAR HIDING */}
         <meta name="apple-mobile-web-app-capable" content="yes" />

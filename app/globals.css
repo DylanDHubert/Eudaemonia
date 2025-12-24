@@ -4,11 +4,11 @@
 
 @layer base {
   :root {
-    --font-im-fell-great-primer-sc: 'IM Fell Great Primer SC', serif;
+    --font-spectral-sc: 'Spectral SC', serif;
   }
   
   html {
-    font-family: var(--font-im-fell-great-primer-sc), serif;
+    font-family: var(--font-spectral-sc), serif;
     /* BACKGROUND COLOR FOR OVERSCROLL AREA - MATCHES GRADIENT THEME */
     @apply bg-rose-500 dark:bg-indigo-900;
     /* PREVENT TOP OVERSCROLL - HEADER STAYS FIXED */
@@ -378,7 +378,7 @@ body {
 
 .Toastify__toast {
   @apply bg-white/80 dark:bg-gray-800/80 backdrop-blur-lg rounded-lg shadow-lg border border-gray-200/50 dark:border-gray-700/50;
-  @apply font-sans;
+  font-family: inherit;
   min-height: 64px;
   padding: 16px;
 }
