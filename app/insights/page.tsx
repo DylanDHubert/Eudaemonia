@@ -58,7 +58,6 @@ export default async function InsightsPage() {
     alcoholUnits: entry.alcohol_units,
     cannabisAmount: entry.cannabis_amount,
     meditation: entry.meditation,
-    meditationTime: entry.meditation_time,
     socialTime: entry.social_time,
     workHours: entry.work_hours,
     stressLevel: entry.stress_level,

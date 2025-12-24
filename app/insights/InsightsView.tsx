@@ -49,7 +49,6 @@ type DailyEntry = {
   alcoholUnits: number | null;
   cannabisAmount: number | null;
   meditation: boolean;
-  meditationTime: number | null;
   socialTime: number | null;
   workHours: number | null;
   meals: number | null;
@@ -93,7 +92,6 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
     exercise: 'Exercise',
     exerciseTime: 'Exercise Time',
     meditation: 'Meditation',
-    meditationTime: 'Meditation Time',
     alcoholUnits: 'Alcohol Units',
     cannabisAmount: 'Cannabis Amount',
     socialTime: 'Social Time',
@@ -119,7 +117,6 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
       'sleepHours',
       'sleepQuality',
       'exerciseTime',
-      'meditationTime',
       'alcoholUnits',
       'cannabisAmount',
       'socialTime',
@@ -271,8 +268,6 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
               return entry.sleepQuality;
             case 'exerciseTime':
               return entry.exercise ? entry.exerciseTime || 0 : 0;
-            case 'meditationTime':
-              return entry.meditation ? entry.meditationTime || 0 : 0;
             case 'alcoholUnits':
               return entry.alcoholUnits ?? 0;
             case 'cannabisAmount':

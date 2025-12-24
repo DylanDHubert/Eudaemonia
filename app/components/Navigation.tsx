@@ -178,7 +178,7 @@ export default function Navigation({ user }: NavigationProps) {
                   : 'text-stone-600 hover:text-rose-500 hover:bg-rose-500/10 dark:text-gray-300 dark:hover:text-indigo-500 dark:hover:bg-indigo-500/10'
               }`}
             >
-              Quick Entry
+              Log
             </Link>
             <DarkModeToggle />
           </div>
