@@ -1,6 +1,5 @@
 import { getServerSession } from '@/lib/supabase/auth';
 import { redirect } from 'next/navigation';
-import Link from 'next/link';
 import ActivityHeatmap from './components/ActivityHeatmap';
 import HappinessChart from './components/HappinessChart';
 import GratitudeView from './gratitudes/GratitudeView';
@@ -43,7 +42,7 @@ export default async function Dashboard() {
             
             {/* Happiness Chart */}
             <div className="glass-card p-6 sm:p-6 w-full md:max-w-3xl">
-              <div className="h-70 relative">
+              <div className="relative">
                 <HappinessChart />
               </div>
             </div>
