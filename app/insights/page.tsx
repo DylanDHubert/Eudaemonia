@@ -31,22 +31,6 @@ export default async function InsightsPage() {
     console.error('Error fetching entries:', error);
   }
   
-  // DEBUG: LOG CUSTOM CATEGORIES AND CANNABIS DATA
-  if (entries && entries.length > 0) {
-    const allCustomCategories = new Set<string>();
-    entries.forEach((entry: any) => {
-      if (entry.custom_category_entries) {
-        entry.custom_category_entries.forEach((cce: any) => {
-          if (cce.custom_categories) {
-            allCustomCategories.add(`${cce.custom_categories.name} (${cce.custom_categories.type})`);
-          }
-        });
-      }
-    });
-    console.log('DEBUG: Custom categories found:', Array.from(allCustomCategories));
-    console.log('DEBUG: Cannabis amounts:', entries.map((e: any) => ({ date: e.date, cannabis_amount: e.cannabis_amount })).slice(0, 5));
-  }
-  
   // FORMAT DATE FIELD FOR EACH ENTRY
   const formattedEntries = (entries || []).map((entry: any) => ({
     id: entry.id,

@@ -69,7 +69,7 @@ type InsightsViewProps = {
 type Correlation = {
   factor: string;
   correlation: number;
-  description: string;
+  stressCorrelation: number | null;
 };
 
 export default function InsightsView({ entries, minimumEntries }: InsightsViewProps) {
@@ -84,6 +84,8 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
   const [entryCounts, setEntryCounts] = useState<number[]>([]);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [sortColumn, setSortColumn] = useState<'happiness' | 'stress'>('happiness');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
   
   // Mapping of internal factor names to display names
   const factorNameMap = useMemo<Record<string, string>>(() => ({
@@ -316,6 +318,7 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
         const validIndices: number[] = [];
         const validValues: number[] = [];
         const validHappiness: number[] = [];
+        const validStress: number[] = [];
         
         values.forEach((val, idx) => {
           // INCLUDE ENTRY IF VALUE IS A VALID NUMBER (INCLUDING 0)
@@ -331,6 +334,7 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
             validIndices.push(idx);
             validValues.push(val);
             validHappiness.push(entries[idx].happinessRating);
+            validStress.push(entries[idx].stressLevel);
           }
         });
         
@@ -340,11 +344,12 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
           const uniqueValues = new Set(validValues);
           if (uniqueValues.size > 1) {
             const correlation = calculatePearsonCorrelation(validValues, validHappiness);
+            const stressCorrelation = calculatePearsonCorrelation(validValues, validStress);
             if (!isNaN(correlation) && isFinite(correlation)) {
               correlations.push({
                 factor,
                 correlation,
-                description: getCorrelationDescription(factor, correlation)
+                stressCorrelation: (!isNaN(stressCorrelation) && isFinite(stressCorrelation)) ? stressCorrelation : null
               });
             }
           }
@@ -386,6 +391,7 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
         const validIndices: number[] = [];
         const validValues: boolean[] = [];
         const validHappiness: number[] = [];
+        const validStress: number[] = [];
         
         values.forEach((val, idx) => {
           // FOR CUSTOM BOOLEAN CATEGORIES, INCLUDE ALL ENTRIES (MISSING = FALSE)
@@ -393,6 +399,7 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
           validIndices.push(idx);
           validValues.push(val);
           validHappiness.push(entries[idx].happinessRating);
+          validStress.push(entries[idx].stressLevel);
         });
         
         // CHECK THAT WE HAVE BOTH TRUE AND FALSE VALUES FOR MEANINGFUL CORRELATION
@@ -401,18 +408,18 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
         
         if (validValues.length >= minimumEntries && hasTrue && hasFalse) {
           const correlation = calculatePointBiserialCorrelation(validValues, validHappiness);
+          const stressCorrelation = calculatePointBiserialCorrelation(validValues, validStress);
           if (!isNaN(correlation) && isFinite(correlation)) {
             correlations.push({
               factor,
               correlation,
-              description: getCorrelationDescription(factor, correlation)
+              stressCorrelation: (!isNaN(stressCorrelation) && isFinite(stressCorrelation)) ? stressCorrelation : null
             });
           }
         }
       });
 
-      // Sort correlations by absolute value
-      correlations.sort((a, b) => Math.abs(b.correlation) - Math.abs(a.correlation));
+      // DON'T SORT HERE - WILL BE SORTED IN useMemo BASED ON USER SELECTION
       setCorrelations(correlations);
     };
     
@@ -857,28 +864,44 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
     };
   };
   
-  // Get correlation description
-  const getCorrelationDescription = (factor: string, correlation: number) => {
-    // USE THE DISPLAY NAME FROM FACTOR NAME MAP OR CUSTOM CATEGORY NAME
-    const factorName = getDisplayName(factor);
-    const strength = Math.abs(correlation);
-    const direction = correlation > 0 ? 'positive' : 'negative';
-
-    if (strength < 0.2) {
-      return `No significant correlation between ${factorName} and happiness`;
-    } else if (strength < 0.4) {
-      return `Weak ${direction} correlation between ${factorName} and happiness`;
-    } else if (strength < 0.6) {
-      return `Moderate ${direction} correlation between ${factorName} and happiness`;
-    } else if (strength < 0.8) {
-      return `Strong ${direction} correlation between ${factorName} and happiness`;
-    } else {
-      return `Very strong ${direction} correlation between ${factorName} and happiness`;
-    }
-  };
-  
   // Helper function to format factor names for display
   const formatFactorName = getDisplayName;
+  
+  // SORT CORRELATIONS BASED ON SELECTED COLUMN AND DIRECTION
+  const sortedCorrelations = useMemo(() => {
+    const sorted = [...correlations];
+    sorted.sort((a, b) => {
+      let aValue: number;
+      let bValue: number;
+      
+      if (sortColumn === 'happiness') {
+        aValue = Math.abs(a.correlation);
+        bValue = Math.abs(b.correlation);
+      } else {
+        // FOR STRESS, HANDLE NULL VALUES BY PUTTING THEM LAST
+        if (a.stressCorrelation === null && b.stressCorrelation === null) return 0;
+        if (a.stressCorrelation === null) return 1;
+        if (b.stressCorrelation === null) return -1;
+        aValue = Math.abs(a.stressCorrelation);
+        bValue = Math.abs(b.stressCorrelation);
+      }
+      
+      return sortDirection === 'desc' ? bValue - aValue : aValue - bValue;
+    });
+    return sorted;
+  }, [correlations, sortColumn, sortDirection]);
+  
+  // HANDLE COLUMN HEADER CLICK FOR SORTING
+  const handleSort = (column: 'happiness' | 'stress') => {
+    if (sortColumn === column) {
+      // TOGGLE DIRECTION IF SAME COLUMN
+      setSortDirection(sortDirection === 'desc' ? 'asc' : 'desc');
+    } else {
+      // SWITCH TO NEW COLUMN, DEFAULT TO DESC
+      setSortColumn(column);
+      setSortDirection('desc');
+    }
+  };
   
   // CHECK IF COMPONENT IS MOUNTED (FOR PORTAL)
   useEffect(() => {
@@ -992,14 +1015,6 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
               </div>
             ) : null}
           </div>
-          <div className="text-center mt-0">
-            <p className="text-xs sm:text-sm text-description">
-              {selectedFactor && (correlations.find(c => 
-                c.factor === selectedFactor || 
-                c.factor === getInternalName(selectedFactor))?.description || 
-                'No interpretation available')}
-            </p>
-          </div>
         </div>
       </div>
     </>
@@ -1028,27 +1043,53 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
         {viewMode === 'correlations' ? (
           <>
             <div className="">
-              <h3 className="hidden sm:block text-subheader mb-4">Factors Affecting Your Happiness</h3>
+              <h3 className="hidden sm:block text-subheader mb-4">Factors Affecting Your Happiness & Stress</h3>
               <div className="glass-card p-2 sm:p-6 rounded-lg overflow-hidden">
                 <div className="overflow-x-auto sm:overflow-x-auto">
                   <table className="w-full divide-y divide-gray-200 dark:divide-gray-700">
                     <thead>
                       <tr>
                         <th scope="col" className="px-2 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Factor</th>
-                        <th scope="col" className="px-2 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Correlation</th>
-                        <th scope="col" className="hidden sm:table-cell px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Interpretation</th>
-                        <th scope="col" className="hidden sm:table-cell px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
+                        <th 
+                          scope="col" 
+                          className="px-2 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 select-none"
+                          onClick={() => handleSort('happiness')}
+                        >
+                          <div className="flex items-center gap-1">
+                            Happiness
+                            {sortColumn === 'happiness' && (
+                              <span className="text-gray-700 dark:text-gray-300">
+                                {sortDirection === 'desc' ? '↓' : '↑'}
+                              </span>
+                            )}
+                          </div>
+                        </th>
+                        <th 
+                          scope="col" 
+                          className="px-2 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 select-none"
+                          onClick={() => handleSort('stress')}
+                        >
+                          <div className="flex items-center gap-1">
+                            Stress
+                            {sortColumn === 'stress' && (
+                              <span className="text-gray-700 dark:text-gray-300">
+                                {sortDirection === 'desc' ? '↓' : '↑'}
+                              </span>
+                            )}
+                          </div>
+                        </th>
+                        <th scope="col" className="px-2 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                      {correlations.length === 0 ? (
+                      {sortedCorrelations.length === 0 ? (
                         <tr>
                           <td colSpan={4} className="px-4 sm:px-6 py-4 text-center text-description">
                             No correlation data available
                           </td>
                         </tr>
                       ) : (
-                        correlations.map((correlation, index) => (
+                        sortedCorrelations.map((correlation, index) => (
                           <tr 
                             key={index} 
                             className={`${selectedFactor === correlation.factor ? 'bg-pink-50/50 dark:bg-indigo-900/20' : 'hover:bg-gray-50/50 dark:hover:bg-gray-800/50'} cursor-pointer`}
@@ -1060,8 +1101,10 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
                             <td className={`px-2 sm:px-6 py-4 text-sm ${getCorrelationColor(correlation.correlation)}`}>
                               {formatDecimal(correlation.correlation)}
                             </td>
-                            <td className="hidden sm:table-cell px-6 py-4 text-sm text-description">{correlation.description}</td>
-                            <td className="hidden sm:table-cell px-4 sm:px-6 py-4 whitespace-nowrap text-sm">
+                            <td className={`px-2 sm:px-6 py-4 text-sm ${correlation.stressCorrelation !== null ? getCorrelationColor(correlation.stressCorrelation) : 'text-gray-400'}`}>
+                              {correlation.stressCorrelation !== null ? formatDecimal(correlation.stressCorrelation) : 'N/A'}
+                            </td>
+                            <td className="px-2 sm:px-6 py-4 whitespace-nowrap text-sm">
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
