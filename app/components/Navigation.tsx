@@ -98,95 +98,12 @@ export default function Navigation({ user }: NavigationProps) {
             </Link>
           </div>
           
-          {/* CENTER: NAVIGATION BUTTONS */}
-          <div className="hidden sm:flex sm:items-center sm:justify-center sm:space-x-3 relative z-10">
-            <Link 
-              href="/" 
-              className={`text-sm sm:text-base px-3 py-2 rounded-md transition-colors ${
-                isActive('/')
-                  ? 'text-rose-600 dark:text-indigo-600 bg-white/50 dark:bg-gray-800/50' 
-                  : 'text-stone-600 hover:text-rose-500 hover:bg-rose-500/10 dark:text-gray-300 dark:hover:text-indigo-500 dark:hover:bg-indigo-500/10'
-              }`}
-            >
-              Dashboard
-            </Link>
-            <Link 
-              href="/entry" 
-              className={`text-sm sm:text-base px-3 py-2 rounded-md transition-colors ${
-                isActive('/entry')
-                  ? 'text-rose-600 dark:text-indigo-600 bg-white/50 dark:bg-gray-800/50' 
-                  : 'text-stone-600 hover:text-rose-500 hover:bg-rose-500/10 dark:text-gray-300 dark:hover:text-indigo-500 dark:hover:bg-indigo-500/10'
-              }`}
-            >
-              Entry
-            </Link>
-            <Link 
-              href="/insights" 
-              className={`text-sm sm:text-base px-3 py-2 rounded-md transition-colors ${
-                isActive('/insights')
-                  ? 'text-rose-600 dark:text-indigo-600 bg-white/50 dark:bg-gray-800/50' 
-                  : 'text-stone-600 hover:text-rose-500 hover:bg-rose-500/10 dark:text-gray-300 dark:hover:text-indigo-500 dark:hover:bg-indigo-500/10'
-              }`}
-            >
-              Insights
-            </Link>
-            <Link 
-              href="/history" 
-              className={`text-sm sm:text-base px-3 py-2 rounded-md transition-colors ${
-                isActive('/history')
-                  ? 'text-rose-600 dark:text-indigo-600 bg-white/50 dark:bg-gray-800/50' 
-                  : 'text-stone-600 hover:text-rose-500 hover:bg-rose-500/10 dark:text-gray-300 dark:hover:text-indigo-500 dark:hover:bg-indigo-500/10'
-              }`}
-            >
-              History
-            </Link>
-            <Link 
-              href="/gratitudes" 
-              className={`text-sm sm:text-base px-3 py-2 rounded-md transition-colors ${
-                isActive('/gratitudes')
-                  ? 'text-rose-600 dark:text-indigo-600 bg-white/50 dark:bg-gray-800/50' 
-                  : 'text-stone-600 hover:text-rose-500 hover:bg-rose-500/10 dark:text-gray-300 dark:hover:text-indigo-500 dark:hover:bg-indigo-500/10'
-              }`}
-            >
-              Gratitudes
-            </Link>
-            <Link
-              href="/categories"
-              className={`text-sm sm:text-base px-3 py-2 rounded-md transition-colors ${
-                isActive('/categories')
-                  ? 'text-rose-600 dark:text-indigo-600 bg-white/50 dark:bg-gray-800/50' 
-                  : 'text-stone-600 hover:text-rose-500 hover:bg-rose-500/10 dark:text-gray-300 dark:hover:text-indigo-500 dark:hover:bg-indigo-500/10'
-              }`}
-            >
-              Categories
-            </Link>
-            <Link
-              href="/erc"
-              className={`relative z-10 text-sm sm:text-base px-3 py-2 rounded-md transition-colors ${
-                isActive('/erc')
-                  ? 'text-rose-600 dark:text-indigo-600 bg-white/50 dark:bg-gray-800/50' 
-                  : 'text-stone-600 hover:text-rose-500 hover:bg-rose-500/10 dark:text-gray-300 dark:hover:text-indigo-500 dark:hover:bg-indigo-500/10'
-              }`}
-            >
-              ERC
-            </Link>
-            <Link
-              href="/quick-entry"
-              className={`text-sm sm:text-base px-3 py-2 rounded-md transition-colors ${
-                isActive('/quick-entry')
-                  ? 'text-rose-600 dark:text-indigo-600 bg-white/50 dark:bg-gray-800/50' 
-                  : 'text-stone-600 hover:text-rose-500 hover:bg-rose-500/10 dark:text-gray-300 dark:hover:text-indigo-500 dark:hover:bg-indigo-500/10'
-              }`}
-            >
-              Log
-            </Link>
-            <DarkModeToggle />
-          </div>
+          {/* CENTER: EMPTY SPACE (NAVIGATION MOVED TO POPUP) */}
+          <div className="hidden sm:block"></div>
           
-          {/* RIGHT: USERNAME AND SIGN OUT / MOBILE BUTTONS */}
+          {/* RIGHT: MENU BUTTON AND DARK MODE TOGGLE */}
           <div className="flex items-center justify-end">
-            {/* Mobile menu button and dark mode toggle - same position as desktop sign out */}
-            <div className="flex items-center gap-2 sm:hidden">
+            <div className="flex items-center gap-2">
               <DarkModeToggle />
               <button
                 onClick={toggleMenu}
@@ -200,34 +117,16 @@ export default function Navigation({ user }: NavigationProps) {
                 )}
               </button>
             </div>
-            
-            {/* Desktop: Username and Sign Out */}
-            <div className="hidden sm:block">
-              <div className="flex flex-col items-end">
-                <span className="text-sm text-stone-600 dark:text-gray-300 mb-1">{getUserName()}</span>
-                <button
-                  onClick={async () => {
-                    const supabase = createClient();
-                    await supabase.auth.signOut();
-                    router.push('/login');
-                    router.refresh();
-                  }}
-                  className="text-sm text-stone-600 hover:text-red-500 dark:text-gray-300 dark:hover:text-red-500"
-                >
-                  Sign Out
-                </button>
-              </div>
-            </div>
           </div>
         </div>
       </div>
       
-      {/* Mobile menu modal */}
+      {/* MENU MODAL - USED FOR BOTH MOBILE AND DESKTOP */}
       {isMenuOpen && mounted && createPortal(
         <>
           {/* BACKDROP - COVERS ENTIRE SCREEN */}
           <div 
-            className="sm:hidden fixed top-0 left-0 right-0 bottom-0 z-[9999] bg-black/50 dark:bg-black/70"
+            className="fixed top-0 left-0 right-0 bottom-0 z-[9999] bg-black/50 dark:bg-black/70"
             style={{ 
               backdropFilter: 'blur(12px)', 
               WebkitBackdropFilter: 'blur(12px)',
@@ -240,7 +139,7 @@ export default function Navigation({ user }: NavigationProps) {
           
           {/* MODAL CONTENT */}
           <div 
-            className="sm:hidden fixed inset-0 z-[10000] flex items-start justify-center pt-[20vh] px-4 pointer-events-none"
+            className="fixed inset-0 z-[10000] flex items-start justify-center pt-[20vh] px-4 pointer-events-none"
           >
             <div 
               className="relative w-full max-w-sm bg-white dark:bg-gray-800 rounded-2xl shadow-2xl overflow-hidden pointer-events-auto"
