@@ -65,7 +65,7 @@ export default async function RootLayout({
         {/* PWA ICON - USE icon.png FOR APPLE TOUCH ICON */}
         <link rel="apple-touch-icon" href="/icon.png" />
       </head>
-      <body className={`h-full overflow-x-hidden`}>
+      <body className={`${spectralSC.variable} font-sans h-full overflow-x-hidden`}>
         <div className="min-h-screen relative">
           {/* GRADIENT BASE BACKGROUND - RED TO ROSE TO PINK (LIGHT), INDIGO/PURPLE (DARK) */}
           <div className="absolute inset-0 bg-gradient-to-br from-red-400 via-rose-300 to-pink-300 dark:from-indigo-950 dark:via-purple-900 dark:to-indigo-800"></div>
