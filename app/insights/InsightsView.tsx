@@ -649,6 +649,16 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
     return 'text-red-600';
   };
   
+  // Helper function to get color for stress correlation (inverted logic)
+  // NEGATIVE CORRELATION WITH STRESS = GOOD (GREEN), POSITIVE = BAD (RED)
+  const getStressCorrelationColor = (correlation: number) => {
+    const absCorrelation = Math.abs(correlation);
+    
+    if (absCorrelation < 0.1) return 'text-gray-500';
+    if (correlation < 0) return 'text-green-600'; // NEGATIVE = LESS STRESS = GOOD
+    return 'text-red-600'; // POSITIVE = MORE STRESS = BAD
+  };
+  
   const formatDecimal = (num: number) => {
     return num.toFixed(2);
   };
@@ -1078,7 +1088,7 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
                             )}
                           </div>
                         </th>
-                        <th scope="col" className="px-2 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
+                        <th scope="col" className="hidden sm:table-cell px-2 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
@@ -1101,10 +1111,10 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
                             <td className={`px-2 sm:px-6 py-4 text-sm ${getCorrelationColor(correlation.correlation)}`}>
                               {formatDecimal(correlation.correlation)}
                             </td>
-                            <td className={`px-2 sm:px-6 py-4 text-sm ${correlation.stressCorrelation !== null ? getCorrelationColor(correlation.stressCorrelation) : 'text-gray-400'}`}>
+                            <td className={`px-2 sm:px-6 py-4 text-sm ${correlation.stressCorrelation !== null ? getStressCorrelationColor(correlation.stressCorrelation) : 'text-gray-400'}`}>
                               {correlation.stressCorrelation !== null ? formatDecimal(correlation.stressCorrelation) : 'N/A'}
                             </td>
-                            <td className="px-2 sm:px-6 py-4 whitespace-nowrap text-sm">
+                            <td className="hidden sm:table-cell px-2 sm:px-6 py-4 whitespace-nowrap text-sm">
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
