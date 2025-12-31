@@ -444,4 +444,3 @@ body {
 .Toastify__close-button--dark {
   @apply text-gray-400 dark:text-gray-300;
 }
-

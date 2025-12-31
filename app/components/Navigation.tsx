@@ -6,7 +6,7 @@ import { createClient } from '@/lib/supabase/client';
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import Image from 'next/image';
-import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
+import { Bars3Icon, XMarkIcon, ArrowDownTrayIcon } from '@heroicons/react/24/outline';
 import DarkModeToggle from './DarkModeToggle';
 
 type NavigationProps = {
@@ -76,6 +76,217 @@ export default function Navigation({ user }: NavigationProps) {
 
   const closeMenu = () => {
     setIsMenuOpen(false);
+  };
+
+  // EXPORT DATA FUNCTION
+  const handleExportData = async () => {
+    try {
+      // SHOW LOADING STATE (OPTIONAL - CAN ADD LATER)
+      
+      // FETCH ALL DATA IN PARALLEL
+      const [entriesRes, exposureRes, quickRes, gratitudesRes] = await Promise.all([
+        fetch('/api/entries'),
+        fetch('/api/exposure-entries'),
+        fetch('/api/quick-entries'),
+        fetch('/api/gratitudes')
+      ]);
+
+      const entriesData = await entriesRes.json();
+      const exposureData = await exposureRes.json();
+      const quickData = await quickRes.json();
+      const gratitudesData = await gratitudesRes.json();
+
+      const entries = entriesData.entries || [];
+      const exposureEntries = exposureData.entries || [];
+      const quickEntries = quickData.entries || [];
+      const gratitudes = gratitudesData || [];
+
+      // GROUP DATA BY DATE
+      const dataByDate: Record<string, {
+        dailyEntry?: any;
+        exposureEntries: any[];
+        quickEntries: any[];
+        gratitudes: any[];
+      }> = {};
+
+      // PROCESS DAILY ENTRIES
+      entries.forEach((entry: any) => {
+        const dateKey = new Date(entry.date).toISOString().split('T')[0];
+        if (!dataByDate[dateKey]) {
+          dataByDate[dateKey] = {
+            dailyEntry: null,
+            exposureEntries: [],
+            quickEntries: [],
+            gratitudes: []
+          };
+        }
+        dataByDate[dateKey].dailyEntry = entry;
+      });
+
+      // PROCESS EXPOSURE ENTRIES
+      exposureEntries.forEach((entry: any) => {
+        const dateKey = new Date(entry.date).toISOString().split('T')[0];
+        if (!dataByDate[dateKey]) {
+          dataByDate[dateKey] = {
+            dailyEntry: null,
+            exposureEntries: [],
+            quickEntries: [],
+            gratitudes: []
+          };
+        }
+        dataByDate[dateKey].exposureEntries.push(entry);
+      });
+
+      // PROCESS QUICK ENTRIES
+      quickEntries.forEach((entry: any) => {
+        const dateKey = new Date(entry.date).toISOString().split('T')[0];
+        if (!dataByDate[dateKey]) {
+          dataByDate[dateKey] = {
+            dailyEntry: null,
+            exposureEntries: [],
+            quickEntries: [],
+            gratitudes: []
+          };
+        }
+        dataByDate[dateKey].quickEntries.push(entry);
+      });
+
+      // PROCESS GRATITUDES (USE CREATED_AT DATE)
+      gratitudes.forEach((gratitude: any) => {
+        const dateKey = new Date(gratitude.created_at).toISOString().split('T')[0];
+        if (!dataByDate[dateKey]) {
+          dataByDate[dateKey] = {
+            dailyEntry: null,
+            exposureEntries: [],
+            quickEntries: [],
+            gratitudes: []
+          };
+        }
+        dataByDate[dateKey].gratitudes.push(gratitude);
+      });
+
+      // SORT DATES CHRONOLOGICALLY (OLDEST TO NEWEST)
+      const sortedDates = Object.keys(dataByDate).sort((a, b) => 
+        new Date(a).getTime() - new Date(b).getTime()
+      );
+
+      // FORMAT DATA FOR EXPORT
+      let exportText = '=== Eudaemonia Data Export ===\n';
+      exportText += `Generated: ${new Date().toISOString()}\n\n`;
+
+      sortedDates.forEach((dateKey) => {
+        const dayData = dataByDate[dateKey];
+        const date = new Date(dateKey);
+        const formattedDate = date.toLocaleDateString('en-US', { 
+          weekday: 'long', 
+          year: 'numeric', 
+          month: 'long', 
+          day: 'numeric' 
+        });
+
+        exportText += `--- ${formattedDate} (${dateKey}) ---\n\n`;
+
+        // DAILY ENTRY
+        if (dayData.dailyEntry) {
+          const entry = dayData.dailyEntry;
+          exportText += 'Daily Entry:\n';
+          exportText += `  Sleep: ${entry.sleep_hours} hours (Quality: ${entry.sleep_quality}/10)\n`;
+          exportText += `  Exercise: ${entry.exercise ? 'Yes' : 'No'}${entry.exercise_time ? ` (${entry.exercise_time} minutes)` : ''}\n`;
+          exportText += `  Meditation: ${entry.meditation ? 'Yes' : 'No'}${entry.meditation_time ? ` (${entry.meditation_time} minutes)` : ''}\n`;
+          exportText += `  Alcohol: ${entry.alcohol ? 'Yes' : 'No'}${entry.alcohol_units !== null && entry.alcohol_units !== undefined ? ` (${entry.alcohol_units} units)` : ''}\n`;
+          exportText += `  Cannabis: ${entry.cannabis ? 'Yes' : 'No'}${entry.cannabis_amount !== null && entry.cannabis_amount !== undefined ? ` (${entry.cannabis_amount})` : ''}\n`;
+          if (entry.social_time !== null && entry.social_time !== undefined) {
+            exportText += `  Social Time: ${entry.social_time} hours\n`;
+          }
+          if (entry.work_hours !== null && entry.work_hours !== undefined) {
+            exportText += `  Work Hours: ${entry.work_hours} hours\n`;
+          }
+          exportText += `  Stress Level: ${entry.stress_level}/10\n`;
+          exportText += `  Happiness Rating: ${entry.happiness_rating}/10\n`;
+          if (entry.meals !== null && entry.meals !== undefined) {
+            exportText += `  Meals: ${entry.meals}\n`;
+          }
+          if (entry.food_quality !== null && entry.food_quality !== undefined) {
+            exportText += `  Food Quality: ${entry.food_quality}/10\n`;
+          }
+          if (entry.notes) {
+            exportText += `  Notes: ${entry.notes}\n`;
+          }
+          
+          // CUSTOM CATEGORIES
+          if (entry.custom_category_entries && entry.custom_category_entries.length > 0) {
+            exportText += '  Custom Categories:\n';
+            entry.custom_category_entries.forEach((cce: any) => {
+              const category = cce.custom_categories;
+              exportText += `    - ${category.name}: ${cce.value}`;
+              if (category.type === 'scale' && category.min !== null && category.max !== null) {
+                exportText += ` (scale: ${category.min}-${category.max})`;
+              }
+              exportText += '\n';
+            });
+          }
+          exportText += '\n';
+        } else {
+          exportText += 'Daily Entry: (No entry for this day)\n\n';
+        }
+
+        // ERC ENTRIES
+        if (dayData.exposureEntries.length > 0) {
+          exportText += 'ERC Entries:\n';
+          dayData.exposureEntries.forEach((entry: any) => {
+            exportText += `  - [${entry.type.toUpperCase()}]: ${entry.title}\n`;
+            exportText += `    SUDS Pre: ${entry.suds_pre}/10, Peak: ${entry.suds_peak}/10, Post: ${entry.suds_post}/10\n`;
+            if (entry.duration !== null && entry.duration !== undefined) {
+              exportText += `    Duration: ${entry.duration} minutes\n`;
+            }
+            if (entry.notes) {
+              exportText += `    Notes: ${entry.notes}\n`;
+            }
+          });
+          exportText += '\n';
+        }
+
+        // QUICK ENTRIES
+        if (dayData.quickEntries.length > 0) {
+          exportText += 'Quick Entries:\n';
+          dayData.quickEntries.forEach((entry: any) => {
+            exportText += `  - ${entry.category.charAt(0).toUpperCase() + entry.category.slice(1)}: ${entry.rating}/10\n`;
+            if (entry.notes) {
+              exportText += `    Notes: ${entry.notes}\n`;
+            }
+          });
+          exportText += '\n';
+        }
+
+        // GRATITUDES
+        if (dayData.gratitudes.length > 0) {
+          exportText += 'Gratitudes:\n';
+          dayData.gratitudes.forEach((gratitude: any) => {
+            exportText += `  - ${gratitude.content}\n`;
+          });
+          exportText += '\n';
+        }
+
+        exportText += '\n';
+      });
+
+      // DOWNLOAD FILE
+      const blob = new Blob([exportText], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      const today = new Date().toISOString().split('T')[0];
+      a.download = `eudaemonia-export-${today}.txt`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      closeMenu();
+    } catch (error) {
+      console.error('Error exporting data:', error);
+      alert('Failed to export data. Please try again.');
+    }
   };
 
   return (
@@ -254,6 +465,13 @@ export default function Navigation({ user }: NavigationProps) {
               <div className="flex items-center justify-between mb-3">
                 <span className="text-sm text-stone-600 dark:text-gray-400">{getUserName()}</span>
               </div>
+              <button
+                onClick={handleExportData}
+                className="w-full mb-2 px-4 py-2.5 rounded-md text-base font-medium text-stone-700 dark:text-gray-200 bg-stone-100 hover:bg-stone-200 dark:bg-gray-700 dark:hover:bg-gray-600 transition-colors flex items-center justify-center gap-2"
+              >
+                <ArrowDownTrayIcon className="h-5 w-5" />
+                Export Data
+              </button>
               <button
                 onClick={async () => {
                   const supabase = createClient();
