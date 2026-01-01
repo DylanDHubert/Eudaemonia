@@ -4,8 +4,8 @@
   "description": "Monitor lifestyle factors to improve your well-being",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#f43f5e",
-  "theme_color": "#f43f5e",
+  "background_color": "#3b0764",
+  "theme_color": "#3b0764",
   "orientation": "portrait",
   "icons": [
     {

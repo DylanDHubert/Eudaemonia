@@ -11,7 +11,7 @@ export const metadata: Metadata = {
     icon: [
       { url: '/light.png', media: '(prefers-color-scheme: light)' },
       { url: '/dark.png', media: '(prefers-color-scheme: dark)' },
-      { url: '/light.png' }, // DEFAULT FALLBACK
+      { url: '/dark.png' }, // DEFAULT FALLBACK - DARK MODE
     ],
     apple: [
       { url: '/icon.png' }, // PWA ICON FOR APPLE TOUCH ICON
@@ -42,6 +42,20 @@ export default async function RootLayout({
   return (
     <html lang="en" className="h-full">
       <head>
+        {/* SET DARK MODE IMMEDIATELY TO PREVENT FLASH - DEFAULT TO DARK IF NO PREFERENCE */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                const storedPreference = localStorage.getItem('darkMode');
+                const isDarkMode = storedPreference === null ? true : storedPreference === 'true';
+                if (isDarkMode) {
+                  document.documentElement.classList.add('dark');
+                }
+              })();
+            `,
+          }}
+        />
         {/* PRELOAD CUSTOM FONT */}
         <link rel="preload" href="/font.ttf" as="font" type="font/ttf" crossOrigin="anonymous" />
         {/* ADDITIONAL IOS PWA META TAGS FOR SEARCH BAR HIDING */}
@@ -49,12 +63,12 @@ export default async function RootLayout({
         <meta name="mobile-web-app-capable" content="yes" />
         {/* PWA MANIFEST */}
         <link rel="manifest" href="/manifest.json" />
-        {/* THEME COLOR FOR PWA STATUS BAR - ROSE FOR LIGHT, FUSCHIA 800 FOR DARK, UPDATED BY ThemeColorUpdater */}
-        <meta name="theme-color" content="#f43f5e" />
-        {/* APP ICONS - USE LIGHT AS DEFAULT, DARK FOR DARK MODE */}
+        {/* THEME COLOR FOR PWA STATUS BAR - ROSE FOR LIGHT, PURPLE 950 FOR DARK, UPDATED BY ThemeColorUpdater - DEFAULT TO DARK */}
+        <meta name="theme-color" content="#3b0764" />
+        {/* APP ICONS - USE DARK AS DEFAULT, LIGHT FOR LIGHT MODE */}
         <link rel="icon" href="/light.png" media="(prefers-color-scheme: light)" />
         <link rel="icon" href="/dark.png" media="(prefers-color-scheme: dark)" />
-        <link rel="icon" href="/light.png" />
+        <link rel="icon" href="/dark.png" />
         {/* PWA ICON - USE icon.png FOR APPLE TOUCH ICON */}
         <link rel="apple-touch-icon" href="/icon.png" />
       </head>
@@ -63,8 +77,8 @@ export default async function RootLayout({
           {/* GRADIENT BASE BACKGROUND - RED TO ROSE TO PINK (LIGHT), INDIGO/PURPLE (DARK) */}
           <div className="absolute inset-0 bg-gradient-to-br from-red-400 via-rose-300 to-pink-300 dark:from-indigo-950 dark:via-purple-900 dark:to-indigo-800"></div>
           
-          {/* TEXTURE OVERLAY - ANIMATED OPACITY BETWEEN 10% AND 30% - TILED 100X100 */}
-          <div className="absolute inset-0 bg-[url('/texture.png')] bg-repeat bg-[length:100px_100px] texture-animate"></div>
+          {/* TEXTURE OVERLAY - ANIMATED OPACITY BETWEEN 10% AND 30% - TILED 300X300 */}
+          <div className="absolute inset-0 bg-[url('/pattern.png')] bg-repeat bg-[length:300px_300px] texture-animate"></div>
           
           {/* CONTENT LAYER */}
           <div className="relative z-10">
