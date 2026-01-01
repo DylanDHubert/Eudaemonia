@@ -124,7 +124,7 @@ export default function EditEntryModal({ isOpen, onClose, entry }: EditEntryModa
 
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Exercise Time (minutes)
+                Exercise (hours)
               </label>
               <input
                 type="number"
@@ -132,6 +132,8 @@ export default function EditEntryModal({ isOpen, onClose, entry }: EditEntryModa
                 value={formData.exerciseTime || ''}
                 onChange={handleInputChange}
                 min="0"
+                max="24"
+                step="0.5"
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
               />
             </div>
@@ -162,6 +164,122 @@ export default function EditEntryModal({ isOpen, onClose, entry }: EditEntryModa
                 onChange={handleInputChange}
                 step="0.1"
                 min="0"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Meditation
+              </label>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    name="meditation"
+                    checked={formData.meditation || false}
+                    onChange={handleInputChange}
+                    className="w-4 h-4"
+                  />
+                  <span className="text-sm text-gray-700 dark:text-gray-300">Yes</span>
+                </div>
+                <input
+                  type="number"
+                  name="meditationTime"
+                  value={formData.meditationTime || ''}
+                  onChange={handleInputChange}
+                  min="1"
+                  max="480"
+                  disabled={!formData.meditation}
+                  className="w-24 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-100 dark:disabled:bg-gray-700"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Alcohol
+              </label>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    name="alcohol"
+                    checked={formData.alcohol || false}
+                    onChange={handleInputChange}
+                    className="w-4 h-4"
+                  />
+                  <span className="text-sm text-gray-700 dark:text-gray-300">Yes</span>
+                </div>
+                <input
+                  type="number"
+                  name="alcoholUnits"
+                  value={formData.alcoholUnits || ''}
+                  onChange={handleInputChange}
+                  min="0.5"
+                  max="30"
+                  step="0.5"
+                  disabled={!formData.alcohol}
+                  className="w-24 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-100 dark:disabled:bg-gray-700"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Cannabis
+              </label>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    name="cannabis"
+                    checked={formData.cannabis || false}
+                    onChange={handleInputChange}
+                    className="w-4 h-4"
+                  />
+                  <span className="text-sm text-gray-700 dark:text-gray-300">Yes</span>
+                </div>
+                <input
+                  type="number"
+                  name="cannabisAmount"
+                  value={formData.cannabisAmount || ''}
+                  onChange={handleInputChange}
+                  min="0"
+                  max="10"
+                  step="0.01"
+                  placeholder="0"
+                  disabled={!formData.cannabis}
+                  className="w-24 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-100 dark:disabled:bg-gray-700"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Meals
+              </label>
+              <input
+                type="number"
+                name="meals"
+                value={formData.meals || ''}
+                onChange={handleInputChange}
+                min="0"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Food Quality
+              </label>
+              <input
+                type="number"
+                name="foodQuality"
+                value={formData.foodQuality || ''}
+                onChange={handleInputChange}
+                min="1"
+                max="10"
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
               />
             </div>
