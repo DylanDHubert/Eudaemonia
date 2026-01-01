@@ -84,6 +84,28 @@
 @layer components {
   .glass-nav {
     @apply bg-white/50 backdrop-blur-lg border-b border-white/30 shadow-md dark:bg-gray-900/50 dark:border-gray-800/30;
+    position: relative;
+  }
+
+  .glass-nav::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: url('/header_pattern.png');
+    background-repeat: repeat-x;
+    background-size: auto 100%;
+    background-position: top left;
+    opacity: 0.025;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .glass-nav > * {
+    position: relative;
+    z-index: 1;
   }
 
   .glass-card {
