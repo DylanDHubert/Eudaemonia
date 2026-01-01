@@ -2,13 +2,22 @@
 @tailwind components;
 @tailwind utilities;
 
+/* LOAD CUSTOM FONT FROM PUBLIC FOLDER */
+@font-face {
+  font-family: 'CustomChartFont';
+  src: url('/font.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: block; /* WAIT FOR FONT TO LOAD BEFORE RENDERING */
+}
+
 @layer base {
   :root {
-    --font-spectral-sc: 'Spectral SC', serif;
+    --font-custom: 'CustomChartFont', serif;
   }
   
   html {
-    font-family: var(--font-spectral-sc), serif;
+    font-family: var(--font-custom), serif;
     /* BACKGROUND COLOR FOR OVERSCROLL AREA - MATCHES GRADIENT THEME */
     @apply bg-rose-500 dark:bg-indigo-900;
     /* PREVENT TOP OVERSCROLL - HEADER STAYS FIXED */

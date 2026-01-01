@@ -26,10 +26,6 @@ ChartJS.register(
   Legend
 );
 
-// SET DEFAULT FONT FOR ALL CHARTS
-ChartJS.defaults.font.family = "'IM Fell Great Primer SC', serif";
-ChartJS.defaults.font.size = 12;
-
 interface HappinessChartProps {
   entries?: Entry[];
 }
@@ -41,6 +37,51 @@ export default function HappinessChart({ entries }: HappinessChartProps) {
   const [fontSize, setFontSize] = useState(12);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [rawEntries, setRawEntries] = useState<Entry[]>([]);
+  const [fontLoaded, setFontLoaded] = useState(false);
+
+  // LOAD AND SET CHART FONT USING FONTFACE API
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    
+    // CHECK IF FONT IS ALREADY LOADED
+    const checkFontLoaded = async () => {
+      try {
+        // USE FONTFACE API TO LOAD FONT
+        const font = new FontFace('CustomChartFont', 'url(/font.ttf)');
+        await font.load();
+        document.fonts.add(font);
+        
+        // SET CHART DEFAULT FONT
+        ChartJS.defaults.font.family = 'CustomChartFont, serif';
+        ChartJS.defaults.font.size = 12;
+        setFontLoaded(true);
+      } catch (error) {
+        console.error('Error loading font:', error);
+        // FALLBACK TO SERIF IF FONT FAILS TO LOAD
+        ChartJS.defaults.font.family = 'serif';
+        ChartJS.defaults.font.size = 12;
+        setFontLoaded(true);
+      }
+    };
+    
+    // CHECK IF FONT IS ALREADY AVAILABLE
+    if (document.fonts.check('1em CustomChartFont')) {
+      ChartJS.defaults.font.family = 'CustomChartFont, serif';
+      ChartJS.defaults.font.size = 12;
+      setFontLoaded(true);
+    } else {
+      // WAIT FOR FONTS TO BE READY, THEN LOAD
+      document.fonts.ready.then(() => {
+        if (!document.fonts.check('1em CustomChartFont')) {
+          checkFontLoaded();
+        } else {
+          ChartJS.defaults.font.family = 'CustomChartFont, serif';
+          ChartJS.defaults.font.size = 12;
+          setFontLoaded(true);
+        }
+      });
+    }
+  }, []);
 
   // Check if dark mode is enabled - CHECK IMMEDIATELY ON MOUNT
   useEffect(() => {
@@ -268,7 +309,7 @@ export default function HappinessChart({ entries }: HappinessChartProps) {
         ticks: {
           stepSize: 2,
           font: {
-            family: "'IM Fell Great Primer SC', serif",
+            family: 'CustomChartFont, serif',
             size: fontSize,
             color: isDarkMode ? 'rgba(209, 213, 219, 0.8)' : 'rgba(75, 85, 99, 0.8)',
           },
@@ -285,7 +326,7 @@ export default function HappinessChart({ entries }: HappinessChartProps) {
           maxRotation: 45,
           minRotation: 45,
           font: {
-            family: "'IM Fell Great Primer SC', serif",
+            family: 'CustomChartFont, serif',
             size: fontSize,
             color: isDarkMode ? 'rgba(209, 213, 219, 0.8)' : 'rgba(75, 85, 99, 0.8)',
           },
@@ -297,7 +338,18 @@ export default function HappinessChart({ entries }: HappinessChartProps) {
     },
     plugins: {
       legend: {
-        display: false,
+        display: true,
+        position: 'top' as const,
+        align: 'end' as const,
+        labels: {
+          font: {
+            family: 'CustomChartFont, serif',
+            size: fontSize,
+          },
+          color: isDarkMode ? 'rgba(209, 213, 219, 0.8)' : 'rgba(75, 85, 99, 0.8)',
+          usePointStyle: true,
+          padding: 15,
+        },
       },
       tooltip: {
         callbacks: {
@@ -313,11 +365,11 @@ export default function HappinessChart({ entries }: HappinessChartProps) {
           },
         },
         titleFont: {
-          family: "'IM Fell Great Primer SC', serif",
+          family: 'CustomChartFont, serif',
           size: fontSize + 2,
         },
         bodyFont: {
-          family: "'IM Fell Great Primer SC', serif",
+          family: 'CustomChartFont, serif',
           size: fontSize,
         },
       },

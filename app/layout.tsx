@@ -3,15 +3,6 @@ import "./globals.css";
 import Providers from "./providers";
 import Navigation from "./components/Navigation";
 import { getServerSession } from '@/lib/supabase/auth';
-import { Spectral_SC } from 'next/font/google';
-
-// CONFIGURE SPECTRAL SC FONT
-const spectralSC = Spectral_SC({ 
-  weight: ['400'],
-  subsets: ['latin'],
-  display: 'swap',
-  variable: '--font-spectral-sc',
-});
 
 export const metadata: Metadata = {
   title: "Eudaemonia - Track Your Well-being",
@@ -49,8 +40,10 @@ export default async function RootLayout({
   const session = await getServerSession();
   
   return (
-    <html lang="en" className={`${spectralSC.variable} h-full`}>
+    <html lang="en" className="h-full">
       <head>
+        {/* PRELOAD CUSTOM FONT */}
+        <link rel="preload" href="/font.ttf" as="font" type="font/ttf" crossOrigin="anonymous" />
         {/* ADDITIONAL IOS PWA META TAGS FOR SEARCH BAR HIDING */}
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="mobile-web-app-capable" content="yes" />
@@ -65,7 +58,7 @@ export default async function RootLayout({
         {/* PWA ICON - USE icon.png FOR APPLE TOUCH ICON */}
         <link rel="apple-touch-icon" href="/icon.png" />
       </head>
-      <body className={`${spectralSC.variable} font-sans h-full overflow-x-hidden`}>
+      <body className="font-sans h-full overflow-x-hidden">
         <div className="min-h-screen relative">
           {/* GRADIENT BASE BACKGROUND - RED TO ROSE TO PINK (LIGHT), INDIGO/PURPLE (DARK) */}
           <div className="absolute inset-0 bg-gradient-to-br from-red-400 via-rose-300 to-pink-300 dark:from-indigo-950 dark:via-purple-900 dark:to-indigo-800"></div>
