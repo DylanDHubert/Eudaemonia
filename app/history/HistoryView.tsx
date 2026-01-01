@@ -123,7 +123,7 @@ export default function HistoryView({ entries }: HistoryViewProps) {
                 <div>
                   <p className="text-sm text-gray-500 dark:text-gray-400">Alcohol</p>
                   <p className="text-gray-900 dark:text-gray-100">
-                    {entry.alcohol ? 'Yes' : 'No'}
+                    {(entry.alcohol || (entry.alcoholUnits != null && entry.alcoholUnits > 0)) ? 'Yes' : 'No'}
                     {entry.alcoholUnits && entry.alcoholUnits > 0 && ` (${entry.alcoholUnits} units)`}
                   </p>
                 </div>
@@ -133,7 +133,7 @@ export default function HistoryView({ entries }: HistoryViewProps) {
                 <div>
                   <p className="text-sm text-gray-500 dark:text-gray-400">Cannabis</p>
                   <p className="text-gray-900 dark:text-gray-100">
-                    {entry.cannabis ? 'Yes' : 'No'}
+                    {(entry.cannabis || (entry.cannabisAmount != null && entry.cannabisAmount > 0)) ? 'Yes' : 'No'}
                     {entry.cannabisAmount && entry.cannabisAmount > 0 && ` (${entry.cannabisAmount}g)`}
                   </p>
                 </div>
@@ -143,7 +143,7 @@ export default function HistoryView({ entries }: HistoryViewProps) {
                 <div>
                   <p className="text-sm text-gray-500 dark:text-gray-400">Meditation</p>
                   <p className="text-gray-900 dark:text-gray-100">
-                    {entry.meditation ? 'Yes' : 'No'}
+                    {(entry.meditation || (entry.meditationTime != null && entry.meditationTime > 0)) ? 'Yes' : 'No'}
                     {entry.meditationTime && entry.meditationTime > 0 && ` (${entry.meditationTime} min)`}
                   </p>
                 </div>
