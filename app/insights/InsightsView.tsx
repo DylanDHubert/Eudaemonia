@@ -838,8 +838,15 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
         title: {
           display: true,
           text: `${getDisplayName(factorName)} Over Time`,
+          color: isDarkMode ? 'rgba(209, 213, 219, 0.8)' : 'rgba(75, 85, 99, 0.8)',
         },
         tooltip: {
+          backgroundColor: isDarkMode ? 'rgba(17, 24, 39, 0.8)' : 'rgba(255, 255, 255, 0.8)',
+          titleColor: isDarkMode ? 'rgb(229, 231, 235)' : 'rgb(17, 24, 39)',
+          bodyColor: isDarkMode ? 'rgb(229, 231, 235)' : 'rgb(17, 24, 39)',
+          borderColor: isDarkMode ? 'rgb(75, 85, 99)' : 'rgb(229, 231, 235)',
+          borderWidth: 1,
+          padding: 12,
           callbacks: {
             label: function(context: any) {
               const index = context.dataIndex;
@@ -856,19 +863,33 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
         x: {
           title: {
             display: true,
-            text: 'Date'
+            text: 'Date',
+            color: isDarkMode ? 'rgba(209, 213, 219, 0.8)' : 'rgba(75, 85, 99, 0.8)',
+          },
+          ticks: {
+            color: isDarkMode ? 'rgba(209, 213, 219, 0.8)' : 'rgba(75, 85, 99, 0.8)',
+          },
+          grid: {
+            color: isDarkMode ? 'rgba(75, 85, 99, 0.2)' : 'rgba(209, 213, 219, 0.5)',
           }
         },
         y: {
           title: {
             display: true,
-            text: getDisplayName(factorName)
+            text: getDisplayName(factorName),
+            color: isDarkMode ? 'rgba(209, 213, 219, 0.8)' : 'rgba(75, 85, 99, 0.8)',
           },
-          ticks: booleanFactors.includes(getInternalName(factorName)) ? {
-            callback: function(value: any) {
-              return value === 1 ? 'Yes' : 'No';
-            }
-          } : undefined
+          ticks: {
+            color: isDarkMode ? 'rgba(209, 213, 219, 0.8)' : 'rgba(75, 85, 99, 0.8)',
+            ...(booleanFactors.includes(getInternalName(factorName)) ? {
+              callback: function(value: any) {
+                return value === 1 ? 'Yes' : 'No';
+              }
+            } : {})
+          },
+          grid: {
+            color: isDarkMode ? 'rgba(75, 85, 99, 0.2)' : 'rgba(209, 213, 219, 0.5)',
+          }
         }
       }
     };
