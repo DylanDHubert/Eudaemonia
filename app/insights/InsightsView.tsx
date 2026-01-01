@@ -488,9 +488,16 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
       const factorValues: number[] = [];
       const newFactorCounts: number[] = [];
       
+      // CHECK IF THIS IS A BOOLEAN FACTOR (BUILT-IN OR CUSTOM)
+      const isBoolean = isBooleanFactor(selectedFactor);
+      
       entriesByDate.forEach(({ date, value, count }) => {
         factorDates.push(date);
-        factorValues.push(value / count);
+        const avgValue = value / count;
+        // FOR BOOLEAN FACTORS, ROUND TO 0 OR 1 (>= 0.5 = 1, < 0.5 = 0)
+        // THIS PREVENTS FRACTIONAL VALUES LIKE 0.2, 0.5, 0.8 FROM SHOWING UP
+        const finalValue = isBoolean ? Math.round(avgValue) : avgValue;
+        factorValues.push(finalValue);
         newFactorCounts.push(count);
       });
       
@@ -514,26 +521,18 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
       
       // Step 4: Handle boolean factors (exercise, meditation)
       if (booleanFactors.includes(internalName)) {
-        // For boolean factors, create a bar chart showing happiness averages for true/false values
+        // For boolean factors, show all data points at x=0 (false) or x=1 (true)
         const validEntriesWithKey = entries.filter(e => internalName in e && e[internalName as keyof DailyEntry] !== undefined);
         
         if (validEntriesWithKey.length >= minimumEntries) {
-          // Group by true/false value
-          const trueEntries = validEntriesWithKey.filter(e => e[internalName as keyof DailyEntry] === true);
-          const falseEntries = validEntriesWithKey.filter(e => e[internalName as keyof DailyEntry] === false);
-          
-          // Calculate averages
-          const trueAvg = trueEntries.length > 0 
-            ? trueEntries.reduce((sum, e) => sum + e.happinessRating, 0) / trueEntries.length 
-            : 0;
-          const falseAvg = falseEntries.length > 0 
-            ? falseEntries.reduce((sum, e) => sum + e.happinessRating, 0) / falseEntries.length 
-            : 0;
-          
-          newScatterData = [
-            { x: 0, y: falseAvg },
-            { x: 1, y: trueAvg }
-          ];
+          // SHOW ALL DATA POINTS, NOT JUST AVERAGES
+          newScatterData = validEntriesWithKey.map(entry => {
+            const boolValue = entry[internalName as keyof DailyEntry] === true;
+            return {
+              x: boolValue ? 1 : 0,
+              y: entry.happinessRating
+            };
+          });
         }
       }
       // Step 5: Handle custom categories
@@ -551,12 +550,23 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
         );
         
         if (validEntries.length >= minimumEntries) {
+          // FOR ALL CUSTOM CATEGORIES (BOOLEAN AND NUMERIC), SHOW ALL DATA POINTS
+          // BOOLEAN FORMATTING WILL BE HANDLED BY CHART OPTIONS
           newScatterData = validEntries.map(entry => {
             const category = entry.customCategories.find(cat => cat.name === selectedFactor);
-            return {
-              x: category ? category.value : 0,
-              y: entry.happinessRating
-            };
+            // FOR BOOLEAN CATEGORIES, ENSURE VALUE IS 0 OR 1
+            if (categoryType === 'boolean') {
+              return {
+                x: category && category.value === 1 ? 1 : 0,
+                y: entry.happinessRating
+              };
+            } else {
+              // FOR NUMERIC/SCALE CATEGORIES, USE THE VALUE DIRECTLY
+              return {
+                x: category ? category.value : 0,
+                y: entry.happinessRating
+              };
+            }
           });
         }
       }
@@ -756,40 +766,25 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
   const getScatterChartData = (factorName: string): any => {
     if (!selectedFactor || entries.length < 2) return null;
     
-    const factor = getInternalName(selectedFactor);
-    const isBoolean = isBooleanFactor(factor);
-    
-    // Get values for the selected factor and happiness
-    const data = entries.map(entry => {
-      let xValue: number;
-      
-      if (isBoolean) {
-        // For boolean factors, convert to 0 or 1
-        xValue = entry[factor as keyof DailyEntry] ? 1 : 0;
-      } else {
-        // For numeric factors, get the value directly
-        xValue = entry[factor as keyof DailyEntry] as number || 0;
-      }
-      
+    // USE PRE-CALCULATED SCATTER DATA FOR ALL FACTORS (ALREADY PROCESSED CORRECTLY)
+    if (scatterData.length > 0) {
       return {
-        x: xValue,
-        y: entry.happinessRating
+        datasets: [
+          {
+            label: selectedFactor,
+            data: scatterData,
+            backgroundColor: isDarkMode ? 'rgba(79, 70, 229, 0.7)' : 'rgba(244, 63, 94, 0.7)',
+            borderColor: isDarkMode ? 'rgb(79, 70, 229)' : 'rgb(244, 63, 94)',
+            borderWidth: 1,
+            pointRadius: 5,
+            pointHoverRadius: 7,
+          }
+        ]
       };
-    });
+    }
     
-    return {
-      datasets: [
-        {
-          label: selectedFactor,
-          data: data,
-          backgroundColor: isDarkMode ? 'rgba(79, 70, 229, 0.7)' : 'rgba(244, 63, 94, 0.7)',
-          borderColor: isDarkMode ? 'rgb(79, 70, 229)' : 'rgb(244, 63, 94)',
-          borderWidth: 1,
-          pointRadius: 5,
-          pointHoverRadius: 7,
-        }
-      ]
-    };
+    // FALLBACK IF NO SCATTER DATA (SHOULDN'T HAPPEN, BUT JUST IN CASE)
+    return null;
   };
   
   // Time series chart options
@@ -882,8 +877,11 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
             label: function(context: any) {
               const index = context.dataIndex;
               const count = factorCounts[index];
-              if (booleanFactors.includes(getInternalName(factorName))) {
-                return `${context.dataset.label}: ${context.parsed.y === 1 ? 'Yes' : 'No'} (${count}x)`;
+              // USE isBooleanFactor TO CHECK BOTH BUILT-IN AND CUSTOM BOOLEAN CATEGORIES
+              if (isBooleanFactor(factorName)) {
+                // ROUND TO HANDLE ANY FLOATING POINT ISSUES
+                const roundedValue = Math.round(context.parsed.y);
+                return `${context.dataset.label}: ${roundedValue === 1 ? 'Yes' : 'No'} (${count}x)`;
               }
               return `${context.dataset.label}: ${context.parsed.y.toFixed(1)} (${count}x)`;
             }
@@ -919,17 +917,32 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
               family: 'CustomChartFont, serif',
             },
           },
-          ticks: {
-            color: isDarkMode ? 'rgba(209, 213, 219, 0.8)' : 'rgba(75, 85, 99, 0.8)',
-            font: {
-              family: 'CustomChartFont, serif',
-            },
-            ...(booleanFactors.includes(getInternalName(factorName)) ? {
+          // FOR BOOLEAN FACTORS, ONLY SHOW TWO TICKS (0 AND 1)
+          ...(isBooleanFactor(factorName) ? {
+            min: 0,
+            max: 1,
+            ticks: {
+              stepSize: 1,
+              maxTicksLimit: 2,
+              color: isDarkMode ? 'rgba(209, 213, 219, 0.8)' : 'rgba(75, 85, 99, 0.8)',
+              font: {
+                family: 'CustomChartFont, serif',
+              },
               callback: function(value: any) {
-                return value === 1 ? 'Yes' : 'No';
+                // ONLY SHOW LABELS FOR EXACTLY 0 AND 1
+                if (value === 0) return 'No';
+                if (value === 1) return 'Yes';
+                return '';
               }
-            } : {})
-          },
+            }
+          } : {
+            ticks: {
+              color: isDarkMode ? 'rgba(209, 213, 219, 0.8)' : 'rgba(75, 85, 99, 0.8)',
+              font: {
+                family: 'CustomChartFont, serif',
+              },
+            }
+          }),
           grid: {
             color: isDarkMode ? 'rgba(75, 85, 99, 0.2)' : 'rgba(209, 213, 219, 0.5)',
           }
