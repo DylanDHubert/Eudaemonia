@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { PlusIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { PlusIcon } from '@heroicons/react/24/outline';
 import { useRouter } from 'next/navigation';
 import { toast } from 'react-toastify';
 import { format } from 'date-fns';
@@ -204,7 +204,7 @@ export default function CustomCategoriesManager({ userId }: CustomCategoriesMana
                     <td className="px-2 sm:px-6 py-4 text-right text-sm">
                       <button
                         onClick={() => handleDelete(category.id)}
-                        className="text-rose-600 hover:text-rose-900 dark:text-indigo-400 dark:hover:text-indigo-300 transition-colors"
+                        className="text-xs text-rose-600 hover:text-rose-800 dark:text-rose-400 dark:hover:text-rose-300"
                       >
                         Delete
                       </button>

@@ -83,16 +83,16 @@ export default function HistoryView({ entries }: HistoryViewProps) {
                   {formatEntryDate(entry.date, 'EEEE')}
                 </p>
               </div>
-              <div className="flex space-x-4">
+              <div className="flex items-center gap-4">
                 <button
                   onClick={() => handleEditClick(entry)}
-                  className="text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300"
+                  className="text-xs text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300"
                 >
                   Edit
                 </button>
                 <button
                   onClick={() => handleDeleteClick(entry)}
-                  className="text-rose-600 hover:text-rose-800 dark:text-rose-400 dark:hover:text-rose-300"
+                  className="text-xs text-rose-600 hover:text-rose-800 dark:text-rose-400 dark:hover:text-rose-300"
                 >
                   Delete
                 </button>

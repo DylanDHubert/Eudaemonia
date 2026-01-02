@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { format } from 'date-fns';
-import { TrashIcon } from '@heroicons/react/24/outline';
 
 interface Gratitude {
   id: string;
@@ -104,9 +103,9 @@ export default function GratitudeList() {
             </p>
             <button
               onClick={() => handleDelete(gratitude.id)}
-              className="absolute top-2 right-2 p-1 rounded-full text-gray-400 hover:text-red-500 dark:text-gray-600 dark:hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity"
+              className="absolute top-2 right-2 text-xs text-rose-600 hover:text-rose-800 dark:text-rose-400 dark:hover:text-rose-300 opacity-0 group-hover:opacity-100 transition-opacity"
             >
-              <TrashIcon className="w-4 h-4" />
+              Delete
             </button>
           </div>
         ))}

@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import { toast } from 'react-toastify';
 import QuickEntryModal from './QuickEntryModal';
 import { formatEntryDate } from '@/lib/utils';
-import { PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { Moon, Heart, Smile, Zap, Plus, Maximize2, Minimize2 } from 'lucide-react';
 
 type QuickEntry = {
@@ -280,20 +279,18 @@ export default function QuickEntryList({ initialEntries }: { initialEntries: Qui
                   </div>
 
                   {/* ACTIONS */}
-                  <div className="flex items-center gap-2 flex-shrink-0">
+                  <div className="flex flex-col gap-1 flex-shrink-0">
                     <button
                       onClick={() => handleEdit(entry)}
-                      className="p-2 text-gray-600 dark:text-gray-400 hover:text-rose-600 dark:hover:text-indigo-400 hover:bg-rose-50 dark:hover:bg-indigo-900/20 rounded-md transition-colors"
-                      title="Edit"
+                      className="text-xs text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300"
                     >
-                      <PencilIcon className="w-4 h-4" />
+                      Edit
                     </button>
                     <button
                       onClick={() => handleDelete(entry.id)}
-                      className="p-2 text-gray-600 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-md transition-colors"
-                      title="Delete"
+                      className="text-xs text-rose-600 hover:text-rose-800 dark:text-rose-400 dark:hover:text-rose-300"
                     >
-                      <TrashIcon className="w-4 h-4" />
+                      Delete
                     </button>
                   </div>
                 </div>
@@ -302,51 +299,49 @@ export default function QuickEntryList({ initialEntries }: { initialEntries: Qui
               // EXPANDED VIEW
               <div
                 key={entry.id}
-                className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm"
+                className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm relative"
               >
-                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-                  {/* LEFT: MAIN INFO */}
-                  <div className="flex-1">
-                    <div className="flex items-start gap-3 mb-2">
-                      <span className={`px-2 py-1 rounded text-xs font-medium ${getCategoryColor(entry.category)}`}>
-                        {entry.category.charAt(0).toUpperCase() + entry.category.slice(1)}
-                      </span>
-                      <span className="text-sm text-gray-600 dark:text-gray-400">
-                        {entry.rating} / 10
-                      </span>
-                    </div>
-                    
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 mb-3">
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
-                        {formatEntryDate(entry.date, 'MMM d, yyyy')}
-                      </p>
-                    </div>
-
-                    {/* NOTES */}
-                    {entry.notes && (
-                      <p className="text-sm text-gray-700 dark:text-gray-300 mt-2">
-                        {entry.notes}
-                      </p>
-                    )}
+                {/* HEADER WITH CATEGORY AND BUTTONS */}
+                <div className="flex items-start justify-between gap-3 mb-2">
+                  <div className="flex items-start gap-3 flex-1 min-w-0">
+                    <span className={`px-2 py-1 rounded text-xs font-medium ${getCategoryColor(entry.category)} flex-shrink-0`}>
+                      {entry.category.charAt(0).toUpperCase() + entry.category.slice(1)}
+                    </span>
+                    <span className="text-sm text-gray-600 dark:text-gray-400">
+                      {entry.rating} / 10
+                    </span>
                   </div>
-
-                  {/* RIGHT: ACTIONS */}
-                  <div className="flex items-start gap-2">
+                  {/* ACTIONS */}
+                  <div className="flex items-start gap-4 flex-shrink-0">
                     <button
                       onClick={() => handleEdit(entry)}
-                      className="p-2 text-gray-600 dark:text-gray-400 hover:text-rose-600 dark:hover:text-indigo-400 hover:bg-rose-50 dark:hover:bg-indigo-900/20 rounded-md transition-colors"
-                      title="Edit"
+                      className="text-xs text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300"
                     >
-                      <PencilIcon className="w-5 h-5" />
+                      Edit
                     </button>
                     <button
                       onClick={() => handleDelete(entry.id)}
-                      className="p-2 text-gray-600 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-md transition-colors"
-                      title="Delete"
+                      className="text-xs text-rose-600 hover:text-rose-800 dark:text-rose-400 dark:hover:text-rose-300"
                     >
-                      <TrashIcon className="w-5 h-5" />
+                      Delete
                     </button>
                   </div>
+                </div>
+                
+                {/* CONTENT - FULL WIDTH */}
+                <div className="w-full">
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 mb-3">
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      {formatEntryDate(entry.date, 'MMM d, yyyy')}
+                    </p>
+                  </div>
+
+                  {/* NOTES */}
+                  {entry.notes && (
+                    <p className="text-sm text-gray-700 dark:text-gray-300 mt-2">
+                      {entry.notes}
+                    </p>
+                  )}
                 </div>
               </div>
             )

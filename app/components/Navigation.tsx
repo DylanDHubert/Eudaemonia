@@ -350,7 +350,7 @@ export default function Navigation({ user }: NavigationProps) {
           
           {/* MODAL CONTENT */}
           <div 
-            className="fixed inset-0 z-[10000] flex items-start justify-center pt-[20vh] px-4 pointer-events-none"
+            className="fixed inset-0 z-[10000] flex items-center justify-center px-4 pointer-events-none"
           >
             <div 
               className="relative w-full max-w-sm bg-white dark:bg-gray-800 rounded-2xl shadow-2xl overflow-hidden pointer-events-auto"
