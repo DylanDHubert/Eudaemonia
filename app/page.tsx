@@ -4,6 +4,7 @@ import ActivityHeatmap from './components/ActivityHeatmap';
 import HappinessChart from './components/HappinessChart';
 import GratitudeView from './gratitudes/GratitudeView';
 import GratitudeInput from './gratitudes/GratitudeInput';
+import HappinessStressHistograms from './components/HappinessStressHistograms';
 
 export default async function Dashboard() {
   const session = await getServerSession();
@@ -41,9 +42,26 @@ export default async function Dashboard() {
             </div>
             
             {/* Happiness Chart */}
-            <div className="glass-card p-6 sm:p-6 w-full md:max-w-3xl">
+            <div className="glass-card p-6 sm:p-6 w-full md:max-w-3xl mb-6">
               <div className="relative">
                 <HappinessChart />
+              </div>
+            </div>
+            
+            {/* Placeholder Boxes - Inline on Desktop */}
+            <div className="flex flex-col md:flex-row w-full md:max-w-3xl gap-6">
+              {/* Happiness & Stress Histograms */}
+              <div className="glass-card p-6 sm:p-6 w-full md:w-1/2">
+                <div className="h-[160px]">
+                  <HappinessStressHistograms />
+                </div>
+              </div>
+              
+              {/* Placeholder Box 2 */}
+              <div className="glass-card p-6 sm:p-6 w-full md:w-1/2">
+                <div className="h-[160px]">
+                  {/* PLACEHOLDER CONTENT */}
+                </div>
               </div>
             </div>
           </div>
