@@ -682,6 +682,7 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
     
     return {
       responsive: true,
+      maintainAspectRatio: false,
       plugins: {
         legend: {
           display: false,
@@ -848,6 +849,7 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
   const getFactorTimeSeriesOptions = (factorName: string): any => {
     return {
       responsive: true,
+      maintainAspectRatio: false,
       plugins: {
         legend: {
           display: false,
@@ -1104,13 +1106,13 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
       
       {/* MODAL CONTENT */}
       <div 
-        className="fixed inset-0 z-[10000] flex items-start justify-center pt-[20vh] px-4 pointer-events-none"
+        className="fixed inset-0 z-[10000] flex items-center justify-center p-4 pointer-events-none"
       >
         <div 
-          className="glass-card p-4 w-full max-w-4xl h-auto max-h-[80vh] overflow-y-auto pointer-events-auto"
+          className="glass-card p-2 w-full max-w-5xl h-[90vh] max-h-[90vh] overflow-hidden flex flex-col pointer-events-auto"
           onClick={e => e.stopPropagation()}
         >
-          <div className="flex justify-end">
+          <div className="flex justify-end mb-1">
             <button
               onClick={() => {
                 setIsModalOpen(false);
@@ -1123,9 +1125,9 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
               </svg>
             </button>
           </div>
-          <div className="flex flex-col items-center gap-0">
+          <div className="flex flex-col gap-2 flex-1 min-h-0">
             {selectedFactor && scatterData.length > 0 ? (
-              <div className="h-[30vh] w-full flex justify-center">
+              <div className="flex-1 min-h-0 w-full">
                 <Scatter 
                   options={getScatterOptions(selectedFactor)} 
                   data={getScatterChartData(selectedFactor)} 
@@ -1134,7 +1136,7 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
             ) : null}
             
             {factorTimeSeriesData && factorTimeSeriesData.datasets[0].data.length > 0 ? (
-              <div className="h-[30vh] w-full flex justify-center">
+              <div className="flex-1 min-h-0 w-full">
                 <Line 
                   options={getFactorTimeSeriesOptions(selectedFactor)} 
                   data={factorTimeSeriesData} 
