@@ -523,8 +523,8 @@ export default function EntryForm({ userId }: EntryFormProps) {
                   onWheel={handleWheel}
                   className="glass-input w-24 h-10 px-3 py-0 m-0 text-input"
                   min="0"
-                  max="10"
-                  step="0.01"
+                  max="0.1"
+                  step="0.005"
                   placeholder="0"
                 />
               )}

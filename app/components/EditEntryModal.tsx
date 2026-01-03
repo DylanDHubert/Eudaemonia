@@ -261,8 +261,8 @@ export default function EditEntryModal({ isOpen, onClose, entry }: EditEntryModa
                   value={formData.cannabisAmount || ''}
                   onChange={handleInputChange}
                   min="0"
-                  max="10"
-                  step="0.01"
+                  max="0.1"
+                  step="0.005"
                   placeholder="0"
                   disabled={!formData.cannabis}
                   className="w-24 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-100 dark:disabled:bg-gray-700"
@@ -339,15 +339,27 @@ export default function EditEntryModal({ isOpen, onClose, entry }: EditEntryModa
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       {category.customCategory.name}
                     </label>
-                    <input
-                      type="number"
-                      value={category.value}
-                      onChange={(e) => handleCustomCategoryChange(category.customCategory.id, parseFloat(e.target.value))}
-                      min={category.customCategory.min ?? undefined}
-                      max={category.customCategory.max ?? undefined}
-                      step={category.customCategory.type === 'numeric' ? 1 : 0.1}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
-                    />
+                    {category.customCategory.type === 'boolean' ? (
+                      <div className="flex items-center">
+                        <input
+                          type="checkbox"
+                          checked={category.value === 1}
+                          onChange={(e) => handleCustomCategoryChange(category.customCategory.id, e.target.checked ? 1 : 0)}
+                          className="w-4 h-4"
+                        />
+                        <span className="text-sm text-gray-700 dark:text-gray-300 ml-2">Yes</span>
+                      </div>
+                    ) : (
+                      <input
+                        type="number"
+                        value={category.value}
+                        onChange={(e) => handleCustomCategoryChange(category.customCategory.id, parseFloat(e.target.value))}
+                        min={category.customCategory.min ?? undefined}
+                        max={category.customCategory.max ?? undefined}
+                        step={category.customCategory.type === 'numeric' ? 1 : 0.1}
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                      />
+                    )}
                   </div>
                 ))}
               </div>
