@@ -61,10 +61,12 @@ export default function EditEntryModal({ isOpen, onClose, entry }: EditEntryModa
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target;
+    // INTEGER FIELDS THAT SHOULD USE parseInt
+    const integerFields = ['exerciseTime', 'meditationTime', 'meals', 'sleepQuality', 'foodQuality', 'stressLevel', 'happinessRating'];
     setFormData(prev => ({
       ...prev,
       [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked :
-              type === 'number' ? parseFloat(value) || null :
+              type === 'number' ? (integerFields.includes(name) ? parseInt(value) || null : parseFloat(value) || null) :
               value
     }));
   };
@@ -124,18 +126,31 @@ export default function EditEntryModal({ isOpen, onClose, entry }: EditEntryModa
 
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Exercise (hours)
+                Exercise
               </label>
-              <input
-                type="number"
-                name="exerciseTime"
-                value={formData.exerciseTime || ''}
-                onChange={handleInputChange}
-                min="0"
-                max="24"
-                step="0.5"
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
-              />
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    name="exercise"
+                    checked={formData.exercise || false}
+                    onChange={handleInputChange}
+                    className="w-4 h-4"
+                  />
+                  <span className="text-sm text-gray-700 dark:text-gray-300">Yes</span>
+                </div>
+                <input
+                  type="number"
+                  name="exerciseTime"
+                  value={formData.exerciseTime || ''}
+                  onChange={handleInputChange}
+                  min="1"
+                  max="720"
+                  disabled={!formData.exercise}
+                  className="w-24 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-100 dark:disabled:bg-gray-700"
+                  placeholder="min"
+                />
+              </div>
             </div>
 
             <div>

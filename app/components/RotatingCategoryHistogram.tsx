@@ -34,7 +34,7 @@ interface CategoryConfig {
 const categories: CategoryConfig[] = [
   { key: 'sleepHours', snakeKey: 'sleep_hours', label: 'Sleep Hours', maxValue: 12, bins: 12 },
   { key: 'sleepQuality', snakeKey: 'sleep_quality', label: 'Sleep Quality', maxValue: 10, bins: 10 },
-  { key: 'exerciseTime', snakeKey: 'exercise_time', label: 'Exercise Time', maxValue: 12, bins: 12 },
+  { key: 'exerciseTime', snakeKey: 'exercise_time', label: 'Exercise Time', maxValue: 720, bins: 12 },
   { key: 'meditationTime', snakeKey: 'meditation_time', label: 'Meditation Time', maxValue: 60, bins: 12 },
   { key: 'socialTime', snakeKey: 'social_time', label: 'Social Time', maxValue: 12, bins: 12 },
   { key: 'workHours', snakeKey: 'work_hours', label: 'Work Hours', maxValue: 12, bins: 12 },

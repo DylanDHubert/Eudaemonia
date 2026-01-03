@@ -23,7 +23,7 @@ export default function EntryForm({ userId }: EntryFormProps) {
   const [formData, setFormData] = useState({
     sleepHours: '',
     sleepQuality: '',
-    exercise: '',
+    exercise: false,
     exerciseTime: '',
     alcohol: false,
     alcoholUnits: '',
@@ -169,7 +169,7 @@ export default function EntryForm({ userId }: EntryFormProps) {
         ...formData,
         sleepHours: formData.sleepHours ? parseFloat(formData.sleepHours) : null,
         sleepQuality: formData.sleepQuality ? parseInt(formData.sleepQuality) : null,
-        exercise: formData.exercise ? parseFloat(formData.exercise) : null,
+        exercise: formData.exercise,
         exerciseTime: formData.exerciseTime ? parseInt(formData.exerciseTime) : null,
         alcoholUnits: formData.alcohol ? (formData.alcoholUnits !== undefined && formData.alcoholUnits !== null && formData.alcoholUnits !== '' ? parseFloat(formData.alcoholUnits) : 0) : null,
         cannabisAmount: formData.cannabis ? (formData.cannabisAmount !== undefined && formData.cannabisAmount !== null && formData.cannabisAmount !== '' ? parseFloat(formData.cannabisAmount) : 0) : null,
@@ -244,7 +244,7 @@ export default function EntryForm({ userId }: EntryFormProps) {
         ...prev,
         sleepHours: '',
         sleepQuality: '',
-        exercise: '',
+        exercise: false,
         exerciseTime: '',
         alcohol: false,
         alcoholUnits: '',
@@ -400,20 +400,36 @@ export default function EntryForm({ userId }: EntryFormProps) {
           </div>
           
           <div className="glass-card p-4">
-            <label className="text-subheader block mb-2">
-              Exercise
-            </label>
-            <input
-              type="number"
-              name="exercise"
-              value={formData.exercise}
-              onChange={handleChange}
-              onWheel={handleWheel}
-              className="glass-input w-full px-3 py-2 text-input"
-              min="0"
-              max="24"
-              step="0.5"
-            />
+            <div className="flex items-center justify-between h-10">
+              <div className="flex items-center gap-4">
+                <label className="text-subheader whitespace-nowrap">
+                  Exercise
+                </label>
+                <div className="flex items-center whitespace-nowrap">
+                  <input
+                    type="checkbox"
+                    name="exercise"
+                    checked={formData.exercise}
+                    onChange={handleCheckboxChange}
+                    className="mr-2"
+                  />
+                  <span className="text-input">Yes</span>
+                </div>
+              </div>
+              {formData.exercise && (
+                <input
+                  type="number"
+                  name="exerciseTime"
+                  value={formData.exerciseTime}
+                  onChange={handleChange}
+                  onWheel={handleWheel}
+                  className="glass-input w-24 h-10 px-3 py-0 m-0 text-input"
+                  min="1"
+                  max="720"
+                  placeholder="min"
+                />
+              )}
+            </div>
           </div>
           
           <div className="glass-card p-4">

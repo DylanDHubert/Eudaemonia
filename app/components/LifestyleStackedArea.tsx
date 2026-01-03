@@ -155,7 +155,7 @@ export default function LifestyleStackedArea() {
         light: hexToRgba(happinessColors['3'], 0.6), 
         dark: hexToRgba(happinessColors['3'], 0.6) 
       },
-      maxValue: 12, // 12 HOURS MAX
+      maxValue: 720, // 720 MINUTES MAX (12 HOURS)
       normalize: normalizeValue,
     },
     {
