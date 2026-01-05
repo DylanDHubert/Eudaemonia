@@ -56,6 +56,119 @@ export default async function RootLayout({
             `,
           }}
         />
+        {/* CONVERT STRAIGHT QUOTES TO TYPOGRAPHIC QUOTES IN RENDERED CONTENT */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                // FUNCTION TO CONVERT STRAIGHT QUOTES TO CURLY QUOTES
+                function convertQuotes(text) {
+                  if (!text) return text;
+                  
+                  // CONVERT DOUBLE QUOTES: "text" -> "text"
+                  // SIMPLE HEURISTIC: FIRST " IS OPENING, SECOND IS CLOSING, ETC.
+                  let result = '';
+                  let inDoubleQuotes = false;
+                  
+                  for (let i = 0; i < text.length; i++) {
+                    if (text[i] === '"') {
+                      result += inDoubleQuotes ? '"' : '"';
+                      inDoubleQuotes = !inDoubleQuotes;
+                    } else if (text[i] === "'" && (i === 0 || text[i-1] === ' ' || text[i-1] === '\\n')) {
+                      // OPENING SINGLE QUOTE (AFTER SPACE OR START OF LINE)
+                      result += ''';
+                    } else if (text[i] === "'" && (i === text.length - 1 || text[i+1] === ' ' || text[i+1] === '\\n' || text[i+1] === ',' || text[i+1] === '.')) {
+                      // CLOSING SINGLE QUOTE (BEFORE SPACE, END, OR PUNCTUATION)
+                      result += ''';
+                    } else {
+                      result += text[i];
+                    }
+                  }
+                  
+                  return result;
+                }
+                
+                // FUNCTION TO PROCESS TEXT NODES, SKIPPING INPUT/TEXTAREA
+                function processTextNode(node) {
+                  if (node.nodeType !== Node.TEXT_NODE) return;
+                  
+                  // SKIP IF INSIDE INPUT, TEXTAREA, OR CONTENTEDITABLE
+                  let parent = node.parentElement;
+                  while (parent) {
+                    if (parent.tagName === 'INPUT' || 
+                        parent.tagName === 'TEXTAREA' || 
+                        parent.isContentEditable ||
+                        parent.closest('input, textarea, [contenteditable="true"]')) {
+                      return;
+                    }
+                    parent = parent.parentElement;
+                  }
+                  
+                  const originalText = node.textContent;
+                  const convertedText = convertQuotes(originalText);
+                  
+                  if (originalText !== convertedText) {
+                    node.textContent = convertedText;
+                  }
+                }
+                
+                // FUNCTION TO PROCESS ALL TEXT NODES IN A CONTAINER
+                function processContainer(container) {
+                  const walker = document.createTreeWalker(
+                    container,
+                    NodeFilter.SHOW_TEXT,
+                    null
+                  );
+                  
+                  const textNodes = [];
+                  let node;
+                  while (node = walker.nextNode()) {
+                    textNodes.push(node);
+                  }
+                  
+                  textNodes.forEach(processTextNode);
+                }
+                
+                // PROCESS ON PAGE LOAD
+                if (document.readyState === 'loading') {
+                  document.addEventListener('DOMContentLoaded', function() {
+                    processContainer(document.body);
+                  });
+                } else {
+                  processContainer(document.body);
+                }
+                
+                // WATCH FOR NEW CONTENT ADDED DYNAMICALLY
+                const observer = new MutationObserver(function(mutations) {
+                  mutations.forEach(function(mutation) {
+                    mutation.addedNodes.forEach(function(node) {
+                      if (node.nodeType === Node.ELEMENT_NODE) {
+                        processContainer(node);
+                      } else if (node.nodeType === Node.TEXT_NODE) {
+                        processTextNode(node);
+                      }
+                    });
+                  });
+                });
+                
+                // START OBSERVING WHEN DOM IS READY
+                if (document.readyState === 'loading') {
+                  document.addEventListener('DOMContentLoaded', function() {
+                    observer.observe(document.body, {
+                      childList: true,
+                      subtree: true
+                    });
+                  });
+                } else {
+                  observer.observe(document.body, {
+                    childList: true,
+                    subtree: true
+                  });
+                }
+              })();
+            `,
+          }}
+        />
         {/* PRELOAD CUSTOM FONT */}
         <link rel="preload" href="/font.ttf" as="font" type="font/ttf" crossOrigin="anonymous" />
         {/* ADDITIONAL IOS PWA META TAGS FOR SEARCH BAR HIDING */}
