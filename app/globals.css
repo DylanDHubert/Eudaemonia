@@ -431,30 +431,54 @@ body {
 }
 
 .Toastify__toast {
-  @apply bg-white/80 dark:bg-gray-800/80 backdrop-blur-lg rounded-lg shadow-lg border border-gray-200/50 dark:border-gray-700/50;
+  @apply bg-white/50 dark:bg-gray-900/50 backdrop-blur-lg rounded-lg shadow-md border border-white/30 dark:border-gray-800/30;
   font-family: inherit;
   min-height: 64px;
   padding: 16px;
+  position: relative;
+}
+
+/* ADD HEADER PATTERN OVERLAY TO TOAST (MATCHES HEADER STYLING) */
+.Toastify__toast::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: url('/header_pattern.png');
+  background-repeat: repeat-x;
+  background-size: auto 100%;
+  background-position: top left;
+  opacity: 0.015;
+  pointer-events: none;
+  z-index: 0;
+  border-radius: inherit;
+}
+
+.Toastify__toast > * {
+  position: relative;
+  z-index: 1;
 }
 
 .Toastify__toast--success {
-  @apply border-green-300/50 dark:border-green-600/50;
-  @apply bg-green-50/80 dark:bg-green-900/30 backdrop-blur-lg;
+  @apply border-green-300/30 dark:border-green-600/30;
+  @apply bg-green-50/50 dark:bg-green-900/30 backdrop-blur-lg;
 }
 
 .Toastify__toast--error {
-  @apply border-red-300/50 dark:border-red-600/50;
-  @apply bg-red-50/80 dark:bg-red-900/30 backdrop-blur-lg;
+  @apply border-red-300/30 dark:border-red-600/30;
+  @apply bg-red-50/50 dark:bg-red-900/30 backdrop-blur-lg;
 }
 
 .Toastify__toast--info {
-  @apply border-blue-300/50 dark:border-blue-600/50;
-  @apply bg-blue-50/80 dark:bg-blue-900/30 backdrop-blur-lg;
+  @apply border-blue-300/30 dark:border-blue-600/30;
+  @apply bg-blue-50/50 dark:bg-blue-900/30 backdrop-blur-lg;
 }
 
 .Toastify__toast--warning {
-  @apply border-yellow-300/50 dark:border-yellow-600/50;
-  @apply bg-yellow-50/80 dark:bg-yellow-900/30 backdrop-blur-lg;
+  @apply border-yellow-300/30 dark:border-yellow-600/30;
+  @apply bg-yellow-50/50 dark:bg-yellow-900/30 backdrop-blur-lg;
 }
 
 .Toastify__toast-body {

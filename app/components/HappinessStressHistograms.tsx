@@ -28,8 +28,9 @@ export default function HappinessStressHistograms() {
   const [isLoading, setIsLoading] = useState(true);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [fontSize, setFontSize] = useState(10);
+  const [entries, setEntries] = useState<any[]>([]);
 
-  // CHECK DARK MODE
+  // CHECK DARK MODE - INITIALIZE SYNCHRONOUSLY
   useEffect(() => {
     const checkDarkMode = () => {
       if (typeof window !== 'undefined') {
@@ -38,6 +39,7 @@ export default function HappinessStressHistograms() {
       }
     };
 
+    // CHECK IMMEDIATELY ON MOUNT
     checkDarkMode();
 
     const observer = new MutationObserver((mutations) => {
@@ -75,7 +77,7 @@ export default function HappinessStressHistograms() {
     return () => window.removeEventListener('resize', updateFontSize);
   }, []);
 
-  // FETCH ENTRIES AND BUILD HISTOGRAMS
+  // FETCH ENTRIES
   useEffect(() => {
     async function fetchEntries() {
       try {
@@ -88,65 +90,13 @@ export default function HappinessStressHistograms() {
         const data = await response.json();
         
         if (data.entries && Array.isArray(data.entries) && data.entries.length > 0) {
-          // BUILD HISTOGRAM DATA FOR HAPPINESS (1-10)
-          const happinessCounts = Array(10).fill(0);
-          const stressCounts = Array(10).fill(0);
-          
-          data.entries.forEach((entry: any) => {
-            // HANDLE BOTH CAMELCASE AND SNAKE_CASE
-            const happiness = entry.happiness_rating ?? entry.happinessRating;
-            const stress = entry.stress_level ?? entry.stressLevel;
-            
-            if (happiness != null && !isNaN(happiness) && happiness >= 1 && happiness <= 10) {
-              happinessCounts[Math.round(happiness) - 1]++;
-            }
-            
-            if (stress != null && !isNaN(stress) && stress >= 1 && stress <= 10) {
-              stressCounts[Math.round(stress) - 1]++;
-            }
-          });
-          
-          // PREPARE HAPPINESS HISTOGRAM DATA
-          const happinessLabels = Array.from({ length: 10 }, (_, i) => (i + 1).toString());
-          setHappinessData({
-            labels: happinessLabels,
-            datasets: [{
-              label: 'Days',
-              data: happinessCounts,
-              backgroundColor: isDarkMode 
-                ? 'rgba(79, 70, 229, 0.6)' 
-                : 'rgba(244, 63, 94, 0.6)',
-              borderColor: isDarkMode 
-                ? 'rgb(79, 70, 229)' 
-                : 'rgb(244, 63, 94)',
-              borderWidth: 1,
-            }]
-          });
-          
-          // PREPARE STRESS HISTOGRAM DATA
-          const stressLabels = Array.from({ length: 10 }, (_, i) => (i + 1).toString());
-          setStressData({
-            labels: stressLabels,
-            datasets: [{
-              label: 'Days',
-              data: stressCounts,
-              backgroundColor: isDarkMode 
-                ? 'rgba(168, 85, 247, 0.6)' 
-                : 'rgba(252, 165, 165, 0.6)',
-              borderColor: isDarkMode 
-                ? 'rgb(168, 85, 247)' 
-                : 'rgb(252, 165, 165)',
-              borderWidth: 1,
-            }]
-          });
+          setEntries(data.entries);
         } else {
-          setHappinessData(null);
-          setStressData(null);
+          setEntries([]);
         }
       } catch (error) {
         console.error('Error fetching entries:', error);
-        setHappinessData(null);
-        setStressData(null);
+        setEntries([]);
       } finally {
         setIsLoading(false);
       }
@@ -155,36 +105,66 @@ export default function HappinessStressHistograms() {
     fetchEntries();
   }, []);
 
-  // UPDATE COLORS WHEN DARK MODE CHANGES
+  // BUILD HISTOGRAM DATA - DEPENDS ON ENTRIES AND ISDARKMODE
   useEffect(() => {
-    if (happinessData && stressData) {
-      setHappinessData({
-        ...happinessData,
-        datasets: [{
-          ...happinessData.datasets[0],
-          backgroundColor: isDarkMode 
-            ? 'rgba(79, 70, 229, 0.6)' 
-            : 'rgba(244, 63, 94, 0.6)',
-          borderColor: isDarkMode 
-            ? 'rgb(79, 70, 229)' 
-            : 'rgb(244, 63, 94)',
-        }]
-      });
-      
-      setStressData({
-        ...stressData,
-        datasets: [{
-          ...stressData.datasets[0],
-          backgroundColor: isDarkMode 
-            ? 'rgba(168, 85, 247, 0.6)' 
-            : 'rgba(252, 165, 165, 0.6)',
-          borderColor: isDarkMode 
-            ? 'rgb(168, 85, 247)' 
-            : 'rgb(252, 165, 165)',
-        }]
-      });
+    if (entries.length === 0 || isLoading) {
+      setHappinessData(null);
+      setStressData(null);
+      return;
     }
-  }, [isDarkMode]);
+
+    // BUILD HISTOGRAM DATA FOR HAPPINESS (1-10)
+    const happinessCounts = Array(10).fill(0);
+    const stressCounts = Array(10).fill(0);
+    
+    entries.forEach((entry: any) => {
+      // HANDLE BOTH CAMELCASE AND SNAKE_CASE
+      const happiness = entry.happiness_rating ?? entry.happinessRating;
+      const stress = entry.stress_level ?? entry.stressLevel;
+      
+      if (happiness != null && !isNaN(happiness) && happiness >= 1 && happiness <= 10) {
+        happinessCounts[Math.round(happiness) - 1]++;
+      }
+      
+      if (stress != null && !isNaN(stress) && stress >= 1 && stress <= 10) {
+        stressCounts[Math.round(stress) - 1]++;
+      }
+    });
+    
+    // PREPARE HAPPINESS HISTOGRAM DATA
+    const happinessLabels = Array.from({ length: 10 }, (_, i) => (i + 1).toString());
+    setHappinessData({
+      labels: happinessLabels,
+      datasets: [{
+        label: 'Days',
+        data: happinessCounts,
+        backgroundColor: isDarkMode 
+          ? 'rgba(79, 70, 229, 0.6)' 
+          : 'rgba(244, 63, 94, 0.6)',
+        borderColor: isDarkMode 
+          ? 'rgb(79, 70, 229)' 
+          : 'rgb(244, 63, 94)',
+        borderWidth: 1,
+      }]
+    });
+    
+    // PREPARE STRESS HISTOGRAM DATA
+    const stressLabels = Array.from({ length: 10 }, (_, i) => (i + 1).toString());
+    setStressData({
+      labels: stressLabels,
+      datasets: [{
+        label: 'Days',
+        data: stressCounts,
+        backgroundColor: isDarkMode 
+          ? 'rgba(168, 85, 247, 0.6)' 
+          : 'rgba(252, 165, 165, 0.6)',
+        borderColor: isDarkMode 
+          ? 'rgb(168, 85, 247)' 
+          : 'rgb(252, 165, 165)',
+        borderWidth: 1,
+      }]
+    });
+  }, [entries, isLoading, isDarkMode]);
 
   // CHART OPTIONS
   const chartOptions = {
