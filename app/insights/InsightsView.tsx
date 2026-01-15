@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { 
   Chart as ChartJS, 
@@ -79,7 +79,7 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
   const [timeSeriesData, setTimeSeriesData] = useState<any>(null);
   const [factorTimeSeriesData, setFactorTimeSeriesData] = useState<any>(null);
   const [factorCounts, setFactorCounts] = useState<number[]>([]);
-  const [viewMode, setViewMode] = useState<'correlations' | 'trends' | 'matrix'>('correlations');
+  const [viewMode, setViewMode] = useState<'correlations' | 'trends' | 'matrix' | 'triggers'>('correlations');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [entryCounts, setEntryCounts] = useState<number[]>([]);
   const [isDarkMode, setIsDarkMode] = useState(false);
@@ -87,6 +87,7 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
   const [sortColumn, setSortColumn] = useState<'happiness' | 'stress'>('happiness');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
   const [fontLoaded, setFontLoaded] = useState(false);
+  const [triggerAnalysis, setTriggerAnalysis] = useState<any>(null);
   
   // Mapping of internal factor names to display names
   const factorNameMap = useMemo<Record<string, string>>(() => ({
@@ -1074,7 +1075,265 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
       observer.disconnect();
     };
   }, []);
-  
+
+  // CALCULATE TRIGGER ANALYSIS FOR INFLECTION POINTS
+  useEffect(() => {
+    if (viewMode !== 'triggers' || entries.length < minimumEntries) {
+      setTriggerAnalysis(null);
+      return;
+    }
+
+    const calculateTriggerAnalysis = () => {
+      // SORT ENTRIES BY DATE (OLDEST FIRST)
+      const sortedEntries = [...entries].sort((a, b) => 
+        new Date(a.date).getTime() - new Date(b.date).getTime()
+      );
+
+      if (sortedEntries.length < 2) return null;
+
+      // CALCULATE DAY-TO-DAY CHANGES IN HAPPINESS AND STRESS
+      const happinessChanges: number[] = [];
+      const stressChanges: number[] = [];
+      const changePairs: Array<{ 
+        dayN: DailyEntry; 
+        dayNPlus1: DailyEntry; 
+        happinessChange: number; 
+        stressChange: number;
+        daysBetween: number;
+      }> = [];
+
+      for (let i = 0; i < sortedEntries.length - 1; i++) {
+        const dayN = sortedEntries[i];
+        const dayNPlus1 = sortedEntries[i + 1];
+        
+        const dateN = new Date(dayN.date);
+        const dateNPlus1 = new Date(dayNPlus1.date);
+        const daysBetween = Math.round((dateNPlus1.getTime() - dateN.getTime()) / (1000 * 60 * 60 * 24));
+        
+        // ONLY CONSIDER CONSECUTIVE DAYS OR DAYS WITHIN 3 DAYS (TO HANDLE MISSING ENTRIES)
+        if (daysBetween > 0 && daysBetween <= 3) {
+          const happinessChange = dayNPlus1.happinessRating - dayN.happinessRating;
+          const stressChange = dayNPlus1.stressLevel - dayN.stressLevel;
+          
+          happinessChanges.push(happinessChange);
+          stressChanges.push(stressChange);
+          changePairs.push({
+            dayN,
+            dayNPlus1,
+            happinessChange,
+            stressChange,
+            daysBetween
+          });
+        }
+      }
+
+      if (happinessChanges.length < 2) return null;
+
+      // CALCULATE STATISTICAL THRESHOLDS USING PERCENTILES
+      const calculatePercentile = (arr: number[], percentile: number): number => {
+        const sorted = [...arr].sort((a, b) => a - b);
+        const index = Math.ceil((percentile / 100) * sorted.length) - 1;
+        return sorted[Math.max(0, Math.min(index, sorted.length - 1))];
+      };
+
+      const calculateStdDev = (arr: number[]): number => {
+        const mean = arr.reduce((a, b) => a + b, 0) / arr.length;
+        const variance = arr.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / arr.length;
+        return Math.sqrt(variance);
+      };
+
+      const happinessStdDev = calculateStdDev(happinessChanges);
+      const stressStdDev = calculateStdDev(stressChanges);
+      const happinessMean = happinessChanges.reduce((a, b) => a + b, 0) / happinessChanges.length;
+      const stressMean = stressChanges.reduce((a, b) => a + b, 0) / stressChanges.length;
+
+      // USE TOP/BOTTOM 20% AS SIGNIFICANT CHANGES (ADAPTIVE TO USER'S DATA)
+      const happinessTop20 = calculatePercentile(happinessChanges, 80);
+      const happinessBottom20 = calculatePercentile(happinessChanges, 20);
+      const stressTop20 = calculatePercentile(stressChanges, 80);
+      const stressBottom20 = calculatePercentile(stressChanges, 20);
+
+      // ALTERNATIVE: USE 1 STANDARD DEVIATION AS THRESHOLD
+      const happinessSignificantPositive = happinessMean + happinessStdDev;
+      const happinessSignificantNegative = happinessMean - happinessStdDev;
+      const stressSignificantPositive = stressMean + stressStdDev;
+      const stressSignificantNegative = stressMean - stressStdDev;
+
+      // DEFINE TIMEFRAMES TO ANALYZE
+      const timeframes = [1, 3, 7, 14, 30];
+
+      // HELPER TO GET FACTOR VALUE FROM ENTRY
+      const getFactorValue = (entry: DailyEntry, factor: string): number | boolean | null => {
+        // CHECK FOR CUSTOM CATEGORY FIRST
+        const customCategory = entry.customCategories.find(cat => cat.name === factor);
+        if (customCategory) {
+          if (customCategory.type === 'boolean') {
+            return customCategory.value === 1;
+          }
+          return customCategory.value;
+        }
+
+        // CHECK BUILT-IN FACTORS
+        const internalName = getInternalName(factor);
+        if (booleanFactors.includes(internalName)) {
+          return entry[internalName as keyof DailyEntry] === true;
+        }
+        
+        const value = entry[internalName as keyof DailyEntry];
+        if (value === null || value === undefined) return null;
+        return typeof value === 'number' ? value : (typeof value === 'boolean' ? (value ? 1 : 0) : 0);
+      };
+
+      // HELPER TO CHECK IF FACTOR IS "PRESENT" (ADAPTIVE THRESHOLDS)
+      const isFactorPresent = (entry: DailyEntry, factor: string, allEntries: DailyEntry[]): boolean => {
+        const value = getFactorValue(entry, factor);
+        
+        if (value === null) return false;
+        
+        // FOR BOOLEAN FACTORS, CHECK IF TRUE
+        if (typeof value === 'boolean') {
+          return value === true;
+        }
+        
+        // FOR NUMERIC FACTORS, CHECK IF ABOVE MEDIAN
+        const numericValue = typeof value === 'number' ? value : 0;
+        const allValues = allEntries
+          .map(e => getFactorValue(e, factor))
+          .filter(v => v !== null && typeof v !== 'boolean')
+          .map(v => typeof v === 'number' ? v : 0);
+        
+        if (allValues.length === 0) return false;
+        
+        const sortedValues = [...allValues].sort((a, b) => a - b);
+        const median = sortedValues[Math.floor(sortedValues.length / 2)];
+        
+        // FACTOR IS "PRESENT" IF AT OR ABOVE MEDIAN (INCLUDES MEDIAN ITSELF)
+        return numericValue >= median;
+      };
+
+      // ANALYZE EACH TIMEFRAME
+      const timeframeResults: Record<number, Record<string, {
+        positiveCount: number;
+        negativeCount: number;
+        positiveAvgChange: number;
+        negativeAvgChange: number;
+        totalOccurrences: number;
+      }>> = {};
+
+      timeframes.forEach(timeframe => {
+        timeframeResults[timeframe] = {};
+      });
+
+      // GET ALL FACTORS TO ANALYZE (NUMERIC AND BOOLEAN)
+      const allFactors = new Set<string>();
+      sortedEntries.forEach(entry => {
+        // ADD BUILT-IN FACTORS
+        numericFactors.forEach(f => allFactors.add(f));
+        booleanFactors.forEach(f => allFactors.add(f));
+        // ADD CUSTOM CATEGORIES
+        entry.customCategories.forEach(cat => allFactors.add(cat.name));
+      });
+
+      // FOR EACH SIGNIFICANT CHANGE, CHECK FACTORS IN PREVIOUS TIMEFRAME
+      changePairs.forEach(({ dayN, dayNPlus1, happinessChange, stressChange, daysBetween }) => {
+        // CHECK IF THIS IS A SIGNIFICANT CHANGE
+        const isHappinessSignificant = 
+          happinessChange >= happinessSignificantPositive || 
+          happinessChange <= happinessSignificantNegative;
+        const isStressSignificant = 
+          stressChange >= stressSignificantPositive || 
+          stressChange <= stressSignificantNegative;
+
+        if (!isHappinessSignificant && !isStressSignificant) return;
+
+        // FOR EACH TIMEFRAME, CHECK IF FACTOR WAS PRESENT FOR THAT MANY DAYS BEFORE
+        timeframes.forEach(timeframe => {
+          // FIND ENTRIES WITHIN TIMEFRAME DAYS BEFORE dayN
+          const dateN = new Date(dayN.date);
+          const timeframeStart = new Date(dateN);
+          timeframeStart.setDate(timeframeStart.getDate() - timeframe);
+
+          const entriesInTimeframe = sortedEntries.filter(e => {
+            const entryDate = new Date(e.date);
+            return entryDate >= timeframeStart && entryDate < dateN;
+          });
+
+          // FOR EACH FACTOR, CHECK IF IT WAS CONSISTENTLY PRESENT
+          allFactors.forEach(factor => {
+            // CHECK IF FACTOR WAS PRESENT IN ALL ENTRIES IN TIMEFRAME (OR AT LEAST 80% OF THEM)
+            const presentCount = entriesInTimeframe.filter(e => 
+              isFactorPresent(e, factor, sortedEntries)
+            ).length;
+            
+            // FOR SHORTER TIMEFRAMES, REQUIRE HIGHER CONSISTENCY; FOR LONGER, ALLOW SOME VARIATION
+            // 1 DAY: 100%, 3 DAYS: 80%, 7+ DAYS: 70%
+            const consistencyRate = timeframe === 1 ? 1.0 : timeframe <= 3 ? 0.8 : 0.7;
+            const consistencyThreshold = Math.max(1, Math.ceil(entriesInTimeframe.length * consistencyRate));
+            const wasConsistentlyPresent = presentCount >= consistencyThreshold;
+
+            if (wasConsistentlyPresent && entriesInTimeframe.length > 0) {
+              if (!timeframeResults[timeframe][factor]) {
+                timeframeResults[timeframe][factor] = {
+                  positiveCount: 0,
+                  negativeCount: 0,
+                  positiveAvgChange: 0,
+                  negativeAvgChange: 0,
+                  totalOccurrences: 0
+                };
+              }
+
+              const result = timeframeResults[timeframe][factor];
+              result.totalOccurrences++;
+
+              // TRACK HAPPINESS CHANGES
+              if (isHappinessSignificant) {
+                if (happinessChange > 0) {
+                  result.positiveCount++;
+                  result.positiveAvgChange = (result.positiveAvgChange * (result.positiveCount - 1) + happinessChange) / result.positiveCount;
+                } else {
+                  result.negativeCount++;
+                  result.negativeAvgChange = (result.negativeAvgChange * (result.negativeCount - 1) + happinessChange) / result.negativeCount;
+                }
+              }
+
+              // TRACK STRESS CHANGES (INVERTED: NEGATIVE STRESS CHANGE = GOOD)
+              if (isStressSignificant) {
+                if (stressChange < 0) {
+                  // STRESS DECREASED = GOOD (POSITIVE IMPACT)
+                  result.positiveCount++;
+                  // STORE MAGNITUDE OF STRESS DECREASE AS POSITIVE IMPACT
+                  result.positiveAvgChange = (result.positiveAvgChange * (result.positiveCount - 1) + Math.abs(stressChange)) / result.positiveCount;
+                } else {
+                  // STRESS INCREASED = BAD (NEGATIVE IMPACT)
+                  result.negativeCount++;
+                  result.negativeAvgChange = (result.negativeAvgChange * (result.negativeCount - 1) + stressChange) / result.negativeCount;
+                }
+              }
+            }
+          });
+        });
+      });
+
+      return {
+        timeframeResults,
+        stats: {
+          totalChanges: changePairs.length,
+          happinessMean,
+          happinessStdDev,
+          stressMean,
+          stressStdDev,
+          happinessSignificantPositive,
+          happinessSignificantNegative,
+          stressSignificantPositive,
+          stressSignificantNegative
+        }
+      };
+    };
+
+    const analysis = calculateTriggerAnalysis();
+    setTriggerAnalysis(analysis);
+  }, [viewMode, entries, minimumEntries, numericFactors, booleanFactors, getInternalName]);
+
   if (entries.length < minimumEntries) {
     return (
       <div className="text-center py-6">
@@ -1164,8 +1423,13 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
           </button>
           <button 
             onClick={() => setViewMode('matrix')}
-            className={`px-4 py-2 rounded-lg transition-colors ${viewMode === 'matrix' ? 'bg-rose-400 dark:bg-indigo-500 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'}`}>
+            className={`hidden md:inline-block px-4 py-2 rounded-lg transition-colors ${viewMode === 'matrix' ? 'bg-rose-400 dark:bg-indigo-500 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'}`}>
             Matrix View
+          </button>
+          <button 
+            onClick={() => setViewMode('triggers')}
+            className={`hidden md:inline-block px-4 py-2 rounded-lg transition-colors ${viewMode === 'triggers' ? 'bg-rose-400 dark:bg-indigo-500 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'}`}>
+            Triggers
           </button>
         </div>
         
@@ -1253,7 +1517,7 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
               </div>
             </div>
           </>
-        ) : (
+        ) : viewMode === 'matrix' ? (
           <div className="glass-card p-4 sm:p-6 rounded-lg">
             <h3 className="text-subheader mb-4">Feature Correlation Matrix</h3>
             <div className="relative">
@@ -1265,7 +1529,293 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
               </p>
             </div>
           </div>
-        )}
+        ) : viewMode === 'triggers' ? (
+          <div className="glass-card p-4 sm:p-6 rounded-lg">
+            <h3 className="text-subheader mb-4">Inflection Point Triggers</h3>
+            <p className="text-description mb-6">
+              Discover which factors, when consistently present over different timeframes, tend to precede significant changes in your happiness or stress levels.
+            </p>
+            
+            {!triggerAnalysis ? (
+              <div className="text-center py-8">
+                <p className="text-description">Calculating trigger patterns...</p>
+              </div>
+            ) : triggerAnalysis.timeframeResults && Object.keys(triggerAnalysis.timeframeResults).length === 0 ? (
+              <div className="text-center py-8">
+                <p className="text-description">
+                  Not enough data to identify trigger patterns. Need more entries with significant day-to-day changes.
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-6">
+                {/* STATISTICS SUMMARY */}
+                <div className="bg-gray-50 dark:bg-gray-800/50 p-4 rounded-lg">
+                  <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Analysis Summary</h4>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
+                    <div>
+                      <div className="text-gray-500 dark:text-gray-400">Total Changes</div>
+                      <div className="text-gray-900 dark:text-gray-100 font-semibold">{triggerAnalysis.stats.totalChanges}</div>
+                    </div>
+                    <div>
+                      <div className="text-gray-500 dark:text-gray-400">Happiness Std Dev</div>
+                      <div className="text-gray-900 dark:text-gray-100 font-semibold">{formatDecimal(triggerAnalysis.stats.happinessStdDev)}</div>
+                    </div>
+                    <div>
+                      <div className="text-gray-500 dark:text-gray-400">Stress Std Dev</div>
+                      <div className="text-gray-900 dark:text-gray-100 font-semibold">{formatDecimal(triggerAnalysis.stats.stressStdDev)}</div>
+                    </div>
+                    <div>
+                      <div className="text-gray-500 dark:text-gray-400">Significance Threshold</div>
+                      <div className="text-gray-900 dark:text-gray-100 font-semibold">±1 SD</div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* TIMEFRAME RESULTS - FACTORS AS ROWS, TIMEFRAMES AS COLUMNS */}
+                {(() => {
+                  const timeframes = [1, 3, 7, 14, 30];
+                  
+                  // HELPER FUNCTION TO GET COLOR BASED ON NET IMPACT (USING CORRELATION MATRIX COLORS)
+                  const getImpactColor = (netImpact: number, minImpact: number, maxImpact: number): string => {
+                    if (maxImpact === minImpact) return '#a123a2'; // DEFAULT TO MIDDLE COLOR
+                    
+                    // NORMALIZE NET IMPACT TO -1 TO 1 RANGE
+                    const normalized = (netImpact - minImpact) / (maxImpact - minImpact) * 2 - 1;
+                    
+                    // USE SAME COLOR ARRAY AS CORRELATION MATRIX
+                    const colorArray = ['#cc3258', '#c12e6b', '#b72b7d', '#ac2790', '#a123a2', '#9720b5', '#8c1cc7', '#8118da', '#7715ec', '#6c11ff'];
+                    const colorIndex = Math.min(Math.max(Math.floor((normalized + 1) / 2 * 10), 0), 9);
+                    return colorArray[colorIndex];
+                  };
+                  
+                  // COLLECT ALL FACTORS THAT APPEAR IN ANY TIMEFRAME
+                  const allFactorsSet = new Set<string>();
+                  timeframes.forEach(timeframe => {
+                    const results = triggerAnalysis.timeframeResults[timeframe];
+                    if (results) {
+                      Object.keys(results).forEach(factor => {
+                        if (results[factor].totalOccurrences >= 2) {
+                          allFactorsSet.add(factor);
+                        }
+                      });
+                    }
+                  });
+                  
+                  // FIND MIN/MAX NET IMPACT FOR NORMALIZATION
+                  let minImpact = Infinity;
+                  let maxImpact = -Infinity;
+                  timeframes.forEach(timeframe => {
+                    const results = triggerAnalysis.timeframeResults[timeframe];
+                    if (results) {
+                      Object.values(results).forEach((data: any) => {
+                        if (data.totalOccurrences >= 2) {
+                          const netImpact = data.positiveCount - data.negativeCount;
+                          minImpact = Math.min(minImpact, netImpact);
+                          maxImpact = Math.max(maxImpact, netImpact);
+                        }
+                      });
+                    }
+                  });
+                  
+                  // IF NO IMPACT RANGE, USE DEFAULT
+                  if (minImpact === Infinity) {
+                    minImpact = -10;
+                    maxImpact = 10;
+                  }
+
+                  if (allFactorsSet.size === 0) {
+                    return (
+                      <div className="text-center py-8">
+                        <p className="text-description">
+                          No consistent trigger patterns found. This could mean your changes are more random, or you need more data points.
+                        </p>
+                      </div>
+                    );
+                  }
+
+                  // CONVERT TO ARRAY AND SORT BY TOTAL IMPACT ACROSS ALL TIMEFRAMES
+                  const allFactors = Array.from(allFactorsSet).map(factor => {
+                    let totalNetImpact = 0;
+                    let totalOccurrences = 0;
+                    
+                    timeframes.forEach(timeframe => {
+                      const results = triggerAnalysis.timeframeResults[timeframe];
+                      if (results && results[factor]) {
+                        const data = results[factor];
+                        totalNetImpact += (data.positiveCount - data.negativeCount);
+                        totalOccurrences += data.totalOccurrences;
+                      }
+                    });
+
+                    return {
+                      factor,
+                      totalNetImpact,
+                      totalOccurrences
+                    };
+                  }).sort((a, b) => {
+                    // SORT BY TOTAL OCCURRENCES FIRST, THEN NET IMPACT
+                    if (b.totalOccurrences !== a.totalOccurrences) {
+                      return b.totalOccurrences - a.totalOccurrences;
+                    }
+                    return b.totalNetImpact - a.totalNetImpact;
+                  });
+
+                  return (
+                    <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+                      <div className="overflow-x-auto">
+                        <table className="w-full divide-y divide-gray-200 dark:divide-gray-700 min-w-[800px]">
+                          <thead>
+                            <tr>
+                              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider sticky left-0 bg-gray-50 dark:bg-gray-800 z-10">
+                                Factor
+                              </th>
+                              {timeframes.map(timeframe => (
+                                <th 
+                                  key={timeframe} 
+                                  className="px-3 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+                                  colSpan={3}
+                                >
+                                  {timeframe === 1 ? '1 Day' : `${timeframe} Days`}
+                                </th>
+                              ))}
+                            </tr>
+                            <tr>
+                              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 sticky left-0 bg-gray-50 dark:bg-gray-800 z-10"></th>
+                              {timeframes.map(timeframe => (
+                                <React.Fragment key={timeframe}>
+                                  <th className="px-1 py-2 text-center text-xs font-medium text-gray-500 dark:text-gray-400 w-1">
+                                    {/* COLOR BAR COLUMN */}
+                                  </th>
+                                  <th className="px-2 py-2 text-center text-xs font-medium text-gray-500 dark:text-gray-400">
+                                    Impact
+                                  </th>
+                                  <th className="px-2 py-2 text-center text-xs font-medium text-gray-500 dark:text-gray-400">
+                                    Count
+                                  </th>
+                                </React.Fragment>
+                              ))}
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                            {/* EXAMPLE EXPLANATION ROW */}
+                            <tr className="bg-blue-50/30 dark:bg-blue-900/20 border-b-2 border-blue-300 dark:border-blue-700">
+                              <td className="px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-300 italic sticky left-0 bg-blue-50/30 dark:bg-blue-900/20 z-10">
+                              <span className="text-blue-600 dark:text-blue-400">Example:</span> Exercise
+                            </td>
+                              {timeframes.map(timeframe => (
+                                <React.Fragment key={timeframe}>
+                                  <td className="px-1 py-3 relative">
+                                    <div 
+                                      className="absolute left-0 top-0 bottom-0 w-1 rounded-r"
+                                      style={{ backgroundColor: '#6c11ff' }}
+                                    />
+                                  </td>
+                                  <td className="px-2 py-3 text-sm text-center text-gray-700 dark:text-gray-300">
+                                    <div className="font-semibold text-green-600 dark:text-green-400">+2.5</div>
+                                    <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                                      (1.8)
+                                    </div>
+                                  </td>
+                                  <td className="px-2 py-3 text-sm text-center text-gray-700 dark:text-gray-300">
+                                    <div>5</div>
+                                    <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                                      +4/-1
+                                    </div>
+                                  </td>
+                                </React.Fragment>
+                              ))}
+                            </tr>
+                            <tr className="bg-gray-50/50 dark:bg-gray-800/30">
+                              <td colSpan={1 + (timeframes.length * 3)} className="px-4 py-2 text-xs text-gray-600 dark:text-gray-400 italic">
+                                <span className="font-semibold">How to read:</span> The colored bar indicates overall impact (red = negative, purple = positive). 
+                                Impact shows net change (positive/negative count difference) and average change magnitude. 
+                                Count shows total occurrences and breakdown (+positive/-negative).
+                              </td>
+                            </tr>
+                            {allFactors.map((factorItem, idx) => {
+                              const factor = factorItem.factor;
+                              
+                              return (
+                                <tr 
+                                  key={idx}
+                                  className="hover:bg-gray-50/50 dark:hover:bg-gray-800/50"
+                                >
+                                  <td className="px-4 py-3 text-sm font-medium text-gray-900 dark:text-gray-100 sticky left-0 bg-white dark:bg-gray-900 z-10">
+                                    {getDisplayName(factor)}
+                                  </td>
+                                  {timeframes.map(timeframe => {
+                                    const results = triggerAnalysis.timeframeResults[timeframe];
+                                    const data = results && results[factor];
+                                    
+                                    if (!data || data.totalOccurrences < 2) {
+                                      return (
+                                        <React.Fragment key={timeframe}>
+                                          <td className="px-1 py-3 relative">
+                                            {/* NO COLOR BAR FOR EMPTY DATA */}
+                                          </td>
+                                          <td className="px-2 py-3 text-sm text-center text-gray-400">
+                                            —
+                                          </td>
+                                          <td className="px-2 py-3 text-sm text-center text-gray-400">
+                                            —
+                                          </td>
+                                        </React.Fragment>
+                                      );
+                                    }
+
+                                    const netImpact = data.positiveCount - data.negativeCount;
+                                    const avgChange = data.positiveCount > 0 && data.negativeCount > 0
+                                      ? ((data.positiveAvgChange * data.positiveCount) + (data.negativeAvgChange * data.negativeCount)) / (data.positiveCount + data.negativeCount)
+                                      : data.positiveCount > 0
+                                      ? data.positiveAvgChange
+                                      : data.negativeAvgChange;
+
+                                    const barColor = getImpactColor(netImpact, minImpact, maxImpact);
+
+                                    return (
+                                      <React.Fragment key={timeframe}>
+                                        <td className="px-1 py-3 relative">
+                                          <div 
+                                            className="absolute left-0 top-0 bottom-0 w-1 rounded-r"
+                                            style={{ backgroundColor: barColor }}
+                                          />
+                                        </td>
+                                        <td 
+                                          className={`px-2 py-3 text-sm text-center font-semibold ${
+                                            netImpact > 0 
+                                              ? 'text-green-600 dark:text-green-400' 
+                                              : netImpact < 0 
+                                              ? 'text-red-600 dark:text-red-400' 
+                                              : 'text-gray-500 dark:text-gray-400'
+                                          }`}
+                                        >
+                                          {netImpact > 0 ? '+' : ''}{formatDecimal(netImpact)}
+                                          <div className="text-xs font-normal text-gray-500 dark:text-gray-400 mt-0.5">
+                                            ({formatDecimal(avgChange)})
+                                          </div>
+                                        </td>
+                                        <td className="px-2 py-3 text-sm text-center text-gray-600 dark:text-gray-400">
+                                          <div>{data.totalOccurrences}</div>
+                                          <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                                            +{data.positiveCount}/-{data.negativeCount}
+                                          </div>
+                                        </td>
+                                      </React.Fragment>
+                                    );
+                                  })}
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  );
+                })()}
+              </div>
+            )}
+          </div>
+        ) : null}
       </div>
     </>
   );
