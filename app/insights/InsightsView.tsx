@@ -1218,6 +1218,11 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
         positiveAvgChange: number;
         negativeAvgChange: number;
         totalOccurrences: number;
+        // SEPARATE TRACKING FOR HAPPINESS AND STRESS CONTRIBUTIONS
+        happinessPositiveCount: number;
+        happinessNegativeCount: number;
+        stressPositiveCount: number; // STRESS DECREASES (GOOD)
+        stressNegativeCount: number; // STRESS INCREASES (BAD)
       }>> = {};
 
       timeframes.forEach(timeframe => {
@@ -1278,7 +1283,11 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
                   negativeCount: 0,
                   positiveAvgChange: 0,
                   negativeAvgChange: 0,
-                  totalOccurrences: 0
+                  totalOccurrences: 0,
+                  happinessPositiveCount: 0,
+                  happinessNegativeCount: 0,
+                  stressPositiveCount: 0,
+                  stressNegativeCount: 0
                 };
               }
 
@@ -1289,9 +1298,11 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
               if (isHappinessSignificant) {
                 if (happinessChange > 0) {
                   result.positiveCount++;
+                  result.happinessPositiveCount++;
                   result.positiveAvgChange = (result.positiveAvgChange * (result.positiveCount - 1) + happinessChange) / result.positiveCount;
                 } else {
                   result.negativeCount++;
+                  result.happinessNegativeCount++;
                   result.negativeAvgChange = (result.negativeAvgChange * (result.negativeCount - 1) + happinessChange) / result.negativeCount;
                 }
               }
@@ -1301,11 +1312,13 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
                 if (stressChange < 0) {
                   // STRESS DECREASED = GOOD (POSITIVE IMPACT)
                   result.positiveCount++;
+                  result.stressPositiveCount++;
                   // STORE MAGNITUDE OF STRESS DECREASE AS POSITIVE IMPACT
                   result.positiveAvgChange = (result.positiveAvgChange * (result.positiveCount - 1) + Math.abs(stressChange)) / result.positiveCount;
                 } else {
                   // STRESS INCREASED = BAD (NEGATIVE IMPACT)
                   result.negativeCount++;
+                  result.stressNegativeCount++;
                   result.negativeAvgChange = (result.negativeAvgChange * (result.negativeCount - 1) + stressChange) / result.negativeCount;
                 }
               }
@@ -1715,6 +1728,11 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
                                     <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                                       (1.8)
                                     </div>
+                                    <div className="text-xs font-normal text-gray-600 dark:text-gray-400 mt-1 pt-1 border-t border-gray-200 dark:border-gray-700">
+                                      <span className="text-rose-500 dark:text-rose-400">H:</span> +3
+                                      {' '}
+                                      <span className="text-purple-500 dark:text-purple-400">S:</span> -1
+                                    </div>
                                   </td>
                                   <td className="px-2 py-3 text-sm text-center text-gray-700 dark:text-gray-300">
                                     <div>5</div>
@@ -1729,6 +1747,7 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
                               <td colSpan={1 + (timeframes.length * 3)} className="px-4 py-2 text-xs text-gray-600 dark:text-gray-400 italic">
                                 <span className="font-semibold">How to read:</span> The colored bar indicates overall impact (red = negative, purple = positive). 
                                 Impact shows net change (positive/negative count difference) and average change magnitude. 
+                                <span className="text-rose-500 dark:text-rose-400"> H:</span> = Happiness contribution, <span className="text-purple-500 dark:text-purple-400"> S:</span> = Stress contribution (stress decrease = positive). 
                                 Count shows total occurrences and breakdown (+positive/-negative).
                               </td>
                             </tr>
@@ -1770,6 +1789,10 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
                                       ? data.positiveAvgChange
                                       : data.negativeAvgChange;
 
+                                    // CALCULATE HAPPINESS AND STRESS CONTRIBUTIONS
+                                    const happinessNet = data.happinessPositiveCount - data.happinessNegativeCount;
+                                    const stressNet = data.stressPositiveCount - data.stressNegativeCount;
+
                                     const barColor = getImpactColor(netImpact, minImpact, maxImpact);
 
                                     return (
@@ -1793,6 +1816,14 @@ export default function InsightsView({ entries, minimumEntries }: InsightsViewPr
                                           <div className="text-xs font-normal text-gray-500 dark:text-gray-400 mt-0.5">
                                             ({formatDecimal(avgChange)})
                                           </div>
+                                          {/* SHOW CONTRIBUTIONS BREAKDOWN */}
+                                          {(happinessNet !== 0 || stressNet !== 0) && (
+                                            <div className="text-xs font-normal text-gray-600 dark:text-gray-400 mt-1 pt-1 border-t border-gray-200 dark:border-gray-700">
+                                              <span className="text-rose-500 dark:text-rose-400">H:</span> {happinessNet > 0 ? '+' : ''}{formatDecimal(happinessNet)}
+                                              {' '}
+                                              <span className="text-purple-500 dark:text-purple-400">S:</span> {stressNet > 0 ? '+' : ''}{formatDecimal(stressNet)}
+                                            </div>
+                                          )}
                                         </td>
                                         <td className="px-2 py-3 text-sm text-center text-gray-600 dark:text-gray-400">
                                           <div>{data.totalOccurrences}</div>
