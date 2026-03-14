@@ -6,8 +6,10 @@ import { createClient } from '@/lib/supabase/client';
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import Image from 'next/image';
-import { Bars3Icon, XMarkIcon, ArrowDownTrayIcon } from '@heroicons/react/24/outline';
+import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
+import { SquareArrowDown, SquareActivity } from 'lucide-react';
 import DarkModeToggle from './DarkModeToggle';
+import { buildBloodPressureCsv } from '@/lib/exportBloodPressureCsv';
 
 type NavigationProps = {
   user: {
@@ -84,22 +86,25 @@ export default function Navigation({ user }: NavigationProps) {
       // SHOW LOADING STATE (OPTIONAL - CAN ADD LATER)
       
       // FETCH ALL DATA IN PARALLEL
-      const [entriesRes, exposureRes, quickRes, gratitudesRes] = await Promise.all([
+      const [entriesRes, exposureRes, quickRes, gratitudesRes, bloodPressureRes] = await Promise.all([
         fetch('/api/entries'),
         fetch('/api/exposure-entries'),
         fetch('/api/quick-entries'),
-        fetch('/api/gratitudes')
+        fetch('/api/gratitudes'),
+        fetch('/api/blood-pressure-entries')
       ]);
 
       const entriesData = await entriesRes.json();
       const exposureData = await exposureRes.json();
       const quickData = await quickRes.json();
       const gratitudesData = await gratitudesRes.json();
+      const bloodPressureData = await bloodPressureRes.json();
 
       const entries = entriesData.entries || [];
       const exposureEntries = exposureData.entries || [];
       const quickEntries = quickData.entries || [];
       const gratitudes = gratitudesData || [];
+      const bloodPressureEntries = bloodPressureData.entries || [];
 
       // GROUP DATA BY DATE
       const dataByDate: Record<string, {
@@ -107,6 +112,7 @@ export default function Navigation({ user }: NavigationProps) {
         exposureEntries: any[];
         quickEntries: any[];
         gratitudes: any[];
+        bloodPressureEntries: any[];
       }> = {};
 
       // PROCESS DAILY ENTRIES
@@ -117,7 +123,8 @@ export default function Navigation({ user }: NavigationProps) {
             dailyEntry: null,
             exposureEntries: [],
             quickEntries: [],
-            gratitudes: []
+            gratitudes: [],
+            bloodPressureEntries: []
           };
         }
         dataByDate[dateKey].dailyEntry = entry;
@@ -131,7 +138,8 @@ export default function Navigation({ user }: NavigationProps) {
             dailyEntry: null,
             exposureEntries: [],
             quickEntries: [],
-            gratitudes: []
+            gratitudes: [],
+            bloodPressureEntries: []
           };
         }
         dataByDate[dateKey].exposureEntries.push(entry);
@@ -145,7 +153,8 @@ export default function Navigation({ user }: NavigationProps) {
             dailyEntry: null,
             exposureEntries: [],
             quickEntries: [],
-            gratitudes: []
+            gratitudes: [],
+            bloodPressureEntries: []
           };
         }
         dataByDate[dateKey].quickEntries.push(entry);
@@ -159,10 +168,26 @@ export default function Navigation({ user }: NavigationProps) {
             dailyEntry: null,
             exposureEntries: [],
             quickEntries: [],
-            gratitudes: []
+            gratitudes: [],
+            bloodPressureEntries: []
           };
         }
         dataByDate[dateKey].gratitudes.push(gratitude);
+      });
+
+      // PROCESS BLOOD PRESSURE ENTRIES (DATE IS YYYY-MM-DD)
+      bloodPressureEntries.forEach((bp: any) => {
+        const dateKey = typeof bp.date === 'string' ? bp.date.split('T')[0] : new Date(bp.date).toISOString().split('T')[0];
+        if (!dataByDate[dateKey]) {
+          dataByDate[dateKey] = {
+            dailyEntry: null,
+            exposureEntries: [],
+            quickEntries: [],
+            gratitudes: [],
+            bloodPressureEntries: []
+          };
+        }
+        dataByDate[dateKey].bloodPressureEntries.push(bp);
       });
 
       // SORT DATES CHRONOLOGICALLY (OLDEST TO NEWEST)
@@ -258,6 +283,24 @@ export default function Navigation({ user }: NavigationProps) {
           exportText += '\n';
         }
 
+        // BLOOD PRESSURE
+        if (dayData.bloodPressureEntries && dayData.bloodPressureEntries.length > 0) {
+          exportText += 'Blood Pressure:\n';
+          dayData.bloodPressureEntries.forEach((bp: any) => {
+            const r1 = `${bp.systolic_1}/${bp.diastolic_1} @ ${bp.bpm_1}`;
+            const r2 = `${bp.systolic_2}/${bp.diastolic_2} @ ${bp.bpm_2}`;
+            const r3 = `${bp.systolic_3}/${bp.diastolic_3} @ ${bp.bpm_3}`;
+            const r4 = `${bp.systolic_4}/${bp.diastolic_4} @ ${bp.bpm_4}`;
+            const r5 = `${bp.systolic_5}/${bp.diastolic_5} @ ${bp.bpm_5}`;
+            const avgS = Math.round((bp.systolic_1 + bp.systolic_2 + bp.systolic_3 + bp.systolic_4 + bp.systolic_5) / 5);
+            const avgD = Math.round((bp.diastolic_1 + bp.diastolic_2 + bp.diastolic_3 + bp.diastolic_4 + bp.diastolic_5) / 5);
+            const avgB = Math.round((bp.bpm_1 + bp.bpm_2 + bp.bpm_3 + bp.bpm_4 + bp.bpm_5) / 5);
+            exportText += `  Readings: ${r1}, ${r2}, ${r3}, ${r4}, ${r5}\n`;
+            exportText += `  Average: ${avgS}/${avgD} @ ${avgB} bpm\n`;
+          });
+          exportText += '\n';
+        }
+
         // GRATITUDES
         if (dayData.gratitudes.length > 0) {
           exportText += 'Gratitudes:\n';
@@ -286,6 +329,34 @@ export default function Navigation({ user }: NavigationProps) {
     } catch (error) {
       console.error('Error exporting data:', error);
       alert('Failed to export data. Please try again.');
+    }
+  };
+
+  // EXPORT BLOOD PRESSURE ONLY AS CSV (FOR DOCTOR)
+  const handleExportBloodPressureCsv = async () => {
+    try {
+      const res = await fetch('/api/blood-pressure-entries');
+      if (!res.ok) throw new Error('Failed to fetch blood pressure data');
+      const data = await res.json();
+      const entries = data.entries || [];
+      if (entries.length === 0) {
+        alert('No blood pressure entries to export.');
+        return;
+      }
+      const csv = buildBloodPressureCsv(entries);
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `eudaemonia-blood-pressure-${new Date().toISOString().split('T')[0]}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      closeMenu();
+    } catch (error) {
+      console.error('Error exporting blood pressure CSV:', error);
+      alert('Failed to export blood pressure CSV. Please try again.');
     }
   };
 
@@ -458,6 +529,17 @@ export default function Navigation({ user }: NavigationProps) {
               >
                 Quick Entry
               </Link>
+              <Link
+                href="/blood-pressure"
+                className={`block px-3 py-2.5 rounded-md text-base font-medium transition-colors ${
+                  isActive('/blood-pressure')
+                    ? 'text-rose-600 dark:text-indigo-600 bg-rose-100/80 dark:bg-indigo-400/20' 
+                    : 'text-stone-600 hover:text-rose-500 hover:bg-rose-500/10 dark:text-gray-300 dark:hover:text-indigo-500 dark:hover:bg-indigo-500/10'
+                }`}
+                onClick={closeMenu}
+              >
+                Blood Pressure
+              </Link>
             </div>
             
             {/* MODAL FOOTER */}
@@ -465,13 +547,22 @@ export default function Navigation({ user }: NavigationProps) {
               <div className="flex items-center justify-between mb-3">
                 <span className="text-sm text-stone-600 dark:text-gray-400">{getUserName()}</span>
               </div>
-              <button
-                onClick={handleExportData}
-                className="w-full mb-2 px-4 py-2.5 rounded-md text-base font-medium text-stone-700 dark:text-gray-200 bg-stone-100 hover:bg-stone-200 dark:bg-gray-700 dark:hover:bg-gray-600 transition-colors flex items-center justify-center gap-2"
-              >
-                <ArrowDownTrayIcon className="h-5 w-5" />
-                Export Data
-              </button>
+              <div className="flex items-center gap-2 mb-2">
+                <button
+                  onClick={handleExportData}
+                  className="flex-1 px-4 py-2.5 rounded-md text-base font-medium text-stone-700 dark:text-gray-200 bg-stone-100 hover:bg-stone-200 dark:bg-gray-700 dark:hover:bg-gray-600 transition-colors flex items-center justify-center"
+                  title="Export all data"
+                >
+                  <SquareArrowDown className="h-5 w-5" />
+                </button>
+                <button
+                  onClick={handleExportBloodPressureCsv}
+                  className="flex-1 px-4 py-2.5 rounded-md text-base font-medium text-stone-700 dark:text-gray-200 bg-stone-100 hover:bg-stone-200 dark:bg-gray-700 dark:hover:bg-gray-600 transition-colors flex items-center justify-center"
+                  title="Export blood pressure CSV for doctor"
+                >
+                  <SquareActivity className="h-5 w-5" />
+                </button>
+              </div>
               <button
                 onClick={async () => {
                   const supabase = createClient();

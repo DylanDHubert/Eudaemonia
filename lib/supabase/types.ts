@@ -194,6 +194,74 @@ export interface Database {
           updated_at?: string
         }
       }
+      blood_pressure_entries: {
+        Row: {
+          id: string
+          user_id: string
+          date: string
+          systolic_1: number
+          diastolic_1: number
+          bpm_1: number
+          systolic_2: number
+          diastolic_2: number
+          bpm_2: number
+          systolic_3: number
+          diastolic_3: number
+          bpm_3: number
+          systolic_4: number
+          diastolic_4: number
+          bpm_4: number
+          systolic_5: number
+          diastolic_5: number
+          bpm_5: number
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          date: string
+          systolic_1: number
+          diastolic_1: number
+          bpm_1: number
+          systolic_2: number
+          diastolic_2: number
+          bpm_2: number
+          systolic_3: number
+          diastolic_3: number
+          bpm_3: number
+          systolic_4: number
+          diastolic_4: number
+          bpm_4: number
+          systolic_5: number
+          diastolic_5: number
+          bpm_5: number
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          date?: string
+          systolic_1?: number
+          diastolic_1?: number
+          bpm_1?: number
+          systolic_2?: number
+          diastolic_2?: number
+          bpm_2?: number
+          systolic_3?: number
+          diastolic_3?: number
+          bpm_3?: number
+          systolic_4?: number
+          diastolic_4?: number
+          bpm_4?: number
+          systolic_5?: number
+          diastolic_5?: number
+          bpm_5?: number
+          created_at?: string
+          updated_at?: string
+        }
+      }
     }
     Views: {
       [_ in never]: never

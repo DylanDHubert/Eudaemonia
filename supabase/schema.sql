@@ -97,3 +97,22 @@ CREATE TABLE public.quick_entries (
   CONSTRAINT quick_entries_pkey PRIMARY KEY (id),
   CONSTRAINT quick_entries_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id)
 );
+
+-- BLOOD PRESSURE: ONE ROW PER DAY, 5 READINGS (systolic, diastolic, bpm) EACH
+CREATE TABLE public.blood_pressure_entries (
+  id uuid NOT NULL DEFAULT uuid_generate_v4(),
+  user_id uuid NOT NULL,
+  date date NOT NULL,
+  systolic_1 integer NOT NULL CHECK (systolic_1 >= 50 AND systolic_1 <= 250),
+  diastolic_1 integer NOT NULL CHECK (diastolic_1 >= 30 AND diastolic_1 <= 180),
+  bpm_1 integer NOT NULL CHECK (bpm_1 >= 30 AND bpm_1 <= 250),
+  systolic_2 integer NOT NULL, diastolic_2 integer NOT NULL, bpm_2 integer NOT NULL,
+  systolic_3 integer NOT NULL, diastolic_3 integer NOT NULL, bpm_3 integer NOT NULL,
+  systolic_4 integer NOT NULL, diastolic_4 integer NOT NULL, bpm_4 integer NOT NULL,
+  systolic_5 integer NOT NULL, diastolic_5 integer NOT NULL, bpm_5 integer NOT NULL,
+  created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT blood_pressure_entries_pkey PRIMARY KEY (id),
+  CONSTRAINT blood_pressure_entries_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id),
+  CONSTRAINT blood_pressure_entries_user_date_unique UNIQUE (user_id, date)
+);
